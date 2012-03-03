@@ -1,0 +1,14 @@
+*.swp
+*.o
+*.backup
+*.bgeo
+*.emp
+*.swo
+*~
+tags
+build*
+Debug
+buddies
+.cproject
+.project
+.settings
