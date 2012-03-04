@@ -74,7 +74,6 @@ inline Vector2::Vector2(float _x, float _y) : x_(_x), y_(_y) {}
 inline Vector2::Vector2(const Vector2& _v) : x_(_v.x()), y_(_v.y()) {}
 
 
-
 /*
 Vector3 definitions
 */
@@ -133,8 +132,6 @@ inline Vector3 Vector3::cross(const Vector3 &_v) const {
                    z_*_v.x() - x_*_v.z(),
                    x_*_v.y() - y_*_v.x());
 }
-
-
 
 
 /*
@@ -266,7 +263,7 @@ inline Matrix4 Matrix4::inverse() const {
         - m_[8]*m_[13]*m_[6]*m_[3]  - m_[12]*m_[1]*m_[6]*m_[11]
         - m_[12]*m_[5]*m_[10]*m_[3] - m_[12]*m_[9]*m_[2]*m_[7];
 
-        std::cout << "det " << det << std::endl;
+        //std::cout << "det " << det << std::endl;
 
     if (abs(det) < 0.00001f) {
         std::cerr << "det very small!" << std::endl;
