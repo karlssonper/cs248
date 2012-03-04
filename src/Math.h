@@ -14,8 +14,10 @@ public:
     Vector2(float _x, float _y);
     Vector2();
     Vector2(const Vector2 &_v);
-    float _x;
-    float _y;
+    float x() const { return x_; }
+    float y() const { return y_; }
+    float x_;
+    float y_;
 };
 
 class Vector3 {
@@ -62,6 +64,15 @@ public:
     static Matrix4 scale(float _sx, float _sy, float _sz);
     float m_[16];
 };
+
+/* 
+Vector2 definitions
+*/
+
+inline Vector2::Vector2() : x_(0.f), y_(0.f) {}
+inline Vector2::Vector2(float _x, float _y) : x_(_x), y_(_y) {}
+inline Vector2::Vector2(const Vector2& _v) : x_(_v.x()), y_(_v.y()) {}
+
 
 
 /*
@@ -259,7 +270,11 @@ inline Matrix4 Matrix4::inverse() const {
 
     if (abs(det) < 0.00001f) {
         std::cerr << "det very small!" << std::endl;
-        det = 0.00001f;
+        if (det > 0 ) { 
+            det = 0.00001f;
+        } else {
+            det = -0.00001f;
+        }
     }
 
     float invDet = 1.f/det;
