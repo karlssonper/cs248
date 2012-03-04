@@ -36,6 +36,19 @@ int main() {
     rot.print();
     std::cout << std::endl;
 
+    float cdata[16];
+    cdata[0] = 1.f; cdata[4] = 2.f; cdata[8] = 3.f; cdata[12] = 4.f;
+    cdata[1] = 2.f; cdata[5] = -3.f; cdata[9] = -4.f; cdata[13] = 5.f;
+    cdata[2] = 0.f; cdata[6] = 2.f; cdata[10] = 4.f; cdata[14] = 6.f;
+    cdata[3] = 1.f; cdata[7] = -3.f; cdata[11] = -6.f; cdata[15] = 9.f;
+
+    Matrix4 invtest(cdata);
+    invtest.print();
+    std::cout << std::endl;
+    Matrix4 inverse = Matrix4(invtest.inverse());
+    inverse.print();
+
+
     
 
 

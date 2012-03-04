@@ -30,7 +30,6 @@ public:
     void yIs(float _y);
     void zIs(float _z);
     void print() const;
-private:
     float x_;
     float y_;
     float z_;
@@ -52,7 +51,6 @@ public:
     static Matrix4 rotate(float _a, float _x, float _y, float _z);
     static Matrix4 translate(float _tx, float _ty, float _tz);
     static Matrix4 scale(float _sx, float _sy, float _sz);
-private:
     float m_[16];
 };
 
@@ -232,6 +230,29 @@ void Matrix4::print() const {
     std::cout << m_[3]<<" "<<m_[7]<<" "<< m_[11]<<" "<<m_[15]<<std::endl;
 }
 
+inline Matrix4 Matrix4::inverse() const {
+
+    float det;
+    det = m_[0]*m_[5]*m_[10]*m_[15] + m_[0]*m_[9]*m_[14]*m_[7] + m_[0]*m_[13]*m_[6]*m_[11]
+        + m_[4]*m_[1]*m_[14]*m_[11] + m_[4]*m_[9]*m_[2]*m_[15] + m_[4]*m_[13]*m_[10]*m_[3]
+        + m_[8]*m_[1]*m_[6]*m_[15] + m_[8]*m_[5]*m_[14]*m_[3] + m_[8]*m_[13]*m_[2]*m_[7]
+        + m_[12]*m_[1]*m_[10]*m_[7] + m_[12]*m_[5]*m_[2]*m_[11] + m_[12]*m_[9]*m_[6]*m_[3]
+        - m_[0]*m_[5]*m_[14]*m_[11] - m_[0]*m_[9]*m_[6]*m_[15] - m_[0]*m_[13]*m_[10]*m_[7]
+        - m_[4]*m_[1]*m_[10]*m_[15] - m_[4]*m_[9]*m_[14]*m_[3] - m_[4]*m_[13]*m_[2]*m_[11]
+        - m_[8]*m_[1]*m_[14]*m_[7] - m_[8]*m_[5]*m_[2]*m_[15] - m_[8]*m_[13]*m_[6]*m_[3]
+        - m_[12]*m_[1]*m_[6]*m_[11] - m_[12]*m_[5]*m_[10]*m_[3] - m_[12]*m_[9]*m_[2]*m_[7];
+
+        std::cout << "determinant: " << det << std::endl;
+
+    if (det < 0.00001) {
+        std::cerr << "det very small!" << std::endl;
+        det = 0.00001;
+
+    }
+
+    return Matrix4();
+
+}
 
 
 
