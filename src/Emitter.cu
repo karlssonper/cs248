@@ -21,21 +21,21 @@ __global__ void init(bool *_act,
 
         _time[tid] = d_params_.lifeTime_;
 
-        _pos[3*tid+0] = d_params_.startPos_.x_;
-        _pos[3*tid+1] = d_params_.startPos_.y_;
-        _pos[3*tid+2] = d_params_.startPos_.z_;
+        _pos[3*tid+0] = d_params_.startPos_[0];
+        _pos[3*tid+1] = d_params_.startPos_[1];
+        _pos[3*tid+2] = d_params_.startPos_[2];
 
-        _acc[3*tid+0] = d_params_.startAcc_.x_;
-        _acc[3*tid+1] = d_params_.startAcc_.y_;
-        _acc[3*tid+2] = d_params_.startAcc_.z_;
+        _acc[3*tid+0] = d_params_.startAcc_[0];
+        _acc[3*tid+1] = d_params_.startAcc_[1];
+        _acc[3*tid+2] = d_params_.startAcc_[2];
 
-        _vel[3*tid+0] = d_params_.startVel_.x_;
-        _vel[3*tid+1] = d_params_.startVel_.y_;
-        _vel[3*tid+2] = d_params_.startVel_.z_;
+        _vel[3*tid+0] = d_params_.startVel_[0];
+        _vel[3*tid+1] = d_params_.startVel_[1];
+        _vel[3*tid+2] = d_params_.startVel_[2];
 
-        _col[3*tid+0] = d_params_.color_.x_;
-        _col[3*tid+1] = d_params_.color_.y_;
-        _col[3*tid+2] = d_params_.color_.z_;
+        _col[3*tid+0] = d_params_.color_[0];
+        _col[3*tid+1] = d_params_.color_[1];
+        _col[3*tid+2] = d_params_.color_[2];
 
         tid += blockDim.x * gridDim.x;
     }
@@ -55,21 +55,21 @@ __global__ void newParticle(bool *_act,
 
         _time[_index] = d_params_.lifeTime_;
 
-        _pos[3*_index+0] = d_params_.startPos_.x_;
-        _pos[3*_index+1] = d_params_.startPos_.y_;
-        _pos[3*_index+2] = d_params_.startPos_.z_;
+        _pos[3*_index+0] = d_params_.startPos_[0];
+        _pos[3*_index+1] = d_params_.startPos_[1];
+        _pos[3*_index+2] = d_params_.startPos_[2];
 
-        _acc[3*_index+0] = d_params_.startAcc_.x_;
-        _acc[3*_index+1] = d_params_.startAcc_.y_;
-        _acc[3*_index+2] = d_params_.startAcc_.z_;
+        _acc[3*_index+0] = d_params_.startAcc_[0];
+        _acc[3*_index+1] = d_params_.startAcc_[1];
+        _acc[3*_index+2] = d_params_.startAcc_[2];
 
-        _vel[3*_index+0] = d_params_.startVel_.x_;
-        _vel[3*_index+1] = d_params_.startVel_.y_;
-        _vel[3*_index+2] = d_params_.startVel_.z_;
+        _vel[3*_index+0] = d_params_.startVel_[0];
+        _vel[3*_index+1] = d_params_.startVel_[1];
+        _vel[3*_index+2] = d_params_.startVel_[2];
 
-        _col[3*_index+0] = d_params_.color_.x_;
-        _col[3*_index+1] = d_params_.color_.y_;
-        _col[3*_index+2] = d_params_.color_.z_;
+        _col[3*_index+0] = d_params_.color_[0];
+        _col[3*_index+1] = d_params_.color_[1];
+        _col[3*_index+2] = d_params_.color_[2];
 
     }
 }
@@ -120,7 +120,7 @@ Emitter::Emitter(EmitterParams _params) : params_(_params) {
     cudaMalloc((void**)&d_col_, sizeof(float)*3*params_.numParticles_);
 
     // init
-    init(d_act_, d_time_, d_pos_, d_acc_, d_vel_, d_col_);
+    init<<<128,128>>>(d_act_, d_time_, d_pos_, d_acc_, d_vel_, d_col_);
 
     // first particle goes in the first slot
     nextSlot_ = 0;
@@ -128,10 +128,21 @@ Emitter::Emitter(EmitterParams _params) : params_(_params) {
     // reset time
     nextEmission_ = params_.rate_;
 
+    // generate VBO
+    vboPos_ = new GLuint;
+    glGenBuffers(1, vboPos_);
+    glBindBuffer(GL_ARRAY_BUFFER, *vboPos_);
+    glBufferData(GL_ARRAY_BUFFER, 
+                 sizeof(float)*3*params_.numParticles_,
+                 0,
+                 GL_DYNAMIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 }
 
 void Emitter::update(float _dt) {
+
+    cudaGLMapBufferObject((void**)&d_pos_, *vboPos_);
 
     // count off lapsed time
     nextEmission_ -= _dt;
@@ -142,26 +153,28 @@ void Emitter::update(float _dt) {
         nextEmission_ += params_.rate_;
 
         // emitt a particle
-        newParticle(d_act_, 
-                    d_time_, 
-                    d_pos_, 
-                    d_acc_, 
-                    d_vel_, 
-                    d_col_,
-                    nextSlot_);
+        newParticle<<<128,128>>>(d_act_, 
+                                 d_time_, 
+                                 d_pos_, 
+                                 d_acc_, 
+                                 d_vel_, 
+                                 d_col_,
+                                 nextSlot_);
 
         // jump forward one slot
         nextSlot_++;
         if (nextSlot_ == params_.numParticles_) nextSlot_ = 0;
 
         // update all the particles
-        integrate(d_act_, 
-                  d_time_, 
-                  d_pos_, 
-                  d_acc_, 
-                  d_vel_, 
-                  d_col_,
-                  _dt);
+        integrate<<<128,128>>>(d_act_, 
+                               d_time_, 
+                               d_pos_, 
+                               d_acc_, 
+                               d_vel_, 
+                               d_col_,
+                              _dt);
+
+        cudaGLUnmapBufferObject(*vboPos_);
     }
 }
 

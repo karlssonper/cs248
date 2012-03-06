@@ -7,10 +7,9 @@
 class ParticleSystem {
 public:
     ParticleSystem(unsigned int _numEmitters);
+    ~ParticleSystem();
     unsigned int numEmitters() const { return numEmitters_; }
     Emitter* emitter(unsigned int _i) { return _emitter.at(_i); }
-    unsigned int first() const { return first_; }
-    unsigned int last() const { return last_; }
     void update(float _dt);
     void newEmitter(Emitter::EmitterParams _params);
 private:
@@ -18,8 +17,6 @@ private:
     ParticleSystem(const ParticleSystem&);
     unsigned int numEmitters_;
     std::vector<Emitter*> _emitter;
-    unsigned int first_;
-    unsigned int last_;
 };
 
 #endif

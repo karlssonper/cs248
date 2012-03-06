@@ -3,13 +3,14 @@
 
 #include <GL/glew.h>
 #include <GL/glut.h>
-#include "MathEngine.h"
 #include <vector>
 
 class Particle;
 
 class Emitter {
 public:
+
+    GLuint vboPos() const { return *vboPos_; }
 
     enum Type {
         EMITTER_SMOKE = 0,
@@ -20,13 +21,11 @@ public:
         unsigned int numParticles_;
         float rate_;
         float mass_;
-        Vector3 startPos_;
-        Vector3 startVel_;
-        Vector3 startAcc_;
-        Vector3 extForce_;
-        Vector3 color_;
+        float startPos_[3];
+        float startVel_[3];
+        float startAcc_[3];
+        float color_[3];
         float lifeTime_;
-        Type type_;
     };
 
     Emitter(EmitterParams _params);
@@ -52,6 +51,6 @@ public:
 
     // time to next emission
     float nextEmission_;
-}
+};
 
 #endif
