@@ -25,12 +25,12 @@ void Node::parentIs(Node * _parent)
 
 void Node::addChildren(Node * _children)
 {
-    children_->push_back(_children);
+    children_.push_back(_children);
 }
 
 void Node::removeChildren(Node * _children)
 {
-    children_->remove(_children);
+    children_.remove(_children);
 }
 
 void Node::rotateX(float _degrees)
@@ -71,7 +71,7 @@ void Node::translate(Vector3 _T)
             modelTransformLocal_ * Matrix4::translate( _T.x, _T.y, _T.z);
     modelTransformLocalChanged_ = true;
 }
-void Node::scale(vector3 _S)
+void Node::scale(Vector3 _S)
 {
     modelTransformLocal_ =
             modelTransformLocal_ * Matrix4::scale( _S.x, _S.y, _S.z);
@@ -80,7 +80,8 @@ void Node::scale(vector3 _S)
 
 void Node::update()
 {
-    for (std::list<Node*>::iterator it = children_.begin(); it != children_.end(); ++it){
+    for (std::list<Node*>::iterator it = children_.begin();
+            it != children_.end(); ++it){
         (*it)->update(false);
     }
 }
@@ -92,7 +93,8 @@ void Node::update(bool _needsUpdate)
     if (upd) {
         modelTransformGlobal_ = parent_->modelMtx() * modelTransformLocal_;
     }
-    for (std::list<Node*>::iterator it = children_.begin(); it != children_.end(); ++it){
+    for (std::list<Node*>::iterator it = children_.begin();
+            it != children_.end(); ++it){
         (*it)->update(upd);
     }
     modelTransformLocalChanged_ = false;

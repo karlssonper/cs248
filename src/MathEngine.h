@@ -1,5 +1,5 @@
-#ifndef MATH_H
-#define MATH_H
+#ifndef MATHENGINE_H
+#define MATHENGINE_H
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846f
@@ -8,16 +8,15 @@
 #include <math.h>
 #include <iostream>
 #include <iomanip>
+#include <stdlib.h>
 
 class Vector2 {
 public:
     Vector2(float _x, float _y);
     Vector2();
     Vector2(const Vector2 &_v);
-    float x() const { return x_; }
-    float y() const { return y_; }
-    float x_;
-    float y_;
+    float x;
+    float y;
 };
 
 class Vector3 {
@@ -25,9 +24,6 @@ public:
     Vector3();
     Vector3(const Vector3 &_v);
     Vector3(float _x, float _y, float _z);
-    float x() const { return x_; }
-    float y() const { return y_; }
-    float z() const { return z_; }
     float mag() const;
     Vector3 operator+(const Vector3 &_v) const;
     Vector3 operator-(const Vector3 &_v) const;
@@ -41,9 +37,9 @@ public:
     void yIs(float _y);
     void zIs(float _z);
     void print() const;
-    float x_;
-    float y_;
-    float z_;
+    float x;
+    float y;
+    float z;
 };
 
 class Matrix4 {
@@ -69,52 +65,52 @@ public:
 Vector2 definitions
 */
 
-inline Vector2::Vector2() : x_(0.f), y_(0.f) {}
-inline Vector2::Vector2(float _x, float _y) : x_(_x), y_(_y) {}
-inline Vector2::Vector2(const Vector2& _v) : x_(_v.x()), y_(_v.y()) {}
+inline Vector2::Vector2() : x(0.f), y(0.f) {}
+inline Vector2::Vector2(float _x, float _y) : x(_x), y(_y) {}
+inline Vector2::Vector2(const Vector2& _v) : x(_v.x), y(_v.y) {}
 
 
 /*
 Vector3 definitions
 */
 
-inline Vector3::Vector3() : x_(0.f), y_(0.f), z_(0.f) {}
+inline Vector3::Vector3() : x(0.f), y(0.f), z(0.f) {}
 
-inline Vector3::Vector3(float _x, float _y, float _z) : x_(_x), y_(_y), z_(_z) {}
+inline Vector3::Vector3(float _x, float _y, float _z) : x(_x), y(_y), z(_z) {}
 
-inline Vector3::Vector3(const Vector3& _v) : x_(_v.x()), y_(_v.y()), z_(_v.z()) {}
+inline Vector3::Vector3(const Vector3& _v) : x(_v.x), y(_v.y), z(_v.z) {}
 
 inline float Vector3::mag() const {
-    return sqrt(x_*x_ + y_*y_ + z_*z_);
+    return sqrt(x*x + y*y + z*z);
 }
 
 inline Vector3 Vector3::operator+(const Vector3 &_v) const {
-    return Vector3(x_+_v.x(), y_+_v.y(), z_+_v.z()); 
+    return Vector3(x+_v.x, y+_v.y, z+_v.z);
 }
 
 inline Vector3 Vector3::operator-(const Vector3 &_v) const {
-    return Vector3(x_-_v.x(), y_-_v.y(), z_-_v.z()); 
+    return Vector3(x-_v.x, y-_v.y, z-_v.z);
 }
 
 inline Vector3& Vector3::operator=(const Vector3 &_v) {
     if (this == &_v) return *this;
-    x_ = _v.x();
-    y_ = _v.y();
-    z_ = _v.z();
+    x = _v.x;
+    y = _v.y;
+    z = _v.z;
     return *this;
 }
 
 inline Vector3 Vector3::operator*(float _f) const {
-    return Vector3(x_*_f, y_*_f, z_*_f);
+    return Vector3(x*_f, y*_f, z*_f);
 }
 
 inline Vector3 Vector3::operator/(float _f) const {
     float d = 1.f/_f;
-    return Vector3(x_*d, y_*d, z_*d);
+    return Vector3(x*d, y*d, z*d);
 }
 
 inline float Vector3::dot(const Vector3& _v) const {
-    return x_*_v.x() + y_*_v.y() + z_*_v.z();
+    return x*_v.x + y*_v.y + z*_v.z;
 }
 
 inline Vector3 Vector3::normalize() const {
@@ -122,15 +118,15 @@ inline Vector3 Vector3::normalize() const {
     return v/v.mag();
 }
 
-void Vector3::print() const {
+inline void Vector3::print() const {
     std::cout << std::fixed << std::setprecision(2);
-    std::cout << "(" << x_ << ", " << y_ << ", " << z_ << ")" << std::endl;
+    std::cout << "(" << x << ", " << y << ", " << z << ")" << std::endl;
 }
 
 inline Vector3 Vector3::cross(const Vector3 &_v) const {
-    return Vector3(y_*_v.z() - z_*_v.y(),
-                   z_*_v.x() - x_*_v.z(),
-                   x_*_v.y() - y_*_v.x());
+    return Vector3(y*_v.z - z*_v.y,
+                   z*_v.x - x*_v.z,
+                   x*_v.y - y*_v.x);
 }
 
 
@@ -180,9 +176,9 @@ inline Matrix4 Matrix4::operator*(const Matrix4 &_m) const {
 
 inline Vector3 Matrix4::operator*(const Vector3 &_v) const {
     float x, y, z, vx, vy, vz, vw;
-    vx = _v.x();
-    vy = _v.y();
-    vz = _v.z();
+    vx = _v.x;
+    vy = _v.y;
+    vz = _v.z;
     vw = 1.f;
     x = vx*m_[0] + vy*m_[4] + vz*m_[8]  + vw*m_[12];
     y = vx*m_[1] + vy*m_[5] + vz*m_[9]  + vw*m_[13];
@@ -239,7 +235,7 @@ inline Matrix4 Matrix4::rotate(float _angle, float _x, float _y, float _z) {
     return Matrix4(r);
 }
 
-void Matrix4::print() const {
+inline void Matrix4::print() const {
     std::cout << std::fixed << std::setprecision(2);
     std::cout << m_[0]<<" "<<m_[4]<<" "<< m_[8]<<" "<<m_[12]<<std::endl;
     std::cout << m_[1]<<" "<<m_[5]<<" "<< m_[9]<<" "<<m_[13]<<std::endl;

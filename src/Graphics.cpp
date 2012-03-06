@@ -25,14 +25,14 @@ void Graphics::bindGeometry(GLuint                      _VAO,
                             GLuint                      _offset)
 {
     glBindVertexArray(_VAO);
-    glBindBuffer(_VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, _VBO);
 
     glEnableVertexAttribArray(_locIdx);
     glVertexAttribPointer(_locIdx, _n, GL_FLOAT, 0, _stride,
             BUFFER_OFFSET(_offset));
 
     glBindVertexArray(0);
-    glBindBuffer(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 void Graphics::drawIndices(GLuint _VAO, GLuint _VBO, GLuint _size)

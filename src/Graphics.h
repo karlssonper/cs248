@@ -9,7 +9,12 @@
 #define GRAPHICS_H_
 
 #include <GL3/gl3w.h>
-#include <GL/glut.h>
+
+#include <string>
+#include <vector>
+#include <map>
+
+#define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
 class Graphics
 {
@@ -62,7 +67,7 @@ private:
 };
 
 template<class Vertex>
-void geometryIs(GLuint                      _geometryVBO,
+void Graphics::geometryIs(GLuint                      _geometryVBO,
                 GLuint                      _indexVBO,
                 const std::vector<Vertex> & _geometryData,
                 const std::vector<GLuint> & _indexData,

@@ -8,12 +8,16 @@
 #ifndef NODE_H_
 #define NODE_H_
 
+#include <list>
+#include <string>
+#include "MathEngine.h"
+
 class Node
 {
 public:
     Node(std::string _name, Node * _parent = NULL);
     const std::string & name() const { return name_;};
-    const Matrix4 & modelMtx() const { return modelTransform_; };
+    const Matrix4 & modelMtx() const { return modelTransformGlobal_; };
     void parentIs(Node * _parent);
     void rotateX(float _degrees);
     void rotateY(float _degrees);
@@ -34,7 +38,7 @@ private:
     std::list<Node*> children_;
     bool modelTransformLocalChanged_;
     void addChildren(Node* _children);
-    void removeChildern(Node * _children);
+    void removeChildren(Node * _children);
     void update(bool _needsUpdate);
 };
 #endif /* NODE_H_ */
