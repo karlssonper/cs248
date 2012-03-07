@@ -11,7 +11,7 @@ void main() {
 
 	vec4 eyeTemp = (gl_ModelViewMatrix*vec4(positionIn, 1.0));
 	eyeSpacePos = eyeTemp.xyz;
-	gl_PointSize = 10.0;
+	gl_PointSize = 50.0 / length(eyeTemp);
 	gl_Position = gl_ProjectionMatrix * eyeTemp;
 	color = colorIn;
 	time = timeIn;

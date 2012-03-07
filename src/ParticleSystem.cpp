@@ -10,8 +10,8 @@ void ParticleSystem::update(float _dt) {
     }
 }
 
-void ParticleSystem::newEmitter(Emitter::EmitterParams _params) {
-    _emitter.push_back(new Emitter(_params));
+void ParticleSystem::newEmitter(unsigned int _numParticles) {
+    _emitter.push_back(new Emitter(_numParticles));
 }
 
 ParticleSystem::~ParticleSystem() {

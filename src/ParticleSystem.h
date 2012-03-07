@@ -11,7 +11,7 @@ public:
     unsigned int numEmitters() const { return numEmitters_; }
     Emitter* emitter(unsigned int _i) { return _emitter.at(_i); }
     void update(float _dt);
-    void newEmitter(Emitter::EmitterParams _params);
+    void newEmitter(unsigned int _numParticles);
 private:
     ParticleSystem();
     ParticleSystem(const ParticleSystem&);

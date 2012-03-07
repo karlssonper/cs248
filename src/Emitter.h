@@ -5,6 +5,8 @@
 #include <GL/glut.h>
 #include <vector>
 
+#include "MathEngine.h"
+
 #include <curand_kernel.h>
 
 class Particle;
@@ -22,7 +24,9 @@ public:
         float rate_;
         float mass_;
         float startPos_[3];
+        float posRandWeight_;
         float startVel_[3];
+        float velRandWeight_;
         float startAcc_[3];
         float color_[3];
         float lifeTime_;
@@ -30,17 +34,25 @@ public:
         Type emitterType_;
     };
 
-    Emitter(EmitterParams _params);
+    Emitter(unsigned int _numParticles);
     void update(float _dt);
-
+    void burst();
     GLuint vboPos() const { return *vboPos_; }
     GLuint vboCol() const { return *vboCol_; }
     GLuint vboTime() const { return *vboTime_; }
-
     EmitterParams params() const { return params_; }
-
+    void posIs(Vector3 _pos);
+    void accIs(Vector3 _acc);
+    void velIs(Vector3 _vel);
+    void massIs(float _mass);
+    void rateIs(float _rate);
+    void colIs(Vector3 _col);
+    void lifeTimeIs(float _lifeTime);
+    void burstSizeIs(unsigned int _burstSize);
+    void typeIs(Type _emitterType);
+    void velRandWeightIs(float _velRandWeight);
+    void posRandWeightIs(float _posRandWeight);
     
-
 private:
     
     // parameters
