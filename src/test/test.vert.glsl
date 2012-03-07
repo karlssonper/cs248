@@ -1,11 +1,19 @@
-uniform float pointRadius;  
-uniform float pointScale;  
-void main()
-{
-    vec3 pos = (gl_ModelViewMatrix * gl_Vertex).xyz; 
-    float dist = 2.0;//length(pos);
-    gl_PointSize = pointRadius * (pointScale / dist);
-    gl_TexCoord[0] = gl_MultiTexCoord0;
-    gl_Position = ftransform();
-    gl_FrontColor = gl_Color;
+attribute vec3 positionIn;
+attribute vec3 colorIn;
+attribute float timeIn;
+
+varying vec3 eyeSpacePos;
+varying vec3 color;
+varying float time;
+
+
+void main() {
+
+	vec4 eyeTemp = (gl_ModelViewMatrix*vec4(positionIn, 1.0));
+	eyeSpacePos = eyeTemp.xyz;
+	gl_PointSize = 10.0;
+	gl_Position = gl_ProjectionMatrix * eyeTemp;
+	color = colorIn;
+	time = timeIn;
+
 }

@@ -1,6 +1,7 @@
 #ifndef RENDERER_H
 #define RENDERER_H
 
+#include "../ParticleSystem.h"
 #include "Shader.h"
 
 #include <GL/glew.h>
@@ -8,10 +9,10 @@
 
 class Renderer {
 public:
-    Renderer(unsigned int _vbo, Shader *shader);
+    Renderer(ParticleSystem *_ps, Shader *shader);
     void render();
 private:
-    unsigned int vbo_;
+    ParticleSystem *ps_;
     Shader *shader_;
 };
 

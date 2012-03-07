@@ -2,6 +2,7 @@
 
 #include "Renderer.h"
 #include "Shader.h"
+#include <iostream>
 
 #include <GL/glew.h>
 #include <GL/glut.h>
@@ -18,8 +19,9 @@ void initGL() {
     glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
     glEnable(GL_DEPTH_TEST);
     glPointSize(3.0);
-    shader = new Shader("../../src/test");
-    renderer = new Renderer(sp->emitter(0)->vboPos(), shader);
+    shader = new Shader("../src/test/test");
+    if (!shader->loaded()) std::cout << shader->errors() << std::endl;
+    renderer = new Renderer(sp, shader);
     glEnable(GL_POINT_SPRITE);
     glTexEnvi(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);
     glEnable(GL_VERTEX_PROGRAM_POINT_SIZE_NV);
@@ -27,7 +29,7 @@ void initGL() {
 }
 
 void idle() {
-    sp->update(0.002);
+    sp->update(0.2);
     glutPostRedisplay();
 }
 
@@ -40,7 +42,7 @@ void display() {
      renderer->render();
 
      glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-     glutWireCube(2.0);
+     //glutWireCube(2.0);
      glutSwapBuffers();
 }
 
@@ -65,23 +67,25 @@ void keyboard(unsigned char key, int x, int y) {
 }
 
 void initParticleSystem() {
+
      // construct emitter
     Emitter::EmitterParams params;
-    params.numParticles_ = 50;
+    params.numParticles_ = 10000;
     params.mass_ = 1.f;
-    params.rate_ = 3.f;
-    params.startAcc_[0] = 0.f;
-    params.startAcc_[1] = -1.f;
-    params.startAcc_[2] = 0.f;
-    params.startVel_[0] = 1.f;
-    params.startVel_[1] = 1.f;
-    params.startVel_[2] = 1.f;
-    params.startPos_[0] = 1.f;
-    params.startPos_[1] = 1.f;
-    params.startPos_[2] = 1.f;
+    params.rate_ = 0.01f;
+    params.startAcc_[0] = 0.0f;
+    params.startAcc_[1] = -0.02f;
+    params.startAcc_[2] = 0.0f;
+    params.startVel_[0] = 0.0f;
+    params.startVel_[1] = 0.2f;
+    params.startVel_[2] = 0.0f;
+    params.startPos_[0] = 0.f;
+    params.startPos_[1] = 0.f;
+    params.startPos_[2] = 0.f;
     params.color_[0] = 1.f;
     params.color_[1] = 1.f;
-    params.color_[2] = 1.f;
+    params.color_[2] = 0.f;
+    params.lifeTime_ = 20.f;
 
     // construct particle system
     sp = new ParticleSystem(1);
@@ -95,10 +99,6 @@ void cleanUp() {
 }
 
 int main(int argc, char** argv) {
-
-   
-
-    // glut and glew 
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
     glutInitWindowPosition(100,100);
@@ -111,11 +111,7 @@ int main(int argc, char** argv) {
     glutReshapeFunc(reshape);
     glutKeyboardFunc(keyboard);
     glutIdleFunc(idle);
-
-    // run!
     glutMainLoop();
-
-   
     return 0;
 }
 

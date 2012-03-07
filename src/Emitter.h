@@ -5,16 +5,16 @@
 #include <GL/glut.h>
 #include <vector>
 
+#include <curand_kernel.h>
+
 class Particle;
 
 class Emitter {
 public:
 
-    GLuint vboPos() const { return *vboPos_; }
-
     enum Type {
-        EMITTER_SMOKE = 0,
-        EMITTER_FIRE
+        EMITTER_STREAM = 0,
+        EMITTER_BURST
     };
 
     struct EmitterParams {
@@ -26,24 +26,36 @@ public:
         float startAcc_[3];
         float color_[3];
         float lifeTime_;
+        unsigned int burstSize_;
+        Type emitterType_;
     };
 
     Emitter(EmitterParams _params);
     void update(float _dt);
 
-    EmitterParams params_;
+    GLuint vboPos() const { return *vboPos_; }
+    GLuint vboCol() const { return *vboCol_; }
+    GLuint vboTime() const { return *vboTime_; }
 
-    // pointers to particle data on device
-    bool *d_act_;
-    float *d_time_;
-    float *d_pos_;
-    float *d_acc_;
-    float *d_vel_;
-    float *d_col_;
+    EmitterParams params() const { return params_; }
+
+    
+
+private:
+    
+    // parameters
+    EmitterParams params_;
 
     // vbo's with the stuff the shaders needs to know about
     GLuint *vboPos_;
     GLuint *vboCol_;
+    GLuint *vboTime_;
+
+    // cudart states for random number generation
+    curandState *d_randstate_;
+
+    // debug purposes
+    void copyPosToHostAndPrint();
 
     // keeps track of the next slot in the array to put
     // new particles in
@@ -51,6 +63,16 @@ public:
 
     // time to next emission
     float nextEmission_;
+
+    // pointers to particle data on device
+    float *d_time_;
+    float *d_pos_;
+    float *d_acc_;
+    float *d_vel_;
+    float *d_col_;
+
+    unsigned int blocks_;
+    unsigned int threads_;
 };
 
 #endif
