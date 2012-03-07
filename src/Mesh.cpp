@@ -7,10 +7,17 @@
 
 #include "Mesh.h"
 #include "Node.h"
+#include "ShaderData.h"
+#include "Graphics.h"
 
 Mesh::Mesh(std::string _name, Node * _node) : name_(_name), node_(_node)
 {
+    loadedInGPU_ = false;
+}
 
+Mesh::~Mesh()
+{
+    Graphics::instance().deleteBuffers(name());
 }
 
 void Mesh::nodeIs(Node * _node)
@@ -18,11 +25,17 @@ void Mesh::nodeIs(Node * _node)
     node_ = _node;
 }
 
+void Mesh::shaderDataIs(ShaderData * _shaderData)
+{
+    shaderData_ = _shaderData;
+}
+
 void Mesh::geometryIs(const std::vector<Vector3> &_position,
                       const std::vector<Vector2> &_texCoord,
                       const std::vector<Vector3> &_normal,
                       const std::vector<Vector3> &_tangent,
-                      const std::vector<Vector3> &_bitangent)
+                      const std::vector<Vector3> &_bitangent,
+                      const std::vector<unsigned int> & _idx)
 {
     position_ = _position;
     texCoord_ = _texCoord;
@@ -33,11 +46,17 @@ void Mesh::geometryIs(const std::vector<Vector3> &_position,
     std::vector<Mesh::Vertex> _v;
     generateVertexVector(_v);
 
+    Graphics::instance().buffersNew(name(), VAO_, geometryVBO_, indexVBO_);
+    Graphics::instance().geometryIs(geometryVBO_,indexVBO_,_v,_idx,VBO_STATIC);
+
+    loadedInGPU_ = true;
 }
 
 void Mesh::display() const
 {
-
+    if (!loadedInGPU_) return;
+    unsigned int n = indices_.size();
+    Graphics::instance().drawIndices(VAO_, indexVBO_, n, shaderData_);
 }
 
 void Mesh::generateVertexVector(std::vector<Vertex> & _v)
@@ -86,5 +105,7 @@ void Mesh::generateVertexVector(std::vector<Vertex> & _v)
             _v[i].bitangent[2] = bitangent_[i].z;
         }
     }
+
+
 
 }

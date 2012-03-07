@@ -2,12 +2,37 @@
 #include <stdlib.h>
 #include <Graphics.h>
 #include <GL/glut.h>
+#include <wrappers/Assimp2Mesh.h>
+#include <Node.h>
+#include <Mesh.h>
+#include <Camera.h>
+#include <Graphics.h>
 
 static int width = 600, height = 600;
+Mesh * mesh;
+Node * node;
+Camera * cam;
 
 static float randf()
 {
     return (float) rand() / ((float) RAND_MAX + 1);
+}
+
+static void createSceneGraph()
+{
+    mesh = new Mesh("sixten");
+    node = new Node("sixtenNode");
+    cam = new Camera();
+    cam->projectionIs(45.f, 1.f, 1.f, 100.f);
+
+    ASSIMP2MESH::read("../models/armadillo.3ds", "0", mesh);
+    std::string tex("../textures/armadillo_n.jpg");
+    Graphics::instance().texture(tex);
+    //Graphics::instance().deleteTexture(tex);
+
+    std::string shader("../shaders/phong");
+    Graphics::instance().shader(shader);
+    //Graphics::instance().deleteShader(shader);
 }
 
 static void display(void)
@@ -18,10 +43,6 @@ static void display(void)
     GLuint _vao;
     glGenVertexArrays(1, &_vao);
     glBindVertexArray(_vao);
-//        glMatrixMode(GL_MODELVIEW);
-//        /glLoadIdentity();
-        //glRotatef(3,1.0,0.0,0.0);
-        //glRotatef(4,0.0,1.0,0.0);
     glutSwapBuffers();
     glutPostRedisplay();
 }
@@ -56,6 +77,8 @@ int main(int argc, char **argv)
     }
     printf("OpenGL %s, GLSL %s\n", glGetString(GL_VERSION),
            glGetString(GL_SHADING_LANGUAGE_VERSION));
+
+    createSceneGraph();
 
     glutMainLoop();
     return 0;

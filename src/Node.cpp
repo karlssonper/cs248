@@ -10,17 +10,25 @@
 Node::Node(std::string _name, Node * _parent) : name_(_name)
 {
     children_.resize(0);
-    parentIs(_parent);
+    parentIs(NULL);
     modelTransformLocalChanged_ = false;
 }
 
 void Node::parentIs(Node * _parent)
 {
-    if (parent_ != NULL) {
-        parent_->removeChildren(this);
+    if (_parent != NULL) {
+        _parent->removeChildren(this);
     }
     parent_ = _parent;
-    parent_->addChildren(this);
+    if (parent_ != NULL) {
+        parent_->addChildren(this);
+    }
+}
+
+void Node::localModelMtxIs(const Matrix4 &_m)
+{
+    modelTransformLocal_ = _m;
+    modelTransformLocalChanged_ = true;
 }
 
 void Node::addChildren(Node * _children)
@@ -91,7 +99,7 @@ void Node::update(bool _needsUpdate)
     const bool upd = modelTransformLocalChanged_ || _needsUpdate;
 
     if (upd) {
-        modelTransformGlobal_ = parent_->modelMtx() * modelTransformLocal_;
+        modelTransformGlobal_ = parent_->globalModelMtx() *modelTransformLocal_;
     }
     for (std::list<Node*>::iterator it = children_.begin();
             it != children_.end(); ++it){

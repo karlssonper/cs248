@@ -17,7 +17,9 @@ class Node
 public:
     Node(std::string _name, Node * _parent = NULL);
     const std::string & name() const { return name_;};
-    const Matrix4 & modelMtx() const { return modelTransformGlobal_; };
+    const Matrix4 & globalModelMtx() const { return modelTransformGlobal_; };
+    const Matrix4 & localModelMtx() const { return modelTransformLocal_; };
+    void localModelMtxIs(const Matrix4 &_m);
     void parentIs(Node * _parent);
     void rotateX(float _degrees);
     void rotateY(float _degrees);

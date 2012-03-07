@@ -49,7 +49,8 @@ public:
     Matrix4(float *_data);
     float operator()(unsigned int _index) const { return m_[_index]; }
     float operator()(unsigned int _index) { return m_[_index]; }
-    float* data() { return m_; }
+    const float* data() const{ return m_; }
+    void makeIdentity();
     Matrix4& operator=(const Matrix4 &_m);
     Matrix4 inverse() const;
     Matrix4 operator*(const Matrix4 &_m) const;
@@ -151,6 +152,13 @@ inline Matrix4::Matrix4(float *_data) {
     for (int i=0; i<16; ++i) {
         m_[i] = _data[i];
     }
+}
+
+inline void Matrix4::makeIdentity(){
+    m_[0] = 1.f; m_[4] = 1.f; m_[8] = 1.f; m_[12] = 1.f;
+    m_[1] = 0.f; m_[2] = 0.f; m_[3] = 0.f; m_[5] = 0.f;
+    m_[6] = 0.f; m_[7] = 0.f; m_[9] = 0.f; m_[12] = 0.f;
+    m_[13] = 0.f; m_[14] = 0.f;
 }
 
 inline Matrix4& Matrix4::operator=(const Matrix4 &_m) {
@@ -308,16 +316,5 @@ inline Matrix4 Matrix4::inverse() const {
 
     return Matrix4(b);
 }
-
-
-
-
-
-
-
-
-
-
-
 
 #endif
