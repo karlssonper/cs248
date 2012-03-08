@@ -114,6 +114,15 @@ void Graphics::drawIndices(GLuint _VAO,
         glBindTexture(GL_TEXTURE_2D, texIt->second.data);
     }
 
+    for (int i = 0; i < NUM_STD_MATRICES; ++i) {
+        if (_shaderData->stdMatrices_[i].first) {
+            glUniformMatrix4fv(_shaderData->stdMatrices_[i].second.location,
+                    1,
+                    false,
+                    _shaderData->stdMatrices_[i].second.data.data());
+        }
+    }
+
     glDrawElements(GL_TRIANGLES, _size, GL_UNSIGNED_INT, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
     glUseProgram(0);
@@ -283,5 +292,13 @@ void Graphics::deleteShader(unsigned int _shaderID)
         }
     }
     std::cerr << "Can't remove shader #" << _shaderID << std::endl;
+}
+
+GLint Graphics::shaderLoc(GLuint _shader, const std::string & _name)
+{
+    glUseProgram(_shader);
+    GLint loc = glGetUniformLocation(_shader, _name.c_str());
+    glUseProgram(0);
+    return loc;
 }
 

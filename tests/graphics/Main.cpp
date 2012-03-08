@@ -10,6 +10,7 @@
 
 static int width = 600, height = 600;
 Mesh * mesh;
+ShaderData * shader;
 Node * node;
 Camera * cam;
 
@@ -30,19 +31,21 @@ static void createSceneGraph()
     Graphics::instance().texture(tex);
     //Graphics::instance().deleteTexture(tex);
 
-    std::string shader("../shaders/phong");
-    Graphics::instance().shader(shader);
+    shader = new ShaderData("../shaders/phong");
+
+    shader->enableMatrix(MODELVIEW);
+    shader->enableMatrix(PROJECTION);
+    shader->enableMatrix(NORMAL);
+    mesh->shaderDataIs(shader);
+
     //Graphics::instance().deleteShader(shader);
 }
 
 static void display(void)
 {
-    glClearColor(randf(), randf(), randf(), 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    GLuint _vao;
-    glGenVertexArrays(1, &_vao);
-    glBindVertexArray(_vao);
+    mesh->display();
     glutSwapBuffers();
     glutPostRedisplay();
 }
@@ -62,7 +65,7 @@ int main(int argc, char **argv)
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
     glutInitWindowSize(width, height);
-    glutCreateWindow("cookie");
+    glutCreateWindow("tests/graphics");
 
     glutReshapeFunc(reshape);
     glutDisplayFunc(display);

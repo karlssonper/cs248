@@ -6,15 +6,37 @@
  */
 
 #include "ShaderData.h"
+#include "Graphics.h"
 
-ShaderData::ShaderData(const std::string & _shader)
+static std::string STDMatricesStr[NUM_STD_MATRICES] = {
+        "ModelViewMatrix",
+        "ProjectionMatrix",
+        "NormalMatrix",
+        "ModelMatrix",
+        "LightViewMatrix",
+        "LightProjectionMatrix",
+        "InverseViewMatrix"
+};
+
+ShaderData::ShaderData(const std::string & _shader) : shaderName_(_shader)
 {
-
+    shaderID_ = Graphics::instance().shader(_shader);
+    stdMatrices_.resize(NUM_STD_MATRICES);
+    for (int i = 0; i < NUM_STD_MATRICES; ++i){
+        stdMatrices_[i].first = false;
+        stdMatrices_[i].second.location =
+                Graphics::instance().shaderLoc(shaderID_, STDMatricesStr[i]);
+    }
 }
 
-ShaderData::ShaderData(unsigned int _shader)
+void ShaderData::enableMatrix(STD_Matrix _m)
 {
+    stdMatrices_[_m].first = true;
+}
 
+void ShaderData::disableMatrix(STD_Matrix _m)
+{
+    stdMatrices_[_m].first = false;
 }
 
 void ShaderData::addFloat(const std::string & _name, float _value)
@@ -74,6 +96,11 @@ Matrix4 * ShaderData::matrixData(const std::string & _name)
         std::cerr << "Can't find Matrix Shader Attribute named " <<
                 _name << std::endl;
     }
+}
+
+Matrix4 * ShaderData::stdMatrixData(STD_Matrix _m)
+{
+    return &stdMatrices_[_m].second.data;
 }
 
 unsigned int * ShaderData::textureData(const std::string & _name)

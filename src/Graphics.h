@@ -57,6 +57,8 @@ public:
     void deleteShader(const std::string & _shader);
     void deleteShader(unsigned int _shaderID);
 
+    GLint shaderLoc(GLuint _shader, const std::string & _name);
+
 private:
     Graphics();
     ~Graphics();

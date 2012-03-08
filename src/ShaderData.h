@@ -9,7 +9,20 @@
 #define SHADERDATA_H_
 
 #include <map>
+#include <vector>
 #include "MathEngine.h"
+
+
+enum STD_Matrix {
+    MODELVIEW = 0,
+    PROJECTION = 1,
+    NORMAL = 2,
+    MODEL = 3,
+    LIGHTVIEW = 4,
+    LIGHTPROJECTION = 5,
+    INVERSEVIEW = 6,
+    NUM_STD_MATRICES = 7
+};
 
 template <class T>
 struct ShaderAttribute
@@ -26,16 +39,19 @@ class ShaderData
 {
 public:
     ShaderData(const std::string & _shader);
-    ShaderData(unsigned int _shader);
 
     void addFloat(const std::string & _name, float _value);
     void addVector3(const std::string & _name, const Vector3 &_vec);
     void addMatrix(const std::string & _name, const Matrix4 & _m);
     void addTexture(const std::string & _name, unsigned int _tex);
 
+    void enableMatrix(STD_Matrix _m);
+    void disableMatrix(STD_Matrix _m);
+
     float * floatData(const std::string & _name);
     Vector3 * vector3Data(const std::string & _name);
     Matrix4 * matrixData(const std::string & _name);
+    Matrix4 * stdMatrixData(STD_Matrix _m);
     unsigned int * textureData(const std::string & _name);
 
 private:
@@ -44,6 +60,9 @@ private:
     std::string shaderName_;
     unsigned int shaderID_;
 
+    typedef std::vector<std::pair<bool, ShaderAttribute <Matrix4> > > matrixVec;
+
+    matrixVec stdMatrices_;
     attribMap1f floats_;
     attribMap3f vec3s_;
     attribMapMat4 matrices_;
