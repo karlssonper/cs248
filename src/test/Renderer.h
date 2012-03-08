@@ -13,11 +13,10 @@ class Renderer {
 public:
     Renderer(ParticleSystem *_ps, Shader *shader);
     void render();
-    void loadTexture(std::string _source);
+    GLuint loadTexture(std::string _source);
 private:
     ParticleSystem *ps_;
     Shader *shader_;
-    GLuint texture;
 };
 
 #endif

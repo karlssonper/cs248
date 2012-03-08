@@ -16,7 +16,8 @@ ParticleSystem *sp;
 Renderer *renderer;
 Shader *shader;
 
-Vector3 emitterPos0, emitterPos1, emitterPos2;
+Emitter *fireEmitter1, *fireEmitter2, *debrisEmitter, *smokeEmitter;
+
 
 void initGL() {
     glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
@@ -25,7 +26,10 @@ void initGL() {
     shader = new Shader("../src/test/test");
     if (!shader->loaded()) std::cout << shader->errors() << std::endl;
     renderer = new Renderer(sp, shader);
-    renderer->loadTexture("sprite.png");
+    //smokeTexture = renderer->loadTexture("smoke.png");
+    //debrisTexture = renderer->loadTexture("debris.png");
+    //blastTexture = renderer->loadTexture("blast.png");
+
     glEnable(GL_POINT_SPRITE);
     glTexEnvi(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);
     glEnable(GL_VERTEX_PROGRAM_POINT_SIZE_NV);
@@ -70,57 +74,93 @@ void keyboard(unsigned char key, int x, int y) {
         break;
     case 'e':
     case 'E':
-        sp->emitter(2)->burst();
+        debrisEmitter->burst();
+        smokeEmitter->burst();
+        fireEmitter1->burst();
+        fireEmitter2->burst();
+        
         break;
     }
 }
 
 void initParticleSystem() {
 
-    emitterPos0 = Vector3(-1.5f, -0.5f, 0.f);
-    emitterPos1 = Vector3(1.5f, -0.5f, 0.f);
-    emitterPos2 = Vector3(0.0, -0.5f, 0.f);
-   
+     GLuint fireTexture1 = renderer->loadTexture("fire1.png");
+     GLuint fireTexture2 = renderer->loadTexture("fire2.png");
+     GLuint debrisTexture = renderer->loadTexture("debris.png");
+     GLuint smokeTexture = renderer->loadTexture("smoke.png");
+
 
     // construct particle system
-    sp = new ParticleSystem(3);
+    sp = new ParticleSystem(4);
 
     // add the emitter
-    sp->newEmitter(10000);
-    sp->emitter(0)->typeIs(Emitter::EMITTER_STREAM);
-    sp->emitter(0)->rateIs(0.1f);
-    sp->emitter(0)->lifeTimeIs(60.f);
-    sp->emitter(0)->massIs(1.f);
-    sp->emitter(0)->posIs(emitterPos0);
-    sp->emitter(0)->posRandWeightIs(0.05);
-    sp->emitter(0)->velIs(Vector3(0.f, 0.f, 0.f));
-    sp->emitter(0)->velRandWeightIs(0.01);
-    sp->emitter(0)->accIs(Vector3(0.f, -0.01f, 0.0f));
-    sp->emitter(0)->colIs(Vector3(1.f, 1.f, 0.f));
+    fireEmitter1 = sp->newEmitter(300);
+    fireEmitter1->posIs(Vector3(0.f, 0.5f, 0.f));
+    fireEmitter1->burstSizeIs(300);
+    fireEmitter1->typeIs(Emitter::EMITTER_BURST);
+    fireEmitter1->blendModeIs(Emitter::BLEND_FIRE);
+    fireEmitter1->textureIs(fireTexture1);
+    fireEmitter1->rateIs(0.02f);
+    fireEmitter1->lifeTimeIs(40.f);
+    fireEmitter1->massIs(1.f);
+    fireEmitter1->posRandWeightIs(0.03);
+    fireEmitter1->velIs(Vector3(0.f, 0.f, 0.f));
+    fireEmitter1->velRandWeightIs(0.01);
+    fireEmitter1->accIs(Vector3(0.f, -0.002f, 0.0f));
+    fireEmitter1->pointSizeIs(70.f);
+    fireEmitter1->growthFactorIs(0.99f);
 
-    sp->newEmitter(10000);
-    sp->emitter(1)->typeIs(Emitter::EMITTER_STREAM);
-    sp->emitter(1)->rateIs(0.2f);
-    sp->emitter(1)->lifeTimeIs(70.f);
-    sp->emitter(1)->massIs(1.f);
-    sp->emitter(1)->posIs(emitterPos1);
-    sp->emitter(1)->posRandWeightIs(0.01);
-    sp->emitter(1)->velIs(Vector3(0.f, 0.2f, 0.f));
-    sp->emitter(1)->velRandWeightIs(0.007);
-    sp->emitter(1)->accIs(Vector3(0.f, -0.01f, 0.0f));
-    sp->emitter(1)->colIs(Vector3(1.f, 0.f, 0.f));
+    fireEmitter2 = sp->newEmitter(300);
+    fireEmitter2->posIs(Vector3(0.f, 0.5f, 0.f));
+    fireEmitter2->burstSizeIs(300);
+    fireEmitter2->typeIs(Emitter::EMITTER_BURST);
+    fireEmitter2->blendModeIs(Emitter::BLEND_FIRE);
+    fireEmitter2->textureIs(fireTexture2);
+    fireEmitter2->rateIs(0.02f);
+    fireEmitter2->lifeTimeIs(40.f);
+    fireEmitter2->massIs(1.f);
+    fireEmitter2->posRandWeightIs(0.03);
+    fireEmitter2->velIs(Vector3(0.f, 0.f, 0.f));
+    fireEmitter2->velRandWeightIs(0.01);
+    fireEmitter2->accIs(Vector3(0.f, -0.002f, 0.0f));
+    fireEmitter2->pointSizeIs(70.f);
+    fireEmitter2->growthFactorIs(0.99f);
 
-    sp->newEmitter(10000);
-    sp->emitter(2)->typeIs(Emitter::EMITTER_BURST);
-    sp->emitter(2)->burstSizeIs(300);
-    sp->emitter(2)->lifeTimeIs(70.f);
-    sp->emitter(2)->massIs(1.f);
-    sp->emitter(2)->posIs(emitterPos2);
-    sp->emitter(2)->posRandWeightIs(0.01);
-    sp->emitter(2)->velIs(Vector3(0.f, 0.0f, 0.f));
-    sp->emitter(2)->velRandWeightIs(0.03);
-    sp->emitter(2)->accIs(Vector3(0.f, -0.01f, 0.0f));
-    sp->emitter(2)->colIs(Vector3(1.f, 0.f, 0.f));
+    debrisEmitter = sp->newEmitter(100);
+    debrisEmitter->posIs(Vector3(0.f, 0.5f, 0.f));
+    debrisEmitter->burstSizeIs(100);
+    debrisEmitter->typeIs(Emitter::EMITTER_BURST);
+    debrisEmitter->blendModeIs(Emitter::BLEND_SMOKE);
+    debrisEmitter->textureIs(debrisTexture);
+    debrisEmitter->rateIs(0.02f);
+    debrisEmitter->lifeTimeIs(300.f);
+    debrisEmitter->massIs(1.f);
+    debrisEmitter->posRandWeightIs(0.02);
+    debrisEmitter->velIs(Vector3(0.f, 0.1f, 0.f));
+    debrisEmitter->velRandWeightIs(0.02);
+    debrisEmitter->accIs(Vector3(0.f, -0.004, 0.0f));
+    debrisEmitter->pointSizeIs(10.f);
+    debrisEmitter->growthFactorIs(1.f);
+
+    smokeEmitter = sp->newEmitter(5);
+    smokeEmitter->posIs(Vector3(0.f, 0.5f, 0.f));
+    smokeEmitter->burstSizeIs(5);
+    smokeEmitter->typeIs(Emitter::EMITTER_BURST);
+    smokeEmitter->blendModeIs(Emitter::BLEND_SMOKE);
+    smokeEmitter->textureIs(smokeTexture);
+    smokeEmitter->rateIs(0.02f);
+    smokeEmitter->lifeTimeIs(70.f);
+    smokeEmitter->massIs(1.f);
+    smokeEmitter->posRandWeightIs(0.2f);
+    smokeEmitter->velIs(Vector3(0.f, 0.001f, 0.f));
+    smokeEmitter->velRandWeightIs(0.001);
+    smokeEmitter->accIs(Vector3(0.f, 0.0f, 0.0f));
+    smokeEmitter->pointSizeIs(100.f);
+    smokeEmitter->growthFactorIs(1.02f);
+
+
+
 
 
 }
@@ -136,8 +176,11 @@ int main(int argc, char** argv) {
     glutInitWindowSize(width, height);
     glutCreateWindow("Particle test");
     glewInit();
+
     initParticleSystem();
     initGL();
+
+
     glutDisplayFunc(display);
     glutReshapeFunc(reshape);
     glutKeyboardFunc(keyboard);
