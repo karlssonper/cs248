@@ -12,7 +12,30 @@
 
 Graphics::Graphics()
 {
-
+#ifdef USE_GLEW
+    printf("OpenGL and GLEW");
+    GLint error = glewInit();
+    if (GLEW_OK != error) {
+        std::cerr << glewGetErrorString(error) << std::endl;
+        exit(-1);
+    }
+    if (!GLEW_VERSION_3_2 || !GL_EXT_framebuffer_object) {
+        std::cerr << "This program requires OpenGL 3.2" << std::endl;
+        exit(-1);
+    }
+#else
+    printf("OpenGL and gl3w");
+    if (gl3wInit()) {
+        fprintf(stderr, "failed to initialize OpenGL\n");
+        exit(-1);
+    }
+    if (!gl3wIsSupported(3, 2)) {
+        fprintf(stderr, "OpenGL 3.2 not supported\n");
+        exit(-1);
+    }
+    printf(" %s\nGLSL %s\n", glGetString(GL_VERSION),
+           glGetString(GL_SHADING_LANGUAGE_VERSION));
+#endif
 }
 
 Graphics::~Graphics()
@@ -63,13 +86,15 @@ void Graphics::deleteBuffers(GLuint _VAO)
 }
 
 
-void Graphics::bindGeometry(GLuint _VAO,
+void Graphics::bindGeometry(GLuint _shader,
+                            GLuint _VAO,
                             GLuint _VBO,
                             GLuint _n,
                             GLuint _stride,
                             GLuint _locIdx,
                             GLuint _offset)
 {
+    glUseProgram(_shader);
     glBindVertexArray(_VAO);
     glBindBuffer(GL_ARRAY_BUFFER, _VBO);
 
@@ -79,6 +104,7 @@ void Graphics::bindGeometry(GLuint _VAO,
 
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glUseProgram(0);
 }
 
 void Graphics::drawIndices(GLuint _VAO,
@@ -86,10 +112,10 @@ void Graphics::drawIndices(GLuint _VAO,
                            GLuint _size,
                            const ShaderData * _shaderData)
 {
+    glUseProgram(_shaderData->shaderID());
     glBindVertexArray(_VAO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _VBO);
 
-    glUseProgram(_shaderData->shaderID_);
     attribMap1f::const_iterator fIt = _shaderData->floats_.begin();
     attribMap3f::const_iterator vecIt = _shaderData->vec3s_.begin();
     attribMapMat4::const_iterator matIt = _shaderData->matrices_.begin();
@@ -227,6 +253,7 @@ GLuint Graphics::LoadShader(const std::string _shader)
         glGetProgramInfoLog(programID, ERROR_BUFSIZE, &length, tempErrorLog);
         error += "Linker errors:\n";
         error += std::string(tempErrorLog, length) + "\n";
+        std::cerr << error;
     }
 
     ShaderID &S = shader_[_shader];
@@ -294,10 +321,18 @@ void Graphics::deleteShader(unsigned int _shaderID)
     std::cerr << "Can't remove shader #" << _shaderID << std::endl;
 }
 
-GLint Graphics::shaderLoc(GLuint _shader, const std::string & _name)
+GLint Graphics::shaderUniformLoc(GLuint _shader, const std::string & _name)
 {
     glUseProgram(_shader);
     GLint loc = glGetUniformLocation(_shader, _name.c_str());
+    glUseProgram(0);
+    return loc;
+}
+
+GLint Graphics::shaderAttribLoc(GLuint _shader, const std::string & _name)
+{
+    glUseProgram(_shader);
+    GLint loc = glGetAttribLocation(_shader, _name.c_str());
     glUseProgram(0);
     return loc;
 }

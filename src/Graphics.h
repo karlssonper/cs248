@@ -8,7 +8,11 @@
 #ifndef GRAPHICS_H_
 #define GRAPHICS_H_
 
-#include <GL3/gl3w.h>
+#ifdef USE_GLEW
+    #include <GL/glew.h>
+#else
+    #include <GL3/gl3w.h>
+#endif
 
 #include <string>
 #include <vector>
@@ -38,7 +42,8 @@ public:
                     const std::vector<GLuint> & _indexData,
                     VBOtype                     _type);
 
-    void bindGeometry(GLuint _VAO,
+    void bindGeometry(GLuint _shader,
+                      GLuint _VAO,
                       GLuint _VBO,
                       GLuint _n,
                       GLuint _stride,
@@ -57,7 +62,8 @@ public:
     void deleteShader(const std::string & _shader);
     void deleteShader(unsigned int _shaderID);
 
-    GLint shaderLoc(GLuint _shader, const std::string & _name);
+    GLint shaderUniformLoc(GLuint _shader, const std::string & _name);
+    GLint shaderAttribLoc(GLuint _shader, const std::string & _name);
 
 private:
     Graphics();

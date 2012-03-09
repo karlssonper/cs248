@@ -25,7 +25,7 @@ ShaderData::ShaderData(const std::string & _shader) : shaderName_(_shader)
     for (int i = 0; i < NUM_STD_MATRICES; ++i){
         stdMatrices_[i].first = false;
         stdMatrices_[i].second.location =
-                Graphics::instance().shaderLoc(shaderID_, STDMatricesStr[i]);
+            Graphics::instance().shaderUniformLoc(shaderID_, STDMatricesStr[i]);
     }
 }
 
@@ -43,28 +43,28 @@ void ShaderData::addFloat(const std::string & _name, float _value)
 {
     ShaderAttribute<float> &V = floats_[_name];
     V.data = _value;
-    V.location = 0;
+    V.location = Graphics::instance().shaderUniformLoc(shaderID_, _name);
 }
 
 void ShaderData::addVector3(const std::string & _name, const Vector3 &_vec)
 {
     ShaderAttribute<Vector3> &V = vec3s_[_name];
     V.data = _vec;
-    V.location = 0;
+    V.location = Graphics::instance().shaderUniformLoc(shaderID_, _name);
 }
 
 void ShaderData::addMatrix(const std::string & _name, const Matrix4 & _m)
 {
     ShaderAttribute<Matrix4> &V = matrices_[_name];
     V.data = _m;
-    V.location = 0;
+    V.location = Graphics::instance().shaderUniformLoc(shaderID_, _name);
 }
 
 void ShaderData::addTexture(const std::string & _name, unsigned int _tex)
 {
     ShaderAttribute<unsigned int> &V = textures_[_name];
     V.data = _tex;
-    V.location = 0;
+    V.location = Graphics::instance().shaderUniformLoc(shaderID_, _name);
 }
 
 float * ShaderData::floatData(const std::string & _name)

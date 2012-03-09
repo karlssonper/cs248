@@ -10,6 +10,25 @@
 #include "ShaderData.h"
 #include "Graphics.h"
 
+#include "Camera.h"
+
+enum SHADER_ATTRIBUTES_IDX {
+    POSITIONS = 0,
+    TEXCOORDS = 1,
+    NORMALS = 2,
+    TANGENTS = 3,
+    BITANGENTS = 4,
+    NUM_SHADER_ATTRIBUTES = 5
+};
+
+static std::string ShaderAttributes[NUM_SHADER_ATTRIBUTES] = {
+        "positionIn",
+        "texcoordIn",
+        "normalIn",
+        "tangentIn",
+        "bitangentIn",
+};
+
 Mesh::Mesh(std::string _name, Node * _node) : name_(_name), node_(_node)
 {
     loadedInGPU_ = false;
@@ -42,12 +61,31 @@ void Mesh::geometryIs(const std::vector<Vector3> &_position,
     normal_ = _normal;
     tangent_ = _tangent;
     bitangent_ = _bitangent;
+    indices_ = _idx;
 
     std::vector<Mesh::Vertex> _v;
     generateVertexVector(_v);
 
     Graphics::instance().buffersNew(name(), VAO_, geometryVBO_, indexVBO_);
     Graphics::instance().geometryIs(geometryVBO_,indexVBO_,_v,_idx,VBO_STATIC);
+
+    const int stride = sizeof(Vertex);
+    const int id = shaderData_->shaderID();
+    Graphics & g = Graphics::instance();
+
+    int posLoc = g.shaderAttribLoc(id , ShaderAttributes[POSITIONS]);
+    int texLoc = g.shaderAttribLoc(id , ShaderAttributes[TEXCOORDS]);
+    int normalLoc = g.shaderAttribLoc(id , ShaderAttributes[NORMALS]);
+    int tangentLoc = g.shaderAttribLoc(id , ShaderAttributes[TANGENTS]);
+    int bitangentLoc = g.shaderAttribLoc(id , ShaderAttributes[BITANGENTS]);
+
+    unsigned int sID = shaderData_->shaderID();
+
+    g.bindGeometry(sID, VAO_, geometryVBO_, 3, stride, posLoc, 0);
+    //g.bindGeometry(VAO_, geometryVBO_, 2, stride, texLoc, 12);
+    //g.bindGeometry(VAO_, geometryVBO_, 3, stride, normalLoc, 20);
+    //g.bindGeometry(VAO_, geometryVBO_, 3, stride, tangentLoc, 32);
+    //g.bindGeometry(VAO_, geometryVBO_, 3, stride, bitangentLoc, 44);
 
     loadedInGPU_ = true;
 }
@@ -56,6 +94,21 @@ void Mesh::display() const
 {
     if (!loadedInGPU_) return;
     unsigned int n = indices_.size();
+
+    Camera::instance().BuildViewMatrix();
+    const Matrix4 & view = Camera::instance().viewMtx();
+    Matrix4 * modelView = shaderData_->stdMatrixData(MODELVIEW);
+    Matrix4 * projection = shaderData_->stdMatrixData(PROJECTION);
+
+    *modelView = view * node_->globalModelMtx();
+    *projection = Camera::instance().projectionMtx();
+    //modelView->print();
+    //projection->print();
+    //Matrix4 * normal = shaderData_->stdMatrixData(NORMAL);
+    //*normal = modelView->inverse().transpose();
+
+    //g.bindGeometry(VAO_, geometryVBO_, 3, stride, posLoc, 0);
+
     Graphics::instance().drawIndices(VAO_, indexVBO_, n, shaderData_);
 }
 

@@ -175,7 +175,7 @@ inline Matrix4 Matrix4::operator*(const Matrix4 &_m) const {
         for (int j=0; j<4; ++j) {
             temp[i*4+j] = 0.f;
             for (int k=0; k<4; ++k) {
-                temp[i*4+j] += m_[k*4+j] * _m(i*4+k);
+                temp[i*4+j] += m_[k*4+j] * _m.m_[i*4+k];
             }
         }
     }

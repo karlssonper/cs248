@@ -2,11 +2,20 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
 PROJECT (TEST_GRAPHICS)
 
+IF (USE_GLEW GREATER 0)
+    SET(GL_EXT_LIB GLEW)
+    ADD_DEFINITIONS(-DUSE_GLEW)
+ELSE (USE_GLEW GREATER 0)
+    SET(GL_EXT_LIB gl3w)
+    LINK_DIRECTORIES($ENV{GL3W}/lib)
+ENDIF (USE_GLEW GREATER 0)
+
+MESSAGE ( "\nOpenGL Extension Library = ${GL_EXT_LIB}.")
+MESSAGE ( "To change -DUSE_GLEW = 1 for GLEW and -DUSE_GLEW=0 for gl3w\n")
+
 INCLUDE_DIRECTORIES($ENV{GL3W}/include
 					$ENV{CS248_PROJECT}/src
 					$ENV{ASSIMP_INCLUDE})
-
-LINK_DIRECTORIES($ENV{GL3W}/lib)
 
 ADD_EXECUTABLE(graphicsTest Main 
                             $ENV{CS248_PROJECT}/src/Graphics
@@ -15,6 +24,6 @@ ADD_EXECUTABLE(graphicsTest Main
                             $ENV{CS248_PROJECT}/src/Camera
                             $ENV{CS248_PROJECT}/src/ShaderData)
 
-TARGET_LINK_LIBRARIES(graphicsTest gl3w GL GLU glut assimp freeimage)
+TARGET_LINK_LIBRARIES(graphicsTest ${GL_EXT_LIB} GL GLU glut assimp freeimage)
 
 INSTALL (TARGETS graphicsTest DESTINATION bin)

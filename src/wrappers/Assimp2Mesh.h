@@ -53,27 +53,27 @@ void read(std::string _fileStr,
     position.resize(mesh->mNumVertices);
 
     if (mesh->HasTextureCoords(0)) {
-        texCoord.resize(position.size());
+        texCoord.resize(mesh->mNumVertices);
     } else {
         texCoord.resize(0);
     }
 
     if (mesh->HasNormals()) {
-        normal.resize(position.size());
+        normal.resize(mesh->mNumVertices);
     } else {
         normal.resize(0);
     }
 
     if (mesh->HasTangentsAndBitangents()) {
-        tangent.resize(position.size());
-        bitangent.resize(position.size());
+        tangent.resize(mesh->mNumVertices);
+        bitangent.resize(mesh->mNumVertices);
     }
     else {
         tangent.resize(0);
         bitangent.resize(0);
     }
 
-    for (int j = 0; j < position.size(); ++j) {
+    for (int j = 0; j < mesh->mNumVertices; ++j) {
         position[j].x = mesh->mVertices[j].x;
         position[j].y = mesh->mVertices[j].y;
         position[j].z = mesh->mVertices[j].z;
@@ -99,20 +99,17 @@ void read(std::string _fileStr,
     }
 
     std::vector<unsigned int> indices;
-    indices.resize(mesh->mNumFaces * 3);
-    int fIdx = 0;
-    for (int i = 0; i < indices.size(); ++i) {
+    indices.reserve(mesh->mNumFaces * 3);
+    for (int i = 0; i < mesh->mNumFaces; ++i) {
         if (mesh->mFaces[i].mNumIndices != 3) {
             //std::cerr << "Can't process nothing else than triangles"
                    // << " # verts: " <<  mesh->mFaces[i].mNumIndices << std::endl;
             continue;
         }
-        indices[fIdx*3] = mesh->mFaces[i].mIndices[0];
-        indices[fIdx*3 + 1] = mesh->mFaces[i].mIndices[1];
-        indices[fIdx*3 + 2] = mesh->mFaces[i].mIndices[2];
-        fIdx++;
+        indices.push_back(mesh->mFaces[i].mIndices[0]);
+        indices.push_back(mesh->mFaces[i].mIndices[1]);
+        indices.push_back(mesh->mFaces[i].mIndices[2]);
     }
-    indices.resize(fIdx);
 
     _mesh->geometryIs(position, texCoord, normal, tangent, bitangent,indices);
 

@@ -40,6 +40,7 @@ class ShaderData
 public:
     ShaderData(const std::string & _shader);
 
+    unsigned int shaderID() const { return shaderID_; } ;
     void addFloat(const std::string & _name, float _value);
     void addVector3(const std::string & _name, const Vector3 &_vec);
     void addMatrix(const std::string & _name, const Matrix4 & _m);

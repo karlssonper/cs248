@@ -16,6 +16,9 @@
 class Camera
 {
 public:
+    //todo remove
+    static Camera& instance() { static Camera c; return c; };
+
     Camera();
     Camera(const Vector3 &_pos, float _yaw, float _pitch);
 
@@ -38,7 +41,7 @@ public:
     void pitch(float _degrees);
     void move(float _dx);
     void strafe(float _dx);
-
+    void BuildViewMatrix();
 private:
     Camera(const Camera&);
     void operator=(const Camera&);
@@ -59,7 +62,7 @@ private:
 
     float Degree2Radians(const float _degrees) { return _degrees *PI_OVER_180;};
     void BuildProjectionMatrix();
-    void BuildViewMatrix();
+
 };
 
 #endif /* CAMERA_H_ */
