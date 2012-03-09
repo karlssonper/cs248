@@ -82,10 +82,10 @@ void Mesh::geometryIs(const std::vector<Vector3> &_position,
     unsigned int sID = shaderData_->shaderID();
 
     g.bindGeometry(sID, VAO_, geometryVBO_, 3, stride, posLoc, 0);
-    //g.bindGeometry(VAO_, geometryVBO_, 2, stride, texLoc, 12);
-    //g.bindGeometry(VAO_, geometryVBO_, 3, stride, normalLoc, 20);
-    //g.bindGeometry(VAO_, geometryVBO_, 3, stride, tangentLoc, 32);
-    //g.bindGeometry(VAO_, geometryVBO_, 3, stride, bitangentLoc, 44);
+    g.bindGeometry(sID, VAO_, geometryVBO_, 2, stride, 1, 12);
+    g.bindGeometry(sID, VAO_, geometryVBO_, 3, stride, 2, 20);
+    g.bindGeometry(sID, VAO_, geometryVBO_, 3, stride, 3, 32);
+    g.bindGeometry(sID, VAO_, geometryVBO_, 3, stride, 4, 44);
 
     loadedInGPU_ = true;
 }
@@ -95,20 +95,35 @@ void Mesh::display() const
     if (!loadedInGPU_) return;
     unsigned int n = indices_.size();
 
-    Camera::instance().BuildViewMatrix();
     const Matrix4 & view = Camera::instance().viewMtx();
-    Matrix4 * modelView = shaderData_->stdMatrixData(MODELVIEW);
-    Matrix4 * projection = shaderData_->stdMatrixData(PROJECTION);
+    Matrix4 * modelView = shaderData_->stdMatrix4Data(MODELVIEW);
+    Matrix4 * projection = shaderData_->stdMatrix4Data(PROJECTION);
 
-    *modelView = view * node_->globalModelMtx();
+    //*modelView = view * node_->globalModelMtx();
+
+    float mv[16] = {1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            -1,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1};
+    *modelView = view * Matrix4(mv);
+
     *projection = Camera::instance().projectionMtx();
-    //modelView->print();
-    //projection->print();
-    //Matrix4 * normal = shaderData_->stdMatrixData(NORMAL);
-    //*normal = modelView->inverse().transpose();
 
-    //g.bindGeometry(VAO_, geometryVBO_, 3, stride, posLoc, 0);
-
+    Matrix3 * normal = shaderData_->stdMatrix3Data(NORMAL);
+    *normal = Matrix3(*modelView).inverse().transpose();
+    //normal->print();
     Graphics::instance().drawIndices(VAO_, indexVBO_, n, shaderData_);
 }
 

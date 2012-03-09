@@ -11,32 +11,43 @@
 static std::string STDMatricesStr[NUM_STD_MATRICES] = {
         "ModelViewMatrix",
         "ProjectionMatrix",
-        "NormalMatrix",
         "ModelMatrix",
         "LightViewMatrix",
         "LightProjectionMatrix",
-        "InverseViewMatrix"
+        "InverseViewMatrix",
+        "NormalMatrix",
 };
 
 ShaderData::ShaderData(const std::string & _shader) : shaderName_(_shader)
 {
     shaderID_ = Graphics::instance().shader(_shader);
     stdMatrices_.resize(NUM_STD_MATRICES);
-    for (int i = 0; i < NUM_STD_MATRICES; ++i){
+    for (int i = 0; i < NUM_STD_MATRICES -1 ; ++i){
         stdMatrices_[i].first = false;
         stdMatrices_[i].second.location =
             Graphics::instance().shaderUniformLoc(shaderID_, STDMatricesStr[i]);
     }
+    stdMatrixNormal_.first = false;
+    stdMatrixNormal_.second.location = Graphics::instance().shaderUniformLoc(
+            shaderID_, STDMatricesStr[NORMAL]);
 }
 
 void ShaderData::enableMatrix(STD_Matrix _m)
 {
-    stdMatrices_[_m].first = true;
+    if (_m == NORMAL) {
+        stdMatrixNormal_.first = true;
+    } else {
+        stdMatrices_[_m].first = true;
+    }
 }
 
 void ShaderData::disableMatrix(STD_Matrix _m)
 {
-    stdMatrices_[_m].first = false;
+    if (_m == NORMAL) {
+        stdMatrixNormal_.first = false;
+    } else {
+        stdMatrices_[_m].first = false;
+    }
 }
 
 void ShaderData::addFloat(const std::string & _name, float _value)
@@ -60,10 +71,11 @@ void ShaderData::addMatrix(const std::string & _name, const Matrix4 & _m)
     V.location = Graphics::instance().shaderUniformLoc(shaderID_, _name);
 }
 
-void ShaderData::addTexture(const std::string & _name, unsigned int _tex)
+void ShaderData::addTexture(const std::string & _name, const std::string& _tex)
 {
+    unsigned int id = Graphics::instance().texture(_tex);
     ShaderAttribute<unsigned int> &V = textures_[_name];
-    V.data = _tex;
+    V.data = id;
     V.location = Graphics::instance().shaderUniformLoc(shaderID_, _name);
 }
 
@@ -98,9 +110,14 @@ Matrix4 * ShaderData::matrixData(const std::string & _name)
     }
 }
 
-Matrix4 * ShaderData::stdMatrixData(STD_Matrix _m)
+Matrix4 * ShaderData::stdMatrix4Data(STD_Matrix _m)
 {
     return &stdMatrices_[_m].second.data;
+}
+
+Matrix3 * ShaderData::stdMatrix3Data(STD_Matrix _m)
+{
+    return &stdMatrixNormal_.second.data;
 }
 
 unsigned int * ShaderData::textureData(const std::string & _name)

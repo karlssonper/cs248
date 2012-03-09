@@ -53,6 +53,7 @@ public:
     void makeIdentity();
     Matrix4& operator=(const Matrix4 &_m);
     Matrix4 inverse() const;
+    Matrix4 transpose() const;
     Matrix4 operator*(const Matrix4 &_m) const;
     Vector3 operator*(const Vector3 &_v) const;
     void print() const;
@@ -60,6 +61,16 @@ public:
     static Matrix4 translate(float _tx, float _ty, float _tz);
     static Matrix4 scale(float _sx, float _sy, float _sz);
     float m_[16];
+};
+
+class Matrix3 {
+public:
+    Matrix3();
+    Matrix3(const Matrix4 & _m);
+    Matrix3 inverse() const;
+    Matrix3 transpose() const;
+    const float* data() const { return m_;};
+    float m_[9];
 };
 
 /* 
@@ -130,6 +141,73 @@ inline Vector3 Vector3::cross(const Vector3 &_v) const {
                    x*_v.y - y*_v.x);
 }
 
+/*
+Matrix3 definitions
+*/
+inline Matrix3::Matrix3()
+{
+    m_[0] = 1.f;
+    m_[1] = 0.f;
+    m_[2] = 0.f;
+    m_[3] = 0.f;
+    m_[4] = 1.f;
+    m_[5] = 0.f;
+    m_[6] = 0.f;
+    m_[7] = 0.f;
+    m_[8] = 1.f;
+}
+
+inline Matrix3::Matrix3(const Matrix4 & _m)
+{
+    m_[0] = _m.data()[0];
+    m_[1] = _m.data()[1];
+    m_[2] = _m.data()[2];
+    m_[3] = _m.data()[4];
+    m_[4] = _m.data()[5];
+    m_[5] = _m.data()[6];
+    m_[6] = _m.data()[8];
+    m_[7] = _m.data()[9];
+    m_[8] = _m.data()[10];
+
+}
+
+inline Matrix3 Matrix3::inverse() const
+{
+    Matrix3 t;
+    float one_over_det = 1.0/(m_[0]*m_[4]*m_[8]+m_[1]*m_[5]*m_[6]+
+       m_[2]*m_[3]*m_[7]-m_[0]*m_[5]*m_[7]-m_[2]*m_[4]*m_[6]-m_[1]*m_[3]*m_[8]);
+    if (abs(one_over_det) < 0.00001f)
+        one_over_det = one_over_det>0 ? 0.00001f : -0.00001f;
+
+    t.m_[0] = one_over_det*(m_[4]*m_[8] - m_[7]*m_[5]);
+    t.m_[1] = one_over_det*(m_[7]*m_[2] - m_[1]*m_[8]);
+    t.m_[2] = one_over_det*(m_[1]*m_[5] - m_[4]*m_[2]);
+    t.m_[3] = one_over_det*(m_[6]*m_[5] - m_[3]*m_[8]);
+    t.m_[4] = one_over_det*(m_[0]*m_[8] - m_[6]*m_[2]);
+    t.m_[5] = one_over_det*(m_[3]*m_[2] - m_[0]*m_[5]);
+    t.m_[6] = one_over_det*(m_[3]*m_[7] - m_[6]*m_[4]);
+    t.m_[7] = one_over_det*(m_[6]*m_[1] - m_[0]*m_[7]);
+    t.m_[8] = one_over_det*(m_[0]*m_[4] - m_[3]*m_[1]);
+
+    return t;
+}
+
+inline Matrix3 Matrix3::transpose() const
+{
+    Matrix3 t;
+    t.m_[0] = m_[0];
+    t.m_[1] = m_[3];
+    t.m_[2] = m_[6];
+    t.m_[3] = m_[1];
+    t.m_[4] = m_[4];
+    t.m_[5] = m_[7];
+    t.m_[6] = m_[2];
+    t.m_[7] = m_[5];
+    t.m_[8] = m_[8];
+    return t;
+}
+
+
 
 /*
 Matrix4 definitions
@@ -159,6 +237,28 @@ inline void Matrix4::makeIdentity(){
     m_[1] = 0.f; m_[2] = 0.f; m_[3] = 0.f; m_[5] = 0.f;
     m_[6] = 0.f; m_[7] = 0.f; m_[9] = 0.f; m_[12] = 0.f;
     m_[13] = 0.f; m_[14] = 0.f;
+}
+
+inline Matrix4 Matrix4::transpose() const
+{
+    Matrix4 t;
+    t.m_[0] = m_[0];
+    t.m_[1] = m_[4];
+    t.m_[2] = m_[8];
+    t.m_[3] = m_[12];
+    t.m_[4] = m_[1];
+    t.m_[5] = m_[5];
+    t.m_[6] = m_[9];
+    t.m_[7] = m_[13];
+    t.m_[8] = m_[2];
+    t.m_[9] = m_[6];
+    t.m_[10] = m_[10];
+    t.m_[11] = m_[14];
+    t.m_[12] = m_[3];
+    t.m_[13] = m_[7];
+    t.m_[14] = m_[11];
+    t.m_[15] = m_[15];
+    return t;
 }
 
 inline Matrix4& Matrix4::operator=(const Matrix4 &_m) {
@@ -270,7 +370,7 @@ inline Matrix4 Matrix4::inverse() const {
         //std::cout << "det " << det << std::endl;
 
     if (abs(det) < 0.00001f) {
-        std::cerr << "det very small!" << std::endl;
+        //std::cerr << "det very small!" << std::endl;
         if (det > 0 ) { 
             det = 0.00001f;
         } else {

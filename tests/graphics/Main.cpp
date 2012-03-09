@@ -28,11 +28,17 @@ static void createSceneGraph()
 
     shader->enableMatrix(MODELVIEW);
     shader->enableMatrix(PROJECTION);
-    //shader->enableMatrix(NORMAL);
+    shader->enableMatrix(NORMAL);
+
+    std::string tex("../textures/armadillo_n.jpg");
+    std::string texName("normalMap");
+    shader->addTexture(texName, tex);
+
     mesh->shaderDataIs(shader);
     ASSIMP2MESH::read("../models/armadillo.3ds", "0", mesh);
-    std::string tex("../textures/armadillo_n.jpg");
-    Graphics::instance().texture(tex);
+
+
+
     //Graphics::instance().deleteTexture(tex);
 
     //Graphics::instance().deleteShader(shader);
@@ -41,7 +47,7 @@ static void createSceneGraph()
 static void display(void)
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+    Camera::instance().BuildViewMatrix();
     mesh->display();
     glutSwapBuffers();
     glutPostRedisplay();

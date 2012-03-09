@@ -135,18 +135,24 @@ void Graphics::drawIndices(GLuint _VAO,
     }
 
     for (int i = 0; texIt != _shaderData->textures_.end(); ++texIt, ++i){
-        glUniform1i(texIt->second.location, i);
-        glActiveTexture(GL_TEXTURE0 + i);
+        glUniform1i(texIt->second.location, i+1);
+        glActiveTexture(GL_TEXTURE0 + i+1);
         glBindTexture(GL_TEXTURE_2D, texIt->second.data);
     }
 
-    for (int i = 0; i < NUM_STD_MATRICES; ++i) {
+    for (int i = 0; i < NUM_STD_MATRICES-1; ++i) {
         if (_shaderData->stdMatrices_[i].first) {
             glUniformMatrix4fv(_shaderData->stdMatrices_[i].second.location,
                     1,
                     false,
                     _shaderData->stdMatrices_[i].second.data.data());
         }
+    }
+    if (_shaderData->stdMatrixNormal_.first) {
+        glUniformMatrix3fv(_shaderData->stdMatrixNormal_.second.location,
+                    1,
+                    false,
+                    _shaderData->stdMatrixNormal_.second.data.data());
     }
 
     glDrawElements(GL_TRIANGLES, _size, GL_UNSIGNED_INT, 0);
@@ -165,14 +171,19 @@ GLuint Graphics::texture(const std::string & _img)
         GLuint texID;
         glGenTextures(1, &texID);
         glBindTexture(GL_TEXTURE_2D, texID);
-        glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-                         GL_LINEAR_MIPMAP_NEAREST );
+        glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA, FI2T.w, FI2T.h, 0, GL_RGBA,
+                GL_UNSIGNED_BYTE,FI2T.data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+        //glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+                //GL_LINEAR_MIPMAP_NEAREST );
+        glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
         glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
         glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
-        glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA, FI2T.w, FI2T.h, 0, GL_RGBA,
-                GL_UNSIGNED_BYTE,FI2T.data );
+
         glBindTexture(GL_TEXTURE_2D, 0);
+        std::cerr << FI2T.w << " " << FI2T.h << std::endl;
+        std::cerr << int(FI2T.data[2456]) << int(FI2T.data[2457]) << int(FI2T.data[2458]) << int(FI2T.data[2459]) << std::endl;
         texture_[_img] = texID;
         return texID;
     }
@@ -323,17 +334,19 @@ void Graphics::deleteShader(unsigned int _shaderID)
 
 GLint Graphics::shaderUniformLoc(GLuint _shader, const std::string & _name)
 {
-    glUseProgram(_shader);
     GLint loc = glGetUniformLocation(_shader, _name.c_str());
-    glUseProgram(0);
+    if (loc < 0){
+        std::cerr << "Couldn't find location for " << _name << std::endl;
+    }
     return loc;
 }
 
 GLint Graphics::shaderAttribLoc(GLuint _shader, const std::string & _name)
 {
-    glUseProgram(_shader);
     GLint loc = glGetAttribLocation(_shader, _name.c_str());
-    glUseProgram(0);
+    if (loc < 0){
+            std::cerr << "Couldn't find location for " << _name << std::endl;
+        }
     return loc;
 }
 
