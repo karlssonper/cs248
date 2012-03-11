@@ -9,6 +9,7 @@
 #include <fstream>
 #include <iostream>
 #include "wrappers/FreeImage2Tex.h"
+#include <cuda/Init.h>
 
 Graphics::Graphics()
 {
@@ -36,6 +37,7 @@ Graphics::Graphics()
     printf(" %s\nGLSL %s\n", glGetString(GL_VERSION),
            glGetString(GL_SHADING_LANGUAGE_VERSION));
 #endif
+    CUDA::init();
 }
 
 Graphics::~Graphics()

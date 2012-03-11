@@ -41,6 +41,6 @@ void main() {
 	vec3 totAmbient = 0.1;
 	//gl_FragColor = vec4(totDiffuse+totAmbient+totSpecular, 1);
 	//gl_FragColor = vec4(texcoord.x, 0,0,1);
-	gl_FragColor = vec4(normalize(tangent),1);
+	gl_FragColor = vec4(0.5*normalize(N) + vec3(0.5),1);
 
 }

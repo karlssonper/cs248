@@ -16,16 +16,10 @@ varying vec3 bitangent;
 varying vec3 L;
 
 void main() {
-
-	// Transform the vertex to get the eye-space position of the vertex
 	vec4 eyeTemp =  ModelViewMatrix * vec4(positionIn, 1);
 	eyePosition = eyeTemp.xyz;
 	
-	// Transform again to get the clip-space position.  The gl_Position
-	// variable tells OpenGL where the vertex should go.
-	gl_Position = ProjectionMatrix * ModelViewMatrix *vec4(positionIn, 1);
-
-	// Transform the normal, just like in Assignment 2.
+	gl_Position = ProjectionMatrix * eyeTemp;
 	
     normal = NormalMatrix * normalIn;
 	tangent =   NormalMatrix * tangentIn;
@@ -33,6 +27,5 @@ void main() {
 
 	L = NormalMatrix * vec3(0,-1,0);
 
-	// Just copy the texture coordinates
 	texcoord = texcoordIn;
 }
