@@ -19,6 +19,11 @@ public:
         EMITTER_BURST
     };
 
+    enum BlendMode {
+        BLEND_FIRE = 0,
+        BLEND_SMOKE
+    };
+
     struct EmitterParams {
         unsigned int numParticles_;
         float rate_;
@@ -28,39 +33,47 @@ public:
         float startVel_[3];
         float velRandWeight_;
         float startAcc_[3];
-        float color_[3];
+        float pointSize_;
+        float growthFactor_;
         float lifeTime_;
         unsigned int burstSize_;
         Type emitterType_;
+        BlendMode blendMode_;
     };
 
     Emitter(unsigned int _numParticles);
     void update(float _dt);
     void burst();
     GLuint vboPos() const { return *vboPos_; }
-    GLuint vboCol() const { return *vboCol_; }
+    GLuint vboSize() const { return *vboSize_; }
     GLuint vboTime() const { return *vboTime_; }
+    GLuint texture() const { return texture_; }
     EmitterParams params() const { return params_; }
     void posIs(Vector3 _pos);
     void accIs(Vector3 _acc);
     void velIs(Vector3 _vel);
     void massIs(float _mass);
     void rateIs(float _rate);
-    void colIs(Vector3 _col);
     void lifeTimeIs(float _lifeTime);
     void burstSizeIs(unsigned int _burstSize);
     void typeIs(Type _emitterType);
     void velRandWeightIs(float _velRandWeight);
     void posRandWeightIs(float _posRandWeight);
+    void pointSizeIs(float _pointSize);
+    void growthFactorIs(float _growthFactor);
+    void textureIs(GLuint _texture);
+    void blendModeIs(BlendMode _blendMode);
     
 private:
     
     // parameters
     EmitterParams params_;
 
+    GLuint texture_;
+
     // vbo's with the stuff the shaders needs to know about
     GLuint *vboPos_;
-    GLuint *vboCol_;
+    GLuint *vboSize_;
     GLuint *vboTime_;
 
     // cudart states for random number generation
@@ -81,7 +94,7 @@ private:
     float *d_pos_;
     float *d_acc_;
     float *d_vel_;
-    float *d_col_;
+    float *d_size_;
 
     unsigned int blocks_;
     unsigned int threads_;

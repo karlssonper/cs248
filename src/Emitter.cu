@@ -23,7 +23,7 @@ __global__ void init(Emitter::EmitterParams _p,
                      float *_pos,
                      float *_acc,
                      float *_vel,
-                     float *_col) {
+                     float *_size) {
 
     int tid = threadIdx.x + blockIdx.x * blockDim.x;
     while (tid < _p.numParticles_) {
@@ -42,9 +42,7 @@ __global__ void init(Emitter::EmitterParams _p,
         _vel[3*tid+1] = _p.startVel_[1];
         _vel[3*tid+2] = _p.startVel_[2];
 
-        _col[3*tid+0] = _p.color_[0];
-        _col[3*tid+1] = _p.color_[1];
-        _col[3*tid+2] = _p.color_[2];
+        _size[tid] = _p.pointSize_;
 
         tid += blockDim.x * gridDim.x;
     }
@@ -55,7 +53,7 @@ __global__ void newParticle(Emitter::EmitterParams _p,
                             float *_pos,
                             float *_acc,
                             float *_vel,
-                            float *_col,
+                            float *_size,
                             unsigned int _index,
                             curandState *_randstate) {
 
@@ -86,7 +84,7 @@ __global__ void newParticle(Emitter::EmitterParams _p,
         float pz_offset = 2.f * ( curand_normal(&_randstate[tid]) - 0.5f );
         float t_offset = curand_normal(&_randstate[tid]);
 
-        _time[index] = 1.0f + t_offset*0.1;
+        _time[index] = 1.0f + t_offset*0.01;
 
         _pos[3*index+0] = _p.startPos_[0] + px_offset * _p.posRandWeight_;
         _pos[3*index+1] = _p.startPos_[1] + py_offset * _p.posRandWeight_;
@@ -100,9 +98,7 @@ __global__ void newParticle(Emitter::EmitterParams _p,
         _vel[3*index+1] = _p.startVel_[1] + vy_offset * _p.velRandWeight_;
         _vel[3*index+2] = _p.startVel_[2] + vz_offset * _p.velRandWeight_;
 
-        _col[3*index+0] = _p.color_[0];
-        _col[3*index+1] = _p.color_[1];
-        _col[3*index+2] = _p.color_[2];
+         _size[index] = _p.pointSize_;
 
         // only run once if stream (only add one at a time)
         if (_p.emitterType_ == Emitter::EMITTER_STREAM) break;
@@ -118,7 +114,7 @@ __global__ void integrate(Emitter::EmitterParams _p,
                           float *_pos,
                           float *_acc,
                           float *_vel,
-                          float *_col,
+                          float *_size,
                           float _dt) {
 
     int tid = threadIdx.x + blockIdx.x * blockDim.x;
@@ -137,6 +133,8 @@ __global__ void integrate(Emitter::EmitterParams _p,
             _pos[3*tid+1] += _dt * _vel[3*tid+1];
             _pos[3*tid+2] += _dt * _vel[3*tid+2];
 
+            _size[tid] *= _p.growthFactor_;
+
         }
 
         tid += blockDim.x * gridDim.x;
@@ -145,7 +143,27 @@ __global__ void integrate(Emitter::EmitterParams _p,
 
 Emitter::Emitter(unsigned int _numParticles) {
 
+    // set standard values
     params_.numParticles_ = _numParticles;
+    params_.burstSize_ = _numParticles;
+    params_.emitterType_ = Emitter::EMITTER_STREAM;
+    params_.growthFactor_ = 1.f;
+    params_.lifeTime_ = 100.f;
+    params_.mass_ = 1.f;
+    params_.pointSize_ = 30.f;
+    params_.posRandWeight_ = 0.f;
+    params_.rate_ = 0.001f;
+    params_.startAcc_[0] = 0.f;
+    params_.startAcc_[1] = 0.f;
+    params_.startAcc_[2] = 0.f;
+    params_.startPos_[0] = 0.f;
+    params_.startPos_[1] = 0.f;
+    params_.startPos_[2] = 0.f;
+    params_.startVel_[0] = 0.f;
+    params_.startVel_[1] = 1.f;
+    params_.startVel_[2] = 0.f;
+    params_.velRandWeight_ = 0.f;
+    params_.blendMode_ = Emitter::BLEND_FIRE;
 
     blocks_ = threads_ = 128;
     
@@ -154,16 +172,14 @@ Emitter::Emitter(unsigned int _numParticles) {
     cudaMalloc((void**)&d_pos_, sizeof(float)*3*_numParticles);
     cudaMalloc((void**)&d_acc_, sizeof(float)*3*_numParticles);
     cudaMalloc((void**)&d_vel_, sizeof(float)*3*_numParticles);
-    cudaMalloc((void**)&d_col_, sizeof(float)*3*_numParticles);
+    cudaMalloc((void**)&d_size_, sizeof(float)*_numParticles);
 
     // for random states
     cudaMalloc((void**)&d_randstate_, sizeof(curandState)*blocks_*threads_);
 
     // init
-    init<<<blocks_,threads_>>>(params_, d_time_, d_pos_, d_acc_, d_vel_, d_col_);
+    init<<<blocks_,threads_>>>(params_, d_time_, d_pos_, d_acc_, d_vel_, d_size_);
     initRand<<<blocks_, threads_>>>(d_randstate_);
-
-    //copyPosToHostAndPrint();
 
     // first particle goes in the first slot
     nextSlot_ = 0;
@@ -182,15 +198,15 @@ Emitter::Emitter(unsigned int _numParticles) {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     cudaGLRegisterBufferObject(*vboPos_);
 
-    vboCol_ = new GLuint;
-    glGenBuffers(1, vboCol_);
-    glBindBuffer(GL_ARRAY_BUFFER, *vboCol_);
+    vboSize_ = new GLuint;
+    glGenBuffers(1, vboSize_);
+    glBindBuffer(GL_ARRAY_BUFFER, *vboSize_);
     glBufferData(GL_ARRAY_BUFFER, 
-                 sizeof(float)*3*_numParticles,
+                 sizeof(float)*_numParticles,
                  0,
                  GL_DYNAMIC_DRAW);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-    cudaGLRegisterBufferObject(*vboCol_);
+    cudaGLRegisterBufferObject(*vboSize_);
 
     vboTime_ = new GLuint;
     glGenBuffers(1, vboTime_);
@@ -203,6 +219,7 @@ Emitter::Emitter(unsigned int _numParticles) {
     cudaGLRegisterBufferObject(*vboTime_);
 
 
+
 }
 
 void Emitter::burst() {
@@ -210,7 +227,7 @@ void Emitter::burst() {
     if (params_.emitterType_ != Emitter::EMITTER_BURST) return;
 
     cudaGLMapBufferObject((void**)&d_pos_, *vboPos_);
-    cudaGLMapBufferObject((void**)&d_col_, *vboCol_);
+    cudaGLMapBufferObject((void**)&d_size_, *vboSize_);
     cudaGLMapBufferObject((void**)&d_time_, *vboTime_);
 
     newParticle<<<blocks_,threads_>>>(params_, 
@@ -218,19 +235,19 @@ void Emitter::burst() {
                                      d_pos_, 
                                      d_acc_, 
                                      d_vel_, 
-                                     d_col_,
+                                     d_size_,
                                      0,
                                      d_randstate_);
 
     cudaGLUnmapBufferObject(*vboPos_);
-    cudaGLUnmapBufferObject(*vboCol_);
+    cudaGLUnmapBufferObject(*vboSize_);
     cudaGLUnmapBufferObject(*vboTime_);
 }
 
 void Emitter::update(float _dt) {
 
     cudaGLMapBufferObject((void**)&d_pos_, *vboPos_);
-    cudaGLMapBufferObject((void**)&d_col_, *vboCol_);
+    cudaGLMapBufferObject((void**)&d_size_, *vboSize_);
     cudaGLMapBufferObject((void**)&d_time_, *vboTime_);
 
     // only care about new emissions if it's a stream
@@ -259,7 +276,7 @@ void Emitter::update(float _dt) {
                                      d_pos_, 
                                      d_acc_, 
                                      d_vel_, 
-                                     d_col_,
+                                     d_size_,
                                      nextSlot_,
                                      d_randstate_);
 
@@ -281,11 +298,11 @@ void Emitter::update(float _dt) {
                                     d_pos_, 
                                     d_acc_, 
                                     d_vel_, 
-                                    d_col_,
+                                    d_size_,
                                     _dt);
 
     cudaGLUnmapBufferObject(*vboPos_);
-    cudaGLUnmapBufferObject(*vboCol_);
+    cudaGLUnmapBufferObject(*vboSize_);
     cudaGLUnmapBufferObject(*vboTime_);
 
 }
@@ -328,10 +345,11 @@ void Emitter::typeIs(Type _emitterType) {
     params_.emitterType_ = _emitterType;
 }
 
-void Emitter::colIs(Vector3 _col) {
-    params_.color_[0] = _col.x;
-    params_.color_[1] = _col.y;
-    params_.color_[2] = _col.z;
+void Emitter::pointSizeIs(float _size) {
+    params_.pointSize_ = _size;
+}
+void Emitter::growthFactorIs(float _growthFactor) {
+    params_.growthFactor_ = _growthFactor;
 }
 
 void Emitter::velRandWeightIs(float _velRandWeight) {
@@ -340,6 +358,14 @@ void Emitter::velRandWeightIs(float _velRandWeight) {
 
 void Emitter::posRandWeightIs(float _posRandWeight) {
     params_.posRandWeight_ = _posRandWeight;
+}
+
+void Emitter::textureIs(GLuint _texture) {
+    texture_ = _texture;
+}
+
+void Emitter::blendModeIs(BlendMode _blendMode) {
+    params_.blendMode_ = _blendMode;
 }
 
 void Emitter::copyPosToHostAndPrint() {
