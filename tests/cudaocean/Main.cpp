@@ -1,3 +1,10 @@
+/*
+ * Main.cpp
+ *
+ *  Created on: Mar 9, 2012
+ *      Author: per
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <wrappers/Assimp2Mesh.h>
@@ -5,6 +12,7 @@
 #include <Mesh.h>
 #include <Camera.h>
 #include <Graphics.h>
+#include <cuda/Ocean.cuh>
 #include <GL/glut.h>
 
 static int width = 600, height = 600;
@@ -37,7 +45,7 @@ static void createSceneGraph()
     mesh->shaderDataIs(shader);
     ASSIMP2MESH::read("../models/armadillo.3ds", "0", mesh);
 
-
+    CUDA::Ocean::init();
 
     //Graphics::instance().deleteTexture(tex);
 
@@ -49,6 +57,9 @@ static void display(void)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     Camera::instance().BuildViewMatrix();
     mesh->display();
+    CUDA::Ocean::performIFFT(0.0f, false);
+    CUDA::Ocean::updateVBO(false);
+    CUDA::Ocean::display();
     glutSwapBuffers();
     glutPostRedisplay();
 }

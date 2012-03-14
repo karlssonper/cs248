@@ -9,6 +9,8 @@ tags
 build*
 Debug
 buddies
+models
+textures
 .cproject
 .project
 .settings

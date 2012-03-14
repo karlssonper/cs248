@@ -1,4 +1,4 @@
-CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 
 PROJECT (TEST_GRAPHICS)
 
@@ -17,13 +17,28 @@ INCLUDE_DIRECTORIES($ENV{GL3W}/include
 					$ENV{CS248_PROJECT}/src
 					$ENV{ASSIMP_INCLUDE})
 
-ADD_EXECUTABLE(graphicsTest Main 
+
+#CUDA
+FIND_PACKAGE(CUDA)
+
+LINK_DIRECTORIES(/usr/local/cuda/lib64)
+
+CUDA_ADD_EXECUTABLE(cudaoceantest Main 
+                            $ENV{CS248_PROJECT}/src/cuda/Ocean.cu
+                            $ENV{CS248_PROJECT}/src/cuda/Init.cpp
                             $ENV{CS248_PROJECT}/src/Graphics
                             $ENV{CS248_PROJECT}/src/Mesh
                             $ENV{CS248_PROJECT}/src/Node
                             $ENV{CS248_PROJECT}/src/Camera
                             $ENV{CS248_PROJECT}/src/ShaderData)
 
-TARGET_LINK_LIBRARIES(graphicsTest ${GL_EXT_LIB} GL GLU glut assimp freeimage)
+TARGET_LINK_LIBRARIES(cudaoceantest 
+                                    ${GL_EXT_LIB} 
+                                               GL 
+                                               GLU 
+                                               glut 
+                                               assimp
+                                               freeimage
+                                               cufft)
 
-INSTALL (TARGETS graphicsTest DESTINATION bin)
+INSTALL (TARGETS cudaoceantest DESTINATION bin)
