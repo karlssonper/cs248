@@ -123,7 +123,6 @@ void Mesh::display() const
 
     Matrix3 * normal = shaderData_->stdMatrix3Data(NORMAL);
     *normal = Matrix3(*modelView).inverse().transpose();
-    //normal->print();
     Graphics::instance().drawIndices(VAO_, indexVBO_, n, shaderData_);
 }
 

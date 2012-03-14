@@ -40,6 +40,13 @@
 #define WIND_ALIGN 2
 #define CHOPPYNESS 0.5f
 
+struct OceanVertex
+{
+    float pos[3];
+    float slope[2];
+    float fold;
+};
+
 unsigned int VBO_GL;
 struct cudaGraphicsResource* VBO_CUDA;
 unsigned int VBO_IDX;
@@ -84,6 +91,19 @@ float _kz(const int j, const float wz)
 {
     return TWO_PI * j / wz;
 }
+
+__device__
+int idxFFT(const int i, const int j)
+{
+    return j + i * blockDim.y * gridDim.y;
+}
+
+__device__
+int idxPos(const int i, const int j)
+{
+    return i + j * blockDim.x * gridDim.x;
+}
+
 
 template <int dir, bool bottomLine>
 __global__
@@ -146,19 +166,37 @@ void updatePositions(const float scale,
     const int i = threadIdx.x + blockIdx.x * blockDim.x;
     const int j = threadIdx.y + blockIdx.y * blockDim.y;
 
-    const int idxRow = j + i * blockDim.y * gridDim.y;
-    const int idxCol = i + j * blockDim.x * gridDim.x;
+
+    const int idx = idxFFT(i,j);
 
     const float x = i * scale;
     const float z = j * scale;
 
+    const int idxLeft = (i != 0) ? (idxFFT(i-1,j)) : (idxFFT(N-1,j));
+    const int idxRight = (i != N-1) ? (idxFFT(i+1,j)) : (idxFFT(0,j));
+    const int idxTop = (j != N-1) ? (idxFFT(i,j+1)) : (idxFFT(i,0));
+    const int idxBot = (j != 0) ? (idxFFT(i,j-1)) : (idxFFT(i,N-1));
+
+    const float2 slope = make_float2(yIn[idxLeft] - yIn[idxRight],
+                                     yIn[idxBot] - yIn[idxTop]);
+
     if (disp){
-        out[idxCol] = make_float3(x + scaleXZ * xIn[idxRow]
-                                 , scaleY * yIn[idxRow]
-                                 ,z + scaleXZ * zIn[idxRow]);
+        float2 dx = make_float2((xIn[idxRight] - xIn[idxLeft])* CHOPPYNESS * N/WORLD_SIZE,
+                (zIn[idxRight] - zIn[idxLeft])* CHOPPYNESS * N/WORLD_SIZE) ;
+        float2 dy = make_float2((xIn[idxTop] - xIn[idxBot])* CHOPPYNESS * N/WORLD_SIZE,
+                (zIn[idxTop] - zIn[idxBot]) * CHOPPYNESS * N/WORLD_SIZE);
+
+        float J = (1.0f + dx.x) * (1.0f + dy.y) - dx.y * dy.x;
+
+        out[idxPos(i,j)*2] = make_float3(x + scaleXZ * xIn[idx]
+                                 , scaleY * yIn[idx]
+                                 ,z + scaleXZ * zIn[idx]);
+
+        out[idxPos(i,j)*2 + 1] = make_float3(slope.x,slope.y, max(1.0f - J, 0.f));
     }
     else {
-        out[idxCol] = make_float3(x,scaleY * yIn[idxRow], z);
+        out[idxPos(i,j)*2] = make_float3(x,scaleY * yIn[idx], z);
+        out[idxPos(i,j)*2 + 1] = make_float3(slope.x,slope.y, 1.f);
     }
 };
 
@@ -316,10 +354,11 @@ void display()
     const Matrix4 & view = Camera::instance().viewMtx();
     Matrix4 * modelView = shaderData->stdMatrix4Data(MODELVIEW);
     Matrix4 * projection = shaderData->stdMatrix4Data(PROJECTION);
+    Matrix3 * normal = shaderData->stdMatrix3Data(NORMAL);
 
     *modelView = Camera::instance().viewMtx();
     *projection = Camera::instance().projectionMtx();
-
+    *normal = Matrix3(*modelView).inverse().transpose();
     Graphics::instance().drawIndices(VAO, VBO_IDX, idxSize, shaderData);
 }
 
@@ -406,7 +445,7 @@ void init()
 
     verticalScale = WAVE_HEIGHT / maxHeight();
 
-    std::vector<float> pos(3*N*N);
+    std::vector<float> vertexData(sizeof(OceanVertex)*N*N);
     std::vector<unsigned int> indices(6*(N-1)*(N-1));
     unsigned int triIdx = 0;
     for (int i = 0; i < N-1; ++i) {
@@ -430,11 +469,17 @@ void init()
     shaderData = new ShaderData("../shaders/ocean");
     shaderData->enableMatrix(MODELVIEW);
     shaderData->enableMatrix(PROJECTION);
+    shaderData->enableMatrix(NORMAL);
 
-    Graphics::instance().geometryIs(VBO_GL, VBO_IDX, pos, indices, VBO_DYNAMIC);
+    Graphics::instance().geometryIs(VBO_GL, VBO_IDX, vertexData, indices, VBO_DYNAMIC);
     int id = shaderData->shaderID();
-    int loc = Graphics::instance().shaderAttribLoc(id,"positionIn");
-    Graphics::instance().bindGeometry(id, VAO, VBO_GL,3,sizeof(float)*3,loc,0);
+    int locPos = Graphics::instance().shaderAttribLoc(id,"positionIn");
+    int locSlope = Graphics::instance().shaderAttribLoc(id,"slopeIn");
+    int locFold = Graphics::instance().shaderAttribLoc(id,"foldIn");
+    Graphics::instance().bindGeometry(id, VAO, VBO_GL,3,sizeof(OceanVertex),locPos,0);
+    Graphics::instance().bindGeometry(id, VAO, VBO_GL,2,sizeof(OceanVertex),locSlope,12);
+    Graphics::instance().bindGeometry(id, VAO, VBO_GL,1,sizeof(OceanVertex),locFold,20);
+
     cudaGraphicsGLRegisterBuffer(&VBO_CUDA, VBO_GL,
             cudaGraphicsMapFlagsWriteDiscard);
 }

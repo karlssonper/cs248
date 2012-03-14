@@ -14,11 +14,14 @@
 #include <Graphics.h>
 #include <cuda/Ocean.cuh>
 #include <GL/glut.h>
+#include <wrappers/FreeImage2Tex.h>
 
 static int width = 600, height = 600;
 Mesh * mesh;
 ShaderData * shader;
 Node * node;
+
+float currentTime = 0;
 
 int mouseX, mouseY;
 
@@ -32,6 +35,8 @@ static void createSceneGraph()
     node = new Node("sixtenNode");
     mesh = new Mesh("sixten", node);
     Camera::instance().projectionIs(45.f, 1.f, 1.f, 100.f);
+    Camera::instance().positionIs(Vector3(11.1429, -5.2408, 10.2673));
+    Camera::instance().rotationIs(492.8, 718.4);
     shader = new ShaderData("../shaders/phong");
 
     shader->enableMatrix(MODELVIEW);
@@ -46,7 +51,6 @@ static void createSceneGraph()
     ASSIMP2MESH::read("../models/armadillo.3ds", "0", mesh);
 
     CUDA::Ocean::init();
-
     //Graphics::instance().deleteTexture(tex);
 
     //Graphics::instance().deleteShader(shader);
@@ -54,10 +58,11 @@ static void createSceneGraph()
 
 static void display(void)
 {
+    currentTime = glutGet(GLUT_ELAPSED_TIME) / 1000.f;
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     Camera::instance().BuildViewMatrix();
     mesh->display();
-    CUDA::Ocean::performIFFT(0.0f, false);
+    CUDA::Ocean::performIFFT(currentTime, false);
     CUDA::Ocean::updateVBO(false);
     CUDA::Ocean::display();
     glutSwapBuffers();
@@ -91,6 +96,13 @@ void mouseFunc(int x,int y)
     Camera::instance().yaw(1.6*dx);
     Camera::instance().pitch(1.6*dy);
 }
+
+void mouseMoveFunc(int x,int y)
+{
+    mouseX = x;
+    mouseY = y;
+}
+
 static void reshape(int w, int h)
 {
     width = w > 1 ? w : 1;
@@ -112,6 +124,7 @@ int main(int argc, char **argv)
     glutDisplayFunc(display);
     glutKeyboardFunc(processNormalKeys);
     glutMotionFunc(mouseFunc);
+    glutPassiveMotionFunc(mouseMoveFunc);
 
     createSceneGraph();
 
