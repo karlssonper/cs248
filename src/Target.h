@@ -1,25 +1,28 @@
 #ifndef TARGET_H
 #define TARGET_H
 
-#include "HitBox.h"
 #include "MathEngine.h"
 #include <string>
 
+class Mesh;
+class HitBox;
 class Target {
 public:
     Target(std::string _name, 
-           Vector3 _position,
-           Vector3 _hbp0, 
-           Vector3 _hbp1, 
+           Mesh * _mesh,
            float _energy);
-   
+    ~Target();
     void explode();
-  
-    Vector3 position;
+    void updateHitBox();
+
     float energy;
-    HitBox hitBox;
+ 
+    HitBox * hitBox() const { return hitBox_; }
+    Mesh * mesh() const { return mesh_; }
     std::string name() const { return name_; }
 private:
+    HitBox * hitBox_;
+    Mesh * mesh_;
     std::string name_;
 };
 

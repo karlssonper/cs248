@@ -11,6 +11,7 @@
 #include "Graphics.h"
 
 #include "Camera.h"
+#include <limits>
 
 enum SHADER_ATTRIBUTES_IDX {
     POSITIONS = 0,
@@ -175,4 +176,25 @@ void Mesh::generateVertexVector(std::vector<Vertex> & _v)
 
 
 
+}
+
+std::vector<Vector3> Mesh::minMax() const {
+    float limMax = std::numeric_limits<float>::max();
+    float limMin = std::numeric_limits<float>::min();
+    Vector3 minCoords = Vector3(limMax, limMax, limMax);
+    Vector3 maxCoords = Vector3(limMin, limMin, limMin);
+    std::vector<Vector3>::const_iterator it;
+    for (it = position_.begin(); it != position_.end(); it++) {
+        Vector3 temp = *it;
+        if (temp.x > maxCoords.x) maxCoords.x = temp.x;
+        else if (temp.x < minCoords.x) minCoords.x = temp.x;
+        if (temp.y > maxCoords.y) maxCoords.y = temp.y;
+        else if (temp.y < minCoords.y) minCoords.y = temp.y;
+         if (temp.z > maxCoords.z) maxCoords.z = temp.z;
+        else if (temp.z < minCoords.z) minCoords.z = temp.z;
+    }
+    std::vector<Vector3> result;
+    result.push_back(minCoords);
+    result.push_back(maxCoords);
+    return result;
 }
