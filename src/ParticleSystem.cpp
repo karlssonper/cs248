@@ -8,7 +8,7 @@ ParticleSystem::ParticleSystem(unsigned int _numEmitters)
 void ParticleSystem::update(float _dt)
 {
     std::vector<Emitter*>::iterator it;
-    for (it=_emitter.begin(); it!=_emitter.end(); it++) {
+    for (it=emitter_.begin(); it!=emitter_.end(); it++) {
         (*it)->update(_dt);
     }
 }
@@ -16,7 +16,7 @@ void ParticleSystem::update(float _dt)
 Emitter* ParticleSystem::newEmitter(unsigned int _numParticles, ShaderData*_sd)
 {
     Emitter* out = new Emitter(_numParticles, _sd);
-    _emitter.push_back(out);
+    emitter_.push_back(out);
     return out;
 }
 
@@ -26,7 +26,7 @@ ParticleSystem::~ParticleSystem() {
 
 void ParticleSystem::display() const
 {
-    for (int i =0; i < _emitter.size(); ++i) {
-        _emitter[i]->display();
+    for (int i =0; i < emitter_.size(); ++i) {
+        emitter_[i]->display();
     }
 }
