@@ -18,7 +18,7 @@ private:
     ParticleSystem();
     ParticleSystem(const ParticleSystem&);
     unsigned int numEmitters_;
-    std::vector<Emitter*> _emitter;
+    std::vector<Emitter*> emitter_;
 };
 
 #endif
