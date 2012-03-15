@@ -18,26 +18,27 @@ Graphics::Graphics()
     GLint error = glewInit();
     if (GLEW_OK != error) {
         std::cerr << glewGetErrorString(error) << std::endl;
-        exit(-1);
+        //exit(-1);
     }
     if (!GLEW_VERSION_3_2 || !GL_EXT_framebuffer_object) {
         std::cerr << "This program requires OpenGL 3.2" << std::endl;
-        exit(-1);
+        //exit(-1);
     }
 #else
     printf("OpenGL and gl3w");
     if (gl3wInit()) {
         fprintf(stderr, "failed to initialize OpenGL\n");
-        exit(-1);
+        //exit(-1);
     }
     if (!gl3wIsSupported(3, 2)) {
         fprintf(stderr, "OpenGL 3.2 not supported\n");
-        exit(-1);
+        //exit(-1);
     }
     printf(" %s\nGLSL %s\n", glGetString(GL_VERSION),
            glGetString(GL_SHADING_LANGUAGE_VERSION));
 #endif
     CUDA::init();
+    glEnable(GL_POINT_SPRITE);
 }
 
 Graphics::~Graphics()
@@ -265,8 +266,6 @@ GLuint Graphics::texture(const std::string & _img)
         glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
 
         glBindTexture(GL_TEXTURE_2D, 0);
-        std::cerr << FI2T.w << " " << FI2T.h << std::endl;
-        std::cerr << int(FI2T.data[2456]) << int(FI2T.data[2457]) << int(FI2T.data[2458]) << int(FI2T.data[2459]) << std::endl;
         texture_[_img] = texID;
         return texID;
     }
@@ -329,13 +328,14 @@ GLuint Graphics::LoadShader(const std::string _shader)
     glAttachShader(programID, vertexShaderID);
     glLinkProgram(programID);
 
-    bool loaded;
+   // bool loaded;
+    GLint loaded = 0;
     std::string error;
 #define ERROR_BUFSIZE 1024
     // Error checking
-    glGetProgramiv(programID, GL_LINK_STATUS, (GLint*)&loaded);
+    glGetProgramiv(programID, GL_LINK_STATUS, &loaded);
     //glGetShaderiv(vertexShaderID, GL_COMPILE_STATUS, (GLint*)&loaded_);
-    if (!loaded) {
+    if (loaded == 0) {
         GLchar tempErrorLog[ERROR_BUFSIZE];
         GLsizei length;
         glGetShaderInfoLog(fragmentShaderID,ERROR_BUFSIZE,&length,tempErrorLog);

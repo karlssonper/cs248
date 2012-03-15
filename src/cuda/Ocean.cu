@@ -7,8 +7,8 @@
 
 
 #include "linux_helper.h"
-#include <Graphics.h>
-#include <Camera.h>
+#include "../Graphics.h"
+#include "../Camera.h"
 #include <cuda_gl_interop.h>
 #include <cufft.h>
 #include <vector>

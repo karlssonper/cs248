@@ -8,11 +8,20 @@
 #ifndef ASSIMP2MESH_H_
 #define ASSIMP2MESH_H_
 
-#include <Importer.hpp>
-#include <scene.h>
-#include <postprocess.h>
-#include <string>
+#ifdef _WIN32
+    #include "assimp.hpp"
+    #include "aiScene.h"
+    #include "aiPostProcess.h"
+    #include <memory>
+    #include <iostream>
+#else
+    #include <Importer.hpp>
+    #include <scene.h>
+    #include <postprocess.h>
+#endif
+
 #include <Mesh.h>
+#include <string>
 
 namespace ASSIMP2MESH{
 
@@ -27,7 +36,7 @@ void read(std::string _fileStr,
         aiProcess_JoinIdenticalVertices |
         aiProcessPreset_TargetRealtime_Quality);
     int idx = -1;
-    for (int i = 0; i < scene->mNumMeshes; ++i){
+    for (unsigned int i = 0; i < scene->mNumMeshes; ++i){
         aiMesh * mesh = scene->mMeshes[i];
         if (std::string(mesh->mName.data) == _meshStr){
             std::cout << "Found " <<_meshStr << " in " << _fileStr << std::endl;
@@ -73,7 +82,7 @@ void read(std::string _fileStr,
         bitangent.resize(0);
     }
 
-    for (int j = 0; j < mesh->mNumVertices; ++j) {
+    for (unsigned int j = 0; j < mesh->mNumVertices; ++j) {
         position[j].x = mesh->mVertices[j].x;
         position[j].y = mesh->mVertices[j].y;
         position[j].z = mesh->mVertices[j].z;
@@ -100,7 +109,7 @@ void read(std::string _fileStr,
 
     std::vector<unsigned int> indices;
     indices.reserve(mesh->mNumFaces * 3);
-    for (int i = 0; i < mesh->mNumFaces; ++i) {
+    for (unsigned int i = 0; i < mesh->mNumFaces; ++i) {
         if (mesh->mFaces[i].mNumIndices != 3) {
             //std::cerr << "Can't process nothing else than triangles"
                    // << " # verts: " <<  mesh->mFaces[i].mNumIndices << std::endl;

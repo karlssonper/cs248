@@ -26,7 +26,7 @@ ParticleSystem::~ParticleSystem() {
 
 void ParticleSystem::display() const
 {
-    for (int i =0; i < _emitter.size(); ++i) {
+    for (unsigned int i =0; i < _emitter.size(); ++i) {
         _emitter[i]->display();
     }
 }

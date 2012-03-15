@@ -1,8 +1,8 @@
 #include "linux_helper.h"
 
 #include "Emitter.cuh"
-#include <Graphics.h>
-#include <Camera.h>
+#include "../Graphics.h"
+#include "../Camera.h"
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <cuda_gl_interop.h>

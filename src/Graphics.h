@@ -8,8 +8,11 @@
 #ifndef GRAPHICS_H_
 #define GRAPHICS_H_
 
+#define USE_GLEW
 #ifdef USE_GLEW
+
     #include <GL/glew.h>
+    #include <GL/glut.h>
 #else
     #include <GL3/gl3w.h>
 #endif

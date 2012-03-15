@@ -148,7 +148,7 @@ void Mesh::generateVertexVector(std::vector<Vertex> & _v)
         exit(1);
     }
 
-    for (int i = 0; i < _v.size(); ++i) {
+    for (unsigned int i = 0; i < _v.size(); ++i) {
         _v[i].position[0] = position_[i].x;
         _v[i].position[1] = position_[i].y;
         _v[i].position[2] = position_[i].z;

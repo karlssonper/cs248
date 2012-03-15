@@ -1,9 +1,13 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <windows.h>
+#include <GL/gl.h>
+#include <GL/glut.h>
 #include <ParticleSystem.h>
 #include <MathEngine.h>
 #include <cuda/Emitter.cuh>
 #include <iostream>
 #include <Camera.h>
-#include <GL/glut.h>
 #include <Mesh.h>
 #include <Node.h>
 #include <wrappers/Assimp2Mesh.h>
@@ -43,7 +47,7 @@ glEnable(GL_VERTEX_PROGRAM_POINT_SIZE_NV);
         glTexEnvi(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_TRUE);
         */
 
-     glEnable(GL_POINT_SPRITE);
+     
 }
 
 void idle() {
@@ -56,7 +60,7 @@ void display() {
     Camera::instance().BuildViewMatrix();
     mesh->display();
     sp->display();
-     /*glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+     /*glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT ); 
      glMatrixMode(GL_MODELVIEW);
      glLoadIdentity();
      glColor4f(0.0f, 0.0f, 1.0f, 1.0f);

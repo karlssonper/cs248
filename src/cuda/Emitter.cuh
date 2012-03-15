@@ -3,8 +3,8 @@
 
 
 #include <vector>
-#include "MathEngine.h"
-#include <ShaderData.h>
+#include "../MathEngine.h"
+#include "../ShaderData.h"
 
 
 #include <curand_kernel.h>
