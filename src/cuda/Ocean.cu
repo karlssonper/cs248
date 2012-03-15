@@ -5,18 +5,8 @@
  *      Author: per
  */
 
-#ifdef __CDT_PARSER__
-#define __global__
-#define __device__
-#define __host__
-#define __shared__
-#define CUDA_KERNEL_DIM(...)
 
-#else
-#define CUDA_KERNEL_DIM(...)  <<< __VA_ARGS__ >>>
-
-#endif
-
+#include "linux_helper.h"
 #include <Graphics.h>
 #include <Camera.h>
 #include <cuda_gl_interop.h>

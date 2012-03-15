@@ -32,6 +32,11 @@ public:
                     GLuint & _VAO,
                     GLuint & _geometryVBO,
                     GLuint & _idxVBOO );
+    void buffersNew(const std::string &_name,
+                    GLuint & _VAO,
+                    GLuint & _positionVBO,
+                    GLuint & _sizeVBO,
+                    GLuint & _timeVBO);
     void deleteBuffers(const std::string & _name);
     void deleteBuffers(GLuint _VAO);
 
@@ -41,6 +46,12 @@ public:
                     const std::vector<Vertex> & _geometryData,
                     const std::vector<GLuint> & _indexData,
                     VBOtype                     _type);
+
+    void geometryIs(GLuint _posVBO,
+                    GLuint _sizeVBO,
+                    GLuint _timeVBO,
+                    GLuint _N,
+                    VBOtype _type);
 
     void bindGeometry(GLuint _shader,
                       GLuint _VAO,
@@ -54,6 +65,11 @@ public:
                      GLuint _VBO,
                      GLuint _size,
                      const ShaderData * _shaderData);
+
+    void drawArrays(GLuint _VAO,
+                     GLuint _N,
+                     const ShaderData * _shaderData,
+                     bool additiveBlending);
 
     GLuint texture(const std::string & _img);
     void deleteTexture(const std::string & _img);
@@ -94,6 +110,8 @@ private:
                    const std::vector<T> & _data,
                    GLenum                 _usage);
 
+    void loadShaderData(const ShaderData * _shaderData) const;
+    void unloadShaderData() const;
     GLuint LoadShader(const std::string _shader);
     std::vector<char> ReadSource(const std::string _file);
 

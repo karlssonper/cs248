@@ -120,11 +120,7 @@ int main(int argc, char **argv)
     glutInitWindowSize(width, height);
     glutCreateWindow("tests/graphics");
 
-    glutReshapeFunc(reshape);
-    glutDisplayFunc(display);
-    glutKeyboardFunc(processNormalKeys);
-    glutMotionFunc(mouseFunc);
-    glutPassiveMotionFunc(mouseMoveFunc);
+
 
     createSceneGraph();
 
