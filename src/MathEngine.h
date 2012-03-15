@@ -174,7 +174,7 @@ inline Matrix3::Matrix3(const Matrix4 & _m)
 inline Matrix3 Matrix3::inverse() const
 {
     Matrix3 t;
-    float one_over_det = 1.0/(m_[0]*m_[4]*m_[8]+m_[1]*m_[5]*m_[6]+
+    float one_over_det = 1.f/(m_[0]*m_[4]*m_[8]+m_[1]*m_[5]*m_[6]+
        m_[2]*m_[3]*m_[7]-m_[0]*m_[5]*m_[7]-m_[2]*m_[4]*m_[6]-m_[1]*m_[3]*m_[8]);
     if (abs(one_over_det) < 0.00001f)
         one_over_det = one_over_det>0 ? 0.00001f : -0.00001f;
