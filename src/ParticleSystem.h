@@ -10,7 +10,7 @@ public:
     ParticleSystem(unsigned int _numEmitters);
     ~ParticleSystem();
     unsigned int numEmitters() const { return numEmitters_; }
-    Emitter* emitter(unsigned int _i) { return _emitter.at(_i); }
+    Emitter* emitter(unsigned int _i) { return emitter_.at(_i); }
     void update(float _dt);
     Emitter* newEmitter(unsigned int _numParticles, ShaderData*_sd);
     void display() const;

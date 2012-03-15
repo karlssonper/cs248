@@ -21,13 +21,13 @@ Emitter* ParticleSystem::newEmitter(unsigned int _numParticles, ShaderData*_sd)
 }
 
 ParticleSystem::~ParticleSystem() {
-    _emitter.clear();
+    emitter_.clear();
 }
 
 void ParticleSystem::display() const
 {
-    for (unsigned int i =0; i < _emitter.size(); ++i) {
-        _emitter[i]->display();
+    for (unsigned int i =0; i < emitter_.size(); ++i) {
+        emitter_[i]->display();
 
     }
 }
