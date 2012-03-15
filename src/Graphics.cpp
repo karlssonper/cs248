@@ -9,7 +9,7 @@
 #include <fstream>
 #include <iostream>
 #include "wrappers/FreeImage2Tex.h"
-#include <cuda/Init.h>
+#include <CUDA.h>
 
 Graphics::Graphics()
 {
@@ -54,6 +54,23 @@ void Graphics::buffersNew(const std::string & _name,
         glGenVertexArrays(1, &_VAO);
         glGenBuffers(1, &_geometryVBO);
         glGenBuffers(1, &_idxVBOO);
+        //add to map
+    } else {
+        std::cerr << "Buffers already exists for " << _name << std::endl;
+    }
+}
+
+void Graphics::buffersNew(const std::string &_name,
+                          GLuint & _VAO,
+                          GLuint & _positionVBO,
+                          GLuint & _sizeVBO,
+                          GLuint & _timeVBO)
+{
+    if (VAOData_.find(_name) == VAOData_.end()) {
+        glGenVertexArrays(1, &_VAO);
+        glGenBuffers(1, &_positionVBO);
+        glGenBuffers(1, &_sizeVBO);
+        glGenBuffers(1, &_timeVBO);
     } else {
         std::cerr << "Buffers already exists for " << _name << std::endl;
     }
@@ -87,6 +104,31 @@ void Graphics::deleteBuffers(GLuint _VAO)
     std::cerr << "Can't remove buffers  VAO#" << _VAO << std::endl;
 }
 
+void Graphics::geometryIs(GLuint _posVBO,
+                          GLuint _sizeVBO,
+                          GLuint _timeVBO,
+                          GLuint _N,
+                          VBOtype _type)
+{
+    GLenum type;
+    switch(_type){
+        case VBO_STATIC:
+            type = GL_STATIC_DRAW;
+            break;
+        case VBO_DYNAMIC:
+            type = GL_DYNAMIC_DRAW;
+            break;
+    }
+
+    std::vector<float> pos(3*_N);
+    std::vector<float> size(_N);
+    std::vector<float> time(_N);
+
+    VBODataIs(GL_ARRAY_BUFFER, _posVBO, pos, type);
+    VBODataIs(GL_ARRAY_BUFFER, _sizeVBO, size, type);
+    VBODataIs(GL_ARRAY_BUFFER, _timeVBO, time, type);
+}
+
 
 void Graphics::bindGeometry(GLuint _shader,
                             GLuint _VAO,
@@ -109,6 +151,33 @@ void Graphics::bindGeometry(GLuint _shader,
     glUseProgram(0);
 }
 
+void Graphics::drawArrays(GLuint _VAO,
+                 GLuint _N,
+                 const ShaderData * _shaderData,
+                 bool additiveBlending)
+{
+    glEnable(GL_POINT_SIZE);
+    // draw
+    glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
+    glEnable(GL_BLEND);
+
+    if (additiveBlending) {
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+    } else  {
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    }
+
+    glEnable(GL_DEPTH_TEST);
+    glDepthMask(GL_FALSE);
+
+    loadShaderData(_shaderData);
+    glBindVertexArray(_VAO);
+    glDrawArrays(GL_POINTS, 0, _N);
+    glDepthMask(GL_TRUE);
+    glBindVertexArray(0);
+    unloadShaderData();
+}
+
 void Graphics::drawIndices(GLuint _VAO,
                            GLuint _VBO,
                            GLuint _size,
@@ -118,50 +187,62 @@ void Graphics::drawIndices(GLuint _VAO,
     glBindVertexArray(_VAO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _VBO);
 
-    attribMap1f::const_iterator fIt = _shaderData->floats_.begin();
-    attribMap3f::const_iterator vecIt = _shaderData->vec3s_.begin();
-    attribMapMat4::const_iterator matIt = _shaderData->matrices_.begin();
-    attribMapTex::const_iterator texIt = _shaderData->textures_.begin();
-
-    for (; fIt != _shaderData->floats_.end(); ++fIt){
-        glUniform1f(fIt->second.location, fIt->second.data);
-    }
-
-    for (; vecIt != _shaderData->vec3s_.end(); ++vecIt){
-        glUniform3fv(vecIt->second.location, 1, &vecIt->second.data.x);
-    }
-
-    for (; matIt != _shaderData->matrices_.end(); ++matIt){
-        glUniformMatrix4fv(matIt->second.location, 1, false,
-                matIt->second.data.data());
-    }
-
-    for (int i = 0; texIt != _shaderData->textures_.end(); ++texIt, ++i){
-        glUniform1i(texIt->second.location, i+1);
-        glActiveTexture(GL_TEXTURE0 + i+1);
-        glBindTexture(GL_TEXTURE_2D, texIt->second.data);
-    }
-
-    for (int i = 0; i < NUM_STD_MATRICES-1; ++i) {
-        if (_shaderData->stdMatrices_[i].first) {
-            glUniformMatrix4fv(_shaderData->stdMatrices_[i].second.location,
-                    1,
-                    false,
-                    _shaderData->stdMatrices_[i].second.data.data());
-        }
-    }
-    if (_shaderData->stdMatrixNormal_.first) {
-        glUniformMatrix3fv(_shaderData->stdMatrixNormal_.second.location,
-                    1,
-                    false,
-                    _shaderData->stdMatrixNormal_.second.data.data());
-    }
+    loadShaderData(_shaderData);
 
     glDrawElements(GL_TRIANGLES, _size, GL_UNSIGNED_INT, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
     glUseProgram(0);
     glBindVertexArray(0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+}
+
+void Graphics::loadShaderData(const ShaderData * _shaderData) const
+{
+    glUseProgram(_shaderData->shaderID());
+    attribMap1f::const_iterator fIt = _shaderData->floats_.begin();
+    attribMap3f::const_iterator vecIt = _shaderData->vec3s_.begin();
+    attribMapMat4::const_iterator matIt = _shaderData->matrices_.begin();
+    attribMapTex::const_iterator texIt = _shaderData->textures_.begin();
+
+    for (; fIt != _shaderData->floats_.end(); ++fIt){
+       glUniform1f(fIt->second.location, fIt->second.data);
+    }
+
+    for (; vecIt != _shaderData->vec3s_.end(); ++vecIt){
+       glUniform3fv(vecIt->second.location, 1, &vecIt->second.data.x);
+    }
+
+    for (; matIt != _shaderData->matrices_.end(); ++matIt){
+       glUniformMatrix4fv(matIt->second.location, 1, false,
+               matIt->second.data.data());
+    }
+
+    for (int i = 0; texIt != _shaderData->textures_.end(); ++texIt, ++i){
+       glUniform1i(texIt->second.location, i+1);
+       glActiveTexture(GL_TEXTURE0 + i+1);
+       glBindTexture(GL_TEXTURE_2D, texIt->second.data);
+    }
+
+    for (int i = 0; i < NUM_STD_MATRICES-1; ++i) {
+       if (_shaderData->stdMatrices_[i].first) {
+           glUniformMatrix4fv(_shaderData->stdMatrices_[i].second.location,
+                   1,
+                   false,
+                   _shaderData->stdMatrices_[i].second.data.data());
+       }
+    }
+    if (_shaderData->stdMatrixNormal_.first) {
+       glUniformMatrix3fv(_shaderData->stdMatrixNormal_.second.location,
+                   1,
+                   false,
+                   _shaderData->stdMatrixNormal_.second.data.data());
+    }
+}
+
+void Graphics::unloadShaderData() const
+{
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glUseProgram(0);
 }
 
 GLuint Graphics::texture(const std::string & _img)

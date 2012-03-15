@@ -71,6 +71,7 @@ public:
     Matrix3 transpose() const;
     const float* data() const { return m_;};
     float m_[9];
+    void print() const;
 };
 
 /* 
@@ -174,10 +175,19 @@ inline Matrix3::Matrix3(const Matrix4 & _m)
 inline Matrix3 Matrix3::inverse() const
 {
     Matrix3 t;
+
     float one_over_det = 1.f/(m_[0]*m_[4]*m_[8]+m_[1]*m_[5]*m_[6]+
        m_[2]*m_[3]*m_[7]-m_[0]*m_[5]*m_[7]-m_[2]*m_[4]*m_[6]-m_[1]*m_[3]*m_[8]);
     if (abs(one_over_det) < 0.00001f)
         one_over_det = one_over_det>0 ? 0.00001f : -0.00001f;
+
+    float det = m_[0]*m_[4]*m_[8]+m_[1]*m_[5]*m_[6]+
+       m_[2]*m_[3]*m_[7]-m_[0]*m_[5]*m_[7]-m_[2]*m_[4]*m_[6]-m_[1]*m_[3]*m_[8];
+    if (abs(det) < 0.00001f){
+        det = det>0 ? 0.00001f : -0.00001f;
+    }
+    float one_over_det = 1.f/det;
+
 
     t.m_[0] = one_over_det*(m_[4]*m_[8] - m_[7]*m_[5]);
     t.m_[1] = one_over_det*(m_[7]*m_[2] - m_[1]*m_[8]);
@@ -207,7 +217,13 @@ inline Matrix3 Matrix3::transpose() const
     return t;
 }
 
-
+inline void Matrix3::print() const
+{
+    std::cout << std::fixed << std::setprecision(2);
+    std::cout << m_[0]<<" "<<m_[3]<<" "<< m_[6]<<std::endl;
+    std::cout << m_[1]<<" "<<m_[4]<<" "<< m_[7]<< std::endl;
+    std::cout << m_[2]<<" "<<m_[5]<<" "<< m_[8]<<std::endl;
+}
 
 /*
 Matrix4 definitions

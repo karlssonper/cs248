@@ -2,8 +2,9 @@
 #define PARTICLESYSTEM_H
 
 #include <vector>
-#include "Emitter.h"
 
+class Emitter;
+class ShaderData;
 class ParticleSystem {
 public:
     ParticleSystem(unsigned int _numEmitters);
@@ -11,7 +12,8 @@ public:
     unsigned int numEmitters() const { return numEmitters_; }
     Emitter* emitter(unsigned int _i) { return _emitter.at(_i); }
     void update(float _dt);
-    Emitter* newEmitter(unsigned int _numParticles);
+    Emitter* newEmitter(unsigned int _numParticles, ShaderData*_sd);
+    void display() const;
 private:
     ParticleSystem();
     ParticleSystem(const ParticleSystem&);

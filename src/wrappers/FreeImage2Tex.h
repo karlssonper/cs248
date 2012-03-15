@@ -10,6 +10,10 @@
 
 #include <FreeImage.h>
 
+
+#include <iostream>
+#include <fstream>
+
 class FreeImage2Texture
 {
 public:
@@ -31,12 +35,20 @@ public:
         char* pixeles = (char*)FreeImage_GetBits(imagen);
         //FreeImage loads in BGR format, so you need to swap some bytes(Or use GL_BGR).
 
+        //std::ofstream myfile;
+        //myfile.open ("texture.txt");
+
         for(int j= 0; j<w*h; j++){
             data[j*4+0]= pixeles[j*4+2];
             data[j*4+1]= pixeles[j*4+1];
             data[j*4+2]= pixeles[j*4+0];
             data[j*4+3]= pixeles[j*4+3];
+
+            //myfile << int(data[j*4+0]) << " " << int(data[j*4+1]) <<
+            //        " " << int(data[j*4+2]) << " ";
         }
+          //myfile.close();
+
         FreeImage_Unload(imagen);
     }
 

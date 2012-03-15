@@ -4,8 +4,7 @@
 #include <string>
 #include <vector>
 
-#include <GL/glew.h>
-#include <GL/glut.h>
+#include <Graphics.h>
 
 class Shader {
 public:

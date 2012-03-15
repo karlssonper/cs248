@@ -82,10 +82,10 @@ void Mesh::geometryIs(const std::vector<Vector3> &_position,
     unsigned int sID = shaderData_->shaderID();
 
     g.bindGeometry(sID, VAO_, geometryVBO_, 3, stride, posLoc, 0);
-    g.bindGeometry(sID, VAO_, geometryVBO_, 2, stride, 1, 12);
-    g.bindGeometry(sID, VAO_, geometryVBO_, 3, stride, 2, 20);
-    g.bindGeometry(sID, VAO_, geometryVBO_, 3, stride, 3, 32);
-    g.bindGeometry(sID, VAO_, geometryVBO_, 3, stride, 4, 44);
+    g.bindGeometry(sID, VAO_, geometryVBO_, 2, stride, texLoc, 12);
+    g.bindGeometry(sID, VAO_, geometryVBO_, 3, stride, normalLoc, 20);
+    g.bindGeometry(sID, VAO_, geometryVBO_, 3, stride, tangentLoc, 32);
+    g.bindGeometry(sID, VAO_, geometryVBO_, 3, stride, bitangentLoc, 44);
 
     loadedInGPU_ = true;
 }
@@ -123,7 +123,6 @@ void Mesh::display() const
 
     Matrix3 * normal = shaderData_->stdMatrix3Data(NORMAL);
     *normal = Matrix3(*modelView).inverse().transpose();
-    //normal->print();
     Graphics::instance().drawIndices(VAO_, indexVBO_, n, shaderData_);
 }
 
