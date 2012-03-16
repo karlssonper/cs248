@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
+#ifdef _WIN32
 #include <windows.h>
-#include <GL/gl.h>
+#endif
 #include <GL/glut.h>
 #include <ParticleSystem.h>
 #include <MathEngine.h>

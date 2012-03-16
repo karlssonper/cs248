@@ -45,6 +45,9 @@ public:
     void addVector3(const std::string & _name, const Vector3 &_vec);
     void addMatrix(const std::string & _name, const Matrix4 & _m);
     void addTexture(const std::string & _name, const std::string& _tex);
+    void addCubeTexture(const std::string & _name,
+                        const std::string & _texNameID,
+                        const std::vector<std::string> &_img);
 
     void enableMatrix(STD_Matrix _m);
     void disableMatrix(STD_Matrix _m);
@@ -70,6 +73,7 @@ private:
     attribMap3f vec3s_;
     attribMapMat4 matrices_;
     attribMapTex textures_;
+    attribMapTex cubeTextures_;
 
 };
 

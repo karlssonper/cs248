@@ -7,8 +7,11 @@
 
 #ifndef GRAPHICS_H_
 #define GRAPHICS_H_
-
-#define USE_GLEW
+#ifdef _WIN32
+    #ifndef USE_GLEW
+        #define USE_GLEW
+    #endif
+#endif
 #ifdef USE_GLEW
 
     #include <GL/glew.h>
@@ -74,7 +77,12 @@ public:
                      const ShaderData * _shaderData,
                      bool additiveBlending);
 
+    void viewportIs(int _width, int _height);
+
     GLuint texture(const std::string & _img);
+    GLuint texture(const std::string & _name,
+                   const std::vector<std::string>& _img);
+
     void deleteTexture(const std::string & _img);
     void deleteTexture(unsigned int _texID);
     GLuint shader(const std::string & _shader);

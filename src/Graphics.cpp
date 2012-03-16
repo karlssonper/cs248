@@ -37,13 +37,20 @@ Graphics::Graphics()
     printf(" %s\nGLSL %s\n", glGetString(GL_VERSION),
            glGetString(GL_SHADING_LANGUAGE_VERSION));
 #endif
+
+    glEnable(GL_DEPTH_TEST);
     CUDA::init();
-    glEnable(GL_POINT_SPRITE);
+    //glEnable(GL_POINT_SPRITE);
 }
 
 Graphics::~Graphics()
 {
 
+}
+
+void Graphics::viewportIs(int _width, int _height)
+{
+    glViewport(0, 0, _width, _height);
 }
 
 void Graphics::buffersNew(const std::string & _name,
@@ -204,6 +211,7 @@ void Graphics::loadShaderData(const ShaderData * _shaderData) const
     attribMap3f::const_iterator vecIt = _shaderData->vec3s_.begin();
     attribMapMat4::const_iterator matIt = _shaderData->matrices_.begin();
     attribMapTex::const_iterator texIt = _shaderData->textures_.begin();
+    attribMapTex::const_iterator ctexIt = _shaderData->cubeTextures_.begin();
 
     for (; fIt != _shaderData->floats_.end(); ++fIt){
        glUniform1f(fIt->second.location, fIt->second.data);
@@ -222,6 +230,12 @@ void Graphics::loadShaderData(const ShaderData * _shaderData) const
        glUniform1i(texIt->second.location, i+1);
        glActiveTexture(GL_TEXTURE0 + i+1);
        glBindTexture(GL_TEXTURE_2D, texIt->second.data);
+    }
+
+    for (int i = 0; ctexIt != _shaderData->cubeTextures_.end(); ++ctexIt, ++i){
+       glUniform1i(ctexIt->second.location, i+1);
+       glActiveTexture(GL_TEXTURE0 + i+1);
+       glBindTexture(GL_TEXTURE_CUBE_MAP, ctexIt->second.data);
     }
 
     for (int i = 0; i < NUM_STD_MATRICES-1; ++i) {
@@ -267,6 +281,37 @@ GLuint Graphics::texture(const std::string & _img)
 
         glBindTexture(GL_TEXTURE_2D, 0);
         texture_[_img] = texID;
+        return texID;
+    }
+}
+
+GLuint Graphics::texture(const std::string & _name,
+                         const std::vector<std::string> &_img)
+{
+    if (texture_.find(_name) != texture_.end()) {
+        return texture_[_name];
+    } else {
+        if (_img.size() != 6) {
+            std::cerr << "Error! A cubemap needs 6 textures" << std::endl;
+        }
+        GLuint texID;
+        glGenTextures(1, &texID);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, texID);
+        glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameterf(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameterf(GL_TEXTURE_CUBE_MAP,GL_TEXTURE_WRAP_S,GL_CLAMP_TO_EDGE);
+        glTexParameterf(GL_TEXTURE_CUBE_MAP,GL_TEXTURE_WRAP_T,GL_CLAMP_TO_EDGE);
+        glTexParameterf(GL_TEXTURE_CUBE_MAP,GL_TEXTURE_WRAP_R,GL_CLAMP_TO_EDGE);
+        for (unsigned int face = 0; face < 6; face++){
+            FreeImage2Texture FI2T(_img[face]);
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, GL_RGBA,
+                    FI2T.w, FI2T.h, 0 , GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+            glCopyTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face,
+                    0, 0, 0, 0, 0, FI2T.w, FI2T.h);
+        }
+
+        glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+        texture_[_name] = texID;
         return texID;
     }
 }
