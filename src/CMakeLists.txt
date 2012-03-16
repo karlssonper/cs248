@@ -24,3 +24,5 @@ TARGET_LINK_LIBRARIES(engine
                                                cufft)
 
 INSTALL (TARGETS engine DESTINATION lib)
+
+SET(engine ENGINE_LIB)

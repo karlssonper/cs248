@@ -4,7 +4,7 @@ PROJECT (TEST_GRAPHICS)
 CUDA_ADD_EXECUTABLE(graphicsTest Main )
 
 TARGET_LINK_LIBRARIES(graphicsTest 
-                                    ${ENGINE_STATIC_LIB}
+                                     ${ENGINE_STATIC_LIB}
                                      ${GL_EXT_LIB} 
                                      GL 
                                      GLU 

@@ -8,6 +8,7 @@
 #ifndef ENGINE_H_
 #define ENGINE_H_
 
+class ShaderData;
 class Engine
 {
 public:
@@ -16,13 +17,20 @@ public:
     void loadResources(const char * _file);
     void start();
 
+    void renderFrame();
     int mouseX() const { return mouseX_;};
     void mouseXIs(int x);
     int mouseY() const { return mouseY_;};
     void mouseYIs(int y);
+    int width() const { return width_;};
+    void widthIs(int _width);
+    int height() const { return height_;};
+    void heightIs(int _height);
 private:
     int mouseX_;
     int mouseY_;
+    int width_;
+    int height_;
 
     enum State { NOT_INITIATED, RUNNING, PAUSED};
     State state_;
@@ -45,9 +53,14 @@ private:
     unsigned int quadVBO_;
     unsigned int quadIdxVBO_;
     unsigned int quadVAO_;
-    unsigned int quadShader_;
+    ShaderData * quadShader_;
 
     void BuildQuad();
+
+    void RenderShadowMap();
+    void RenderFirstPass();
+    void RenderSecondPass();
+
 
     Engine();
     Engine(const Engine & );

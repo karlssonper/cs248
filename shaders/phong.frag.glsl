@@ -41,6 +41,20 @@ void main() {
 	vec3 totAmbient = 0.1;
 	//gl_FragColor = vec4(totDiffuse+totAmbient+totSpecular, 1);
 	//gl_FragColor = vec4(texcoord.x, 0,0,1);
-	gl_FragColor = vec4(0.5*normalize(N) + vec3(0.5),1);
 
+
+	//Depth
+	gl_FragData[0] = vec4(1,1,1,1);
+
+	//Phong Tex
+	gl_FragData[1] = vec4(0,1,0,1);
+
+	//Bloom Tex
+	gl_FragData[2] = vec4(0,0,1,1);
+
+	//Motion Tex
+	gl_FragData[3] = vec4(0.5*normalize(N) + vec3(0.5),1);
+
+	//CoC Tex
+	gl_FragData[4] = vec4(0.5*normalize(N) + vec3(0.5),1);
 }
