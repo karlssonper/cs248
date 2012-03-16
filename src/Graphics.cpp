@@ -164,7 +164,7 @@ void Graphics::drawArrays(GLuint _VAO,
                  const ShaderData * _shaderData,
                  bool additiveBlending)
 {
-    glEnable(GL_POINT_SIZE);
+    //glEnable(GL_POINT_SIZE);
     // draw
     glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
     glEnable(GL_BLEND);

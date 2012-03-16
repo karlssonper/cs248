@@ -20,12 +20,14 @@ public:
     void fire(Vector3 _direction);
     std::vector<Projectile> projectile;
     void updateProjectiles(float _dt);
-    float maxDistance;
-    float speed;
-    float power;
-    Vector3 position;
-    WeaponType type;
+    Vector3 position() const { return position_; }
+    WeaponType type() const { return type_; }
 private:
+    float maxDistance_;
+    float speed_;
+    float power_;
+    Vector3 position_;
+    WeaponType type_;
     std::string name_;
 };
 

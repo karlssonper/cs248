@@ -41,6 +41,9 @@ public:
     void nodeIs(Node * _node);
     void display() const;
 
+    // return two Vector3's, min and max position coords
+    std::vector<Vector3> minMax() const;
+
 private:
     std::string name_;
     Node * node_;
