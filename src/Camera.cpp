@@ -6,6 +6,7 @@
  */
 
 #include "Camera.h"
+#include <limits.h>
 
 Camera::Camera() :
     fov_(45.f),
@@ -16,7 +17,17 @@ Camera::Camera() :
     yawDegrees_(0.f),
     yawRadians_(0.f),
     pitchDegrees_(0.f),
-    pitchRadians_(0.f)
+    pitchRadians_(0.f),
+    shaking_(false),
+    shakeTime_(0.f),
+    shakeDuration_(0.f),
+    shakeMagnitude_(0.f),
+    shakeYaw_(0.f),
+    shakePitch_(0.f),
+    maxYaw_(std::numeric_limits<float>::max()),
+    maxPitch_(std::numeric_limits<float>::max()),
+    minYaw_(std::numeric_limits<float>::min()),
+    minPitch_(std::numeric_limits<float>::min()) 
 {
     BuildProjectionMatrix();
     BuildViewMatrix();
@@ -31,7 +42,17 @@ Camera::Camera(const Vector3 &_pos, float _yaw, float _pitch) :
     yawDegrees_(_yaw),
     yawRadians_(Degree2Radians(_yaw)),
     pitchDegrees_(_pitch),
-    pitchRadians_(Degree2Radians(_pitch))
+    pitchRadians_(Degree2Radians(_pitch)),
+    shaking_(false),
+    shakeTime_(0.f),
+    shakeDuration_(0.f),
+    shakeMagnitude_(0.f),
+    shakeYaw_(0.f),
+    shakePitch_(0.f),
+    maxYaw_(std::numeric_limits<float>::max()),
+    maxPitch_(std::numeric_limits<float>::max()),
+    minYaw_(std::numeric_limits<float>::min()),
+    minPitch_(std::numeric_limits<float>::min()) 
 {
     BuildProjectionMatrix();
     BuildViewMatrix();
@@ -98,12 +119,16 @@ void Camera::rotationIs(float _totalYaw, float _totalPitch)
 void Camera::yaw(float _degrees)
 {
     yawDegrees_ += _degrees;
+    if (yawDegrees_ >= maxYaw_) yawDegrees_ -= _degrees;
+    else if (yawDegrees_ <= minYaw_) yawDegrees_ -= _degrees;
     yawRadians_ = Degree2Radians(yawDegrees_);
 }
 
 void Camera::pitch(float _degrees)
 {
     pitchDegrees_ += _degrees;
+    if (pitchDegrees_ >= maxPitch_) pitchDegrees_ -= _degrees;
+    else if (pitchDegrees_ <= minPitch_) pitchDegrees_ -= _degrees;
     pitchRadians_ = Degree2Radians(pitchDegrees_);
 }
 
@@ -160,14 +185,56 @@ void Camera::BuildProjectionMatrix()
 
 void Camera::BuildViewMatrix()
 {
-    viewMtx_ = Matrix4::rotate(pitchDegrees_, 1.f, 0.f, 0.f);
-    viewMtx_ = viewMtx_ * Matrix4::rotate(yawDegrees_, 0.f, 1.f, 0.f);
+    viewMtx_ = Matrix4::rotate(pitchDegrees_+shakePitch_, 1.f, 0.f, 0.f);
+    viewMtx_ = viewMtx_ * Matrix4::rotate(yawDegrees_+shakeYaw_, 0.f, 1.f, 0.f);
     viewMtx_ = viewMtx_ * Matrix4::translate(pos_.x, pos_.y, pos_.z);
 
     inverseViewMtx_ = Matrix4::translate(-pos_.x, -pos_.y, -pos_.z);
     inverseViewMtx_ = inverseViewMtx_ *
-            Matrix4::rotate(-yawDegrees_, 0.f, 1.f, 0.f);
+            Matrix4::rotate(-yawDegrees_-shakeYaw_, 0.f, 1.f, 0.f);
     inverseViewMtx_ = inverseViewMtx_ *
-            Matrix4::rotate(-pitchDegrees_, 1.f, 0.f, 0.f);
+            Matrix4::rotate(-pitchDegrees_-shakePitch_, 1.f, 0.f, 0.f);
 }
+
+void Camera::shake(float _duration, float _magnitude) {
+
+    shaking_ = true;
+    shakeDuration_ = _duration;
+    shakeTime_ =_duration;
+    shakeMagnitude_ = _magnitude;
+
+    shakeYaw_ = shakeMagnitude_ * Random::randomFloat(-1.f, 1.f);
+    shakePitch_ = shakeMagnitude_ * Random::randomFloat(-1.f, 1.f);
+}
+
+void Camera::updateShake(float _dt) {
+    if (shaking_) {
+        float t = 1.f - shakeTime_/shakeDuration_;
+        shakeMagnitude_ *= (2.f*t*t*t-3*t*t+1);
+        shakeYaw_ = shakeMagnitude_ * Random::randomFloat(-1.f, 1.f);
+        shakePitch_ = shakeMagnitude_ * Random::randomFloat(-1.f, 1.f);
+        shakeTime_ -= _dt;
+        if (shakeTime_ < 0.f) {
+            shakeYaw_ = shakePitch_ = 0.f;
+            shaking_ = false;
+        }
+    }
+}
+
+void Camera::maxYawIs(float _maxYaw) {
+    maxYaw_ = _maxYaw;
+}
+
+void Camera::maxPitchIs(float _maxPitch) {
+    maxPitch_ = _maxPitch;
+}
+
+void Camera::minYawIs(float _minYaw) {
+    minYaw_ = _minYaw;
+}
+
+void Camera::minPitchIs(float _minPitch) {
+    minPitch_ = _minPitch;
+}
+
 

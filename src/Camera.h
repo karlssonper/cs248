@@ -32,6 +32,12 @@ public:
     void nearPlaneIs(float _nearPlane);
     float farPlane() const { return farPlane_;};
     void farPlaneIs(float _farPlane);
+    void maxPitchIs(float _maxPitch);
+    void maxYawIs(float _maxYaw);
+    void minPitchIs(float _minPitch);
+    void minYawIs(float _minYaw);
+    float yaw() const { return yawDegrees_; }
+    float pitch() const { return pitchDegrees_; }
 
     const Matrix4 & viewMtx() const {return viewMtx_;};
     const Matrix4 & inverseViewMtx() const {return inverseViewMtx_;};
@@ -42,6 +48,11 @@ public:
     void move(float _dx);
     void strafe(float _dx);
     void BuildViewMatrix();
+
+    void shake(float _duration, float _magnitude);
+    void updateShake(float _dt);
+
+
 private:
     Camera(const Camera&);
     void operator=(const Camera&);
@@ -62,6 +73,18 @@ private:
 
     float Degree2Radians(const float _degrees) { return _degrees *PI_OVER_180;};
     void BuildProjectionMatrix();
+
+    float maxYaw_;
+    float maxPitch_;
+    float minYaw_;
+    float minPitch_;
+
+    bool shaking_;
+    float shakeDuration_;
+    float shakeTime_;
+    float shakeMagnitude_;
+    float shakeYaw_;
+    float shakePitch_;
 
 };
 

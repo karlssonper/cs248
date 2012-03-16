@@ -29,6 +29,7 @@ Mesh * mesh;
 ShaderData * shader;
 Node * node;
 float currentTime = 0;
+float lastTime = 0;
 
 static void Reshape(int w, int h)
 {
@@ -54,6 +55,10 @@ static void KeyPressed(unsigned char key, int x, int y) {
         case 'd':
             Camera::instance().strafe(0.5);
             break;
+        case 'b':
+            Camera::instance().shake(2.f, 4.f);
+            break;
+
     }
 }
 
@@ -95,9 +100,26 @@ static void MouseMoveFunc(int x,int y)
 static void GameLoop()
 {
     //the heart
-    currentTime = glutGet(GLUT_ELAPSED_TIME) / 1000.f;
+    lastTime = currentTime;
+    currentTime = (float)glutGet(GLUT_ELAPSED_TIME) / 1000.f;
+    float frameTime = currentTime - lastTime;
+    //std::cout << std::endl;
+    //std::cout << "lastTime: " << lastTime << std::endl;
+    //std::cout << "currentTime: " << currentTime << std::endl;
+    //std::cout << "frameTime: " << frameTime << std::endl;
+
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     Camera::instance().BuildViewMatrix();
+
+
+    Camera::instance().updateShake(frameTime);
+
     Engine::instance().renderFrame();
+
+    //std::cout << "Yaw: " << Camera::instance().yaw() << std::endl;
+    //std::cout << "Pitch: " << Camera::instance().pitch() << std::endl;
+
     glutSwapBuffers();
 
     //1. Update the global time
@@ -119,6 +141,7 @@ static void GameLoop()
     //9. Gaussian blur for Bloom map
 
     //10. Render 2nd pass, combine
+
 }
 
 Engine::Engine()
@@ -126,10 +149,8 @@ Engine::Engine()
     state_ = NOT_INITIATED;
 }
 
-void Engine::init(const char * _titlee, int _width, int _height)
+void Engine::init(int argc, char **argv, const char * _titlee, int _width, int _height)
 {
-    int argc = 1;
-    char **argv;
     widthIs(_width);
     heightIs(_height);
     glutInit(&argc, argv);
@@ -189,6 +210,12 @@ void Engine::loadResources(const char * _file)
             firstPassFB_, firstPassDepthFB_, width(), height());
 
     BuildQuad();
+
+    Camera::instance().maxYawIs(492.8+45.0);
+    Camera::instance().minYawIs(492.8-45.0);
+    Camera::instance().maxPitchIs(718.4+10.0);
+    Camera::instance().minPitchIs(718.4-10.0);
+
 
 }
 

@@ -33,3 +33,7 @@ void Target::updateHitBox() {
     hitBox_->p0 = transform*hitBox_->p0;
     hitBox_->p1 = transform*hitBox_->p1;
 }
+
+void Target::updatePos(float _dt) {
+    mesh_->node()->translate(speed_*_dt);
+}

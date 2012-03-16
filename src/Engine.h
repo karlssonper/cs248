@@ -13,7 +13,7 @@ class Engine
 {
 public:
     static Engine& instance() { static Engine e; return e; };
-    void init(const char * _name, int _width, int _height);
+    void init(int argc, char **argv, const char * _name, int _width, int _height);
     void loadResources(const char * _file);
     void start();
 
