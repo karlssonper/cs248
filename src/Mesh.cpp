@@ -37,6 +37,7 @@ Mesh::Mesh(std::string _name, Node * _node) : name_(_name), node_(_node)
 
 Mesh::~Mesh()
 {
+    std::cout << "~Mesh() " << name() << std::endl;
     Graphics::instance().deleteBuffers(name());
 }
 

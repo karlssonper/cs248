@@ -9,7 +9,10 @@
 #include <iostream>
 #include <iomanip>
 #include <stdlib.h>
-#include <random>
+#ifdef _WIN32
+    #include <random>
+#endif
+
 
 class Random {
 public:

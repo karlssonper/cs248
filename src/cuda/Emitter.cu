@@ -237,6 +237,13 @@ Emitter::Emitter(unsigned int _numParticles, ShaderData*_sd) : shaderData_(_sd)
     cudaGLRegisterBufferObject(vboTime_);
 }
 
+Emitter::~Emitter() {
+    std::cout << "~Emitter()" << std::endl;
+    cudaGLUnmapBufferObject(vboPos_);
+    cudaGLUnmapBufferObject(vboSize_);
+    cudaGLUnmapBufferObject(vboTime_);
+}
+
 void Emitter::display() const
 {
     Matrix4 * modelView = shaderData_->stdMatrix4Data(MODELVIEW);

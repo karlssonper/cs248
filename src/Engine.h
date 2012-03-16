@@ -26,7 +26,10 @@ public:
     void widthIs(int _width);
     int height() const { return height_;};
     void heightIs(int _height);
+
+    void cleanUp();
 private:
+    ~Engine();
     int mouseX_;
     int mouseY_;
     int width_;

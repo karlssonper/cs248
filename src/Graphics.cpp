@@ -43,11 +43,6 @@ Graphics::Graphics()
     //glEnable(GL_POINT_SPRITE);
 }
 
-Graphics::~Graphics()
-{
-
-}
-
 void Graphics::viewportIs(int _width, int _height)
 {
     glViewport(0, 0, _width, _height);
@@ -86,6 +81,7 @@ void Graphics::buffersNew(const std::string &_name,
 
 void Graphics::deleteBuffers(const std::string & _name)
 {
+    std::cout << "deleteBuffers(" << std::cout << _name << ")" << std::endl;
     if (VAOData_.find(_name) != VAOData_.end()) {
         VAOData &S = VAOData_[_name];
         glDeleteBuffers(1, &S.geometryVBO);
@@ -205,7 +201,7 @@ void Graphics::enableFramebuffer(GLuint _depthFBO,
     std::vector<GLenum> enums;
     _nDepth > 0 ? enums.push_back(GL_DEPTH_ATTACHMENT):enums.push_back(GL_NONE);
 
-    for (int i = 0; i < _nColor; ++i) {
+    for (unsigned int i = 0; i < _nColor; ++i) {
         enums.push_back(GL_COLOR_ATTACHMENT0 + i);
     }
     glDrawBuffers(enums.size(), &enums[0]);
@@ -592,3 +588,14 @@ GLint Graphics::shaderAttribLoc(GLuint _shader, const std::string & _name)
     return loc;
 }
 
+void Graphics::cleanUp() {
+    VAOData_.clear();
+    texture_.clear();
+    FBO_.clear();
+    shader_.clear();
+}
+
+Graphics::~Graphics() {
+    std::cout << "~Graphics()" << std::endl;
+
+}

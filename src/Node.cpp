@@ -7,6 +7,11 @@
 
 #include "Node.h"
 
+Node::~Node() {
+    std::cout << "~Node()" << name()  << std::endl;
+    children_.clear();
+}
+
 Node::Node(std::string _name, Node * _parent) : name_(_name)
 {
     children_.resize(0);

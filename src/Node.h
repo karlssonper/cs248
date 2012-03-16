@@ -16,6 +16,7 @@ class Node
 {
 public:
     Node(std::string _name, Node * _parent = NULL);
+    ~Node();
     const std::string & name() const { return name_;};
     const Matrix4 & globalModelMtx() const { return modelTransformGlobal_; };
     const Matrix4 & localModelMtx() const { return modelTransformLocal_; };

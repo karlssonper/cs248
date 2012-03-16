@@ -6,7 +6,7 @@
  */
 
 #include "Camera.h"
-#include <limits.h>
+#include <limits>
 
 Camera::Camera() :
     fov_(45.f),
