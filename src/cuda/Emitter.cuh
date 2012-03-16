@@ -42,6 +42,7 @@ public:
     };
 
     Emitter(unsigned int _numParticles, ShaderData*_sd);
+    ~Emitter();
     void update(float _dt);
     void burst();
     unsigned int vboPos() const { return vboPos_; }

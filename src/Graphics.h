@@ -115,6 +115,8 @@ public:
     GLint shaderUniformLoc(GLuint _shader, const std::string & _name);
     GLint shaderAttribLoc(GLuint _shader, const std::string & _name);
 
+    void cleanUp();
+
 private:
     Graphics();
     ~Graphics();

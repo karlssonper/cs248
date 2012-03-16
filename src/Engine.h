@@ -15,15 +15,15 @@ public:
     void init(int argc, char **argv, const char * _name, int _width, int _height);
     void loadResources(const char * _file);
     void start();
-
     int mouseX() const { return mouseX_;};
     void mouseXIs(int x);
     int mouseY() const { return mouseY_;};
     void mouseYIs(int y);
+    void cleanUp();
 private:
+    ~Engine();
     int mouseX_;
     int mouseY_;
-
     enum State { NOT_INITIATED, RUNNING, PAUSED};
     State state_;
 

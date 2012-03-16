@@ -39,6 +39,11 @@ static void Reshape(int w, int h)
 static void KeyPressed(unsigned char key, int x, int y) {
     switch (key){
         case 27:
+            // Important to clean up Engine first (delete any loaded meshes)
+            // so that we don't try to delete
+            // any Meshes that don't exist later.
+            Engine::instance().cleanUp();
+            Graphics::instance().cleanUp();
             exit(0);
         case 'w':
             Camera::instance().move(0.5);
@@ -100,7 +105,7 @@ static void GameLoop()
     lastTime = currentTime;
     currentTime = (float)glutGet(GLUT_ELAPSED_TIME) / 1000.f;
     float frameTime = currentTime - lastTime;
-    std::cout << std::endl;
+    //std::cout << std::endl;
     //std::cout << "lastTime: " << lastTime << std::endl;
     //std::cout << "currentTime: " << currentTime << std::endl;
     //std::cout << "frameTime: " << frameTime << std::endl;
@@ -148,6 +153,10 @@ static void GameLoop()
 Engine::Engine()
 {
     state_ = NOT_INITIATED;
+}
+
+Engine::~Engine() {
+    std::cout << "~Engine()" << std::endl;
 }
 
 void Engine::init(int argc, char **argv, const char * _titlee, int _width, int _height)
@@ -210,8 +219,12 @@ void Engine::loadResources(const char * _file)
     Camera::instance().minYawIs(492.8-45.0);
     Camera::instance().maxPitchIs(718.4+10.0);
     Camera::instance().minPitchIs(718.4-10.0);
+}
 
-
+void Engine::cleanUp() {
+    delete node;
+    delete mesh;
+    delete shader;
 }
 
 void Engine::BuildQuad()
@@ -279,3 +292,4 @@ void Engine::start()
 {
     glutMainLoop();
 }
+
