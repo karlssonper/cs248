@@ -1,6 +1,7 @@
 #include "Target.h"
 #include "Mesh.h"
 #include "HitBox.h"
+#include "Node.h"
 #include <iostream>
 
 Target::Target(std::string _name, 
@@ -9,13 +10,15 @@ Target::Target(std::string _name,
                : 
                name_(_name),
                mesh_(_mesh),
-               energy(_energy) {
+               energy_(_energy),
+               angle_(0.f) {
     std::vector<Vector3> minMax = mesh_->minMax();
     hitBox_ = new HitBox(name_ + "HitBox", minMax.at(0), minMax.at(1));
     updateHitBox();
 }
 
-void Target::explode() {
+void Target::energyDec(float _e) {
+    energy_ -= _e;
 }
 
 Target::~Target() {
@@ -23,4 +26,10 @@ Target::~Target() {
 }
 
 void Target::updateHitBox() {
+    Node * node = mesh_->node();
+    Matrix4 localT = node->localModelMtx();
+    Matrix4 globalT = node->globalModelMtx();
+    Matrix4 transform = globalT*localT;
+    hitBox_->p0 = transform*hitBox_->p0;
+    hitBox_->p1 = transform*hitBox_->p1;
 }

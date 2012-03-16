@@ -7,20 +7,17 @@ Weapon::Weapon(std::string _name,
                float _maxDistance) 
                : 
                name_(_name), 
-               position(_position), 
-               speed(_speed), 
-               power(_power),
-               maxDistance(_maxDistance) 
+               position_(_position), 
+               speed_(_speed), 
+               power_(_power),
+               maxDistance_(_maxDistance) 
                {}
 
 void Weapon::fire(Vector3 _direction)  {
-
     Vector3 speedVector = _direction;
     speedVector.normalize();
-    speedVector = speedVector*speed;
-   
-    projectile.push_back(Projectile(position, speedVector, maxDistance));
-
+    speedVector = speedVector*speed_;
+    projectile.push_back(Projectile(position_, speedVector, maxDistance_));
 }
 
 void Weapon::updateProjectiles(float _dt) {
