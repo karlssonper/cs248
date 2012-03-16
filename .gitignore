@@ -10,6 +10,7 @@ build*
 Debug
 buddies
 models
+lib
 textures
 .cproject
 .project
