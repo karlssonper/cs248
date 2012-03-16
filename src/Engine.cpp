@@ -28,6 +28,7 @@ Mesh * mesh;
 ShaderData * shader;
 Node * node;
 float currentTime = 0;
+float lastTime = 0;
 
 static void Reshape(int w, int h)
 {
@@ -51,6 +52,10 @@ static void KeyPressed(unsigned char key, int x, int y) {
         case 'd':
             Camera::instance().strafe(0.5);
             break;
+        case 'b':
+            Camera::instance().shake(2.f, 4.f);
+            break;
+
     }
 }
 
@@ -92,13 +97,25 @@ static void MouseMoveFunc(int x,int y)
 static void GameLoop()
 {
     //the heart
-    currentTime = glutGet(GLUT_ELAPSED_TIME) / 1000.f;
+    lastTime = currentTime;
+    currentTime = (float)glutGet(GLUT_ELAPSED_TIME) / 1000.f;
+    float frameTime = currentTime - lastTime;
+    std::cout << std::endl;
+    //std::cout << "lastTime: " << lastTime << std::endl;
+    //std::cout << "currentTime: " << currentTime << std::endl;
+    //std::cout << "frameTime: " << frameTime << std::endl;
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     Camera::instance().BuildViewMatrix();
     mesh->display();
     CUDA::Ocean::performIFFT(currentTime, false);
     CUDA::Ocean::updateVBO(false);
     CUDA::Ocean::display();
+
+    Camera::instance().updateShake(frameTime);
+
+    //std::cout << "Yaw: " << Camera::instance().yaw() << std::endl;
+    //std::cout << "Pitch: " << Camera::instance().pitch() << std::endl;
+
     glutSwapBuffers();
 
     //1. Update the global time
@@ -124,6 +141,8 @@ static void GameLoop()
     //11. Let CUDA blur intensities in regular 1st pass to create bloom map
 
     //12. Render 2nd pass, combine
+
+
 }
 
 Engine::Engine()
@@ -131,10 +150,10 @@ Engine::Engine()
     state_ = NOT_INITIATED;
 }
 
-void Engine::init(const char * _titlee, int _width, int _height)
+void Engine::init(int argc, char **argv, const char * _titlee, int _width, int _height)
 {
-    int argc = 1;
-    char **argv;
+    //int argc = 1;
+    //char **argv;
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
     glutInitWindowSize(_width, _height);
@@ -186,6 +205,12 @@ void Engine::loadResources(const char * _file)
 
     Graphics::instance().createTextureToFBO(colorTexNames, colorTex,
             firstPassFB_, firstPassDepthFB_, 1028, 1028);
+
+    Camera::instance().maxYawIs(492.8+45.0);
+    Camera::instance().minYawIs(492.8-45.0);
+    Camera::instance().maxPitchIs(718.4+10.0);
+    Camera::instance().minPitchIs(718.4-10.0);
+
 
 }
 

@@ -9,6 +9,14 @@
 #include <iostream>
 #include <iomanip>
 #include <stdlib.h>
+#include <random>
+
+class Random {
+public:
+    static float randomFloat(float _min, float _max) { 
+        return ( (_max-_min) * (float)rand()/RAND_MAX ) + _min;
+    }
+};
 
 class Vector2 {
 public:

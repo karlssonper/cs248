@@ -190,7 +190,7 @@ std::vector<Vector3> Mesh::minMax() const {
         else if (temp.x < minCoords.x) minCoords.x = temp.x;
         if (temp.y > maxCoords.y) maxCoords.y = temp.y;
         else if (temp.y < minCoords.y) minCoords.y = temp.y;
-         if (temp.z > maxCoords.z) maxCoords.z = temp.z;
+        if (temp.z > maxCoords.z) maxCoords.z = temp.z;
         else if (temp.z < minCoords.z) minCoords.z = temp.z;
     }
     std::vector<Vector3> result;
