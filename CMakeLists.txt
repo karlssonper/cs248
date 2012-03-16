@@ -18,8 +18,10 @@ FIND_PACKAGE(CUDA)
 
 LINK_DIRECTORIES(/usr/local/cuda/lib64)
 
+SET(ENGINE_STATIC_LIB $ENV{CS248_PROJECT}/lib/libengine.a)
+
 INCLUDE_DIRECTORIES($ENV{GL3W}/include
 					$ENV{CS248_PROJECT}/src
 					$ENV{ASSIMP_INCLUDE})
 
-SUBDIRS ( tests )
+SUBDIRS ( src tests )

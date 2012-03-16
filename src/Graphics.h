@@ -67,6 +67,29 @@ public:
                       GLuint _locIdx,
                       GLuint _offset);
 
+    void createTextureToFBO(std::string _name,
+                            GLuint &depthTex,
+                            GLuint &_fbo,
+                            GLuint width,
+                            GLuint height);
+
+    void createTextureToFBO(const std::vector<std::string> &names,
+                            std::vector<GLuint> &colorTex,
+                            GLuint &_colorFBO,
+                            GLuint &_depthFBO,
+                            GLuint width,
+                            GLuint height);
+
+    void enableFramebuffer(GLuint _depthFBO,
+                           GLuint _colorFBO,
+                           GLuint _nDepth,
+                           GLuint _nColor,
+                           GLuint _width,
+                           GLuint _height);
+
+    void enableFramebuffer(GLuint _depthFBO, GLuint _width, GLuint _height);
+    void disableFramebuffer();
+
     void drawIndices(GLuint _VAO,
                      GLuint _VBO,
                      GLuint _size,
@@ -105,6 +128,8 @@ private:
     VAOmap VAOData_;
     typedef std::map<std::string, GLuint> TexMap;
     TexMap texture_;
+    typedef std::map<std::string, GLuint> FBOMap;
+    FBOMap FBO_;
 
     struct ShaderID
     {

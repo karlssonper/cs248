@@ -112,6 +112,120 @@ void Graphics::deleteBuffers(GLuint _VAO)
     std::cerr << "Can't remove buffers  VAO#" << _VAO << std::endl;
 }
 
+void Graphics::createTextureToFBO(std::string _name,
+                                  GLuint &_depthTex,
+                                  GLuint &_fbo,
+                                  GLuint _width,
+                                  GLuint _height)
+{
+    GLuint depthTexture;
+    glGenTextures(1, &depthTexture);
+
+    glBindTexture(GL_TEXTURE_2D, depthTexture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
+            _width, _height,0,GL_DEPTH_COMPONENT,
+            GL_UNSIGNED_BYTE,0);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+   // Generate a framebuffer
+    glGenFramebuffers(1, &_fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, _fbo);
+
+    // Attach the texture to the frame buffer
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+        GL_TEXTURE_2D, depthTexture, 0);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    FBO_[_name] = _fbo;
+    texture_[_name] = depthTexture;
+}
+
+void Graphics::createTextureToFBO(const std::vector<std::string> &_names,
+                                  std::vector<GLuint> &_colorTex,
+                                  GLuint &_colorFBO,
+                                  GLuint &_depthFBO,
+                                  GLuint _width,
+                                  GLuint _height)
+{
+    glGenFramebuffers(1, &_colorFBO);
+    glGenRenderbuffers(1, &_depthFBO);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, _colorFBO);
+    glBindRenderbuffer(GL_RENDERBUFFER, _depthFBO);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, _width, _height);
+
+    FBO_[_names[0]] = _colorFBO;
+    FBO_[_names[0]] = _depthFBO;
+
+    for (unsigned int i = 0; i < _names.size(); ++i) {
+        // The position buffer
+        glActiveTexture(GL_TEXTURE0 + i); // Use texture unit 0 for position
+        glGenTextures(1, &_colorTex[i]);
+        texture_[_names[i]] = _colorTex[i];
+        glBindTexture(GL_TEXTURE_2D, _colorTex[i]);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, _width, _height, 0,
+                GL_RGB, GL_UNSIGNED_BYTE, NULL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    }
+
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+            GL_RENDERBUFFER, _depthFBO);
+    for (unsigned int i = 0; i < _names.size(); ++i) {
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i,
+        GL_TEXTURE_2D, _colorTex[i], 0);
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+void Graphics::enableFramebuffer(GLuint _depthFBO,
+                                 GLuint _colorFBO,
+                                 GLuint _nDepth,
+                                 GLuint _nColor,
+                                 GLuint _width,
+                                 GLuint _height)
+{
+    glBindFramebuffer(GL_FRAMEBUFFER, _colorFBO);
+    glBindRenderbuffer(GL_RENDERBUFFER, _depthFBO);
+
+
+    glViewport(0, 0, _width, _height);
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    std::vector<GLenum> enums;
+    _nDepth > 0 ? enums.push_back(GL_DEPTH_ATTACHMENT):enums.push_back(GL_NONE);
+
+    for (int i = 0; i < _nColor; ++i) {
+        enums.push_back(GL_COLOR_ATTACHMENT0 + i);
+    }
+    glDrawBuffers(enums.size(), &enums[0]);
+}
+
+void Graphics::enableFramebuffer(GLuint _depthFBO, GLuint _width,GLuint _height)
+{
+    glBindFramebuffer(GL_FRAMEBUFFER, _depthFBO);
+    glDrawBuffer(GL_NONE);
+    glCullFace(GL_FRONT);
+    glViewport(0, 0, _width, _height);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+}
+
+void disableFramebuffer()
+{
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+}
+
 void Graphics::geometryIs(GLuint _posVBO,
                           GLuint _sizeVBO,
                           GLuint _timeVBO,
