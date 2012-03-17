@@ -4,6 +4,9 @@
  *  Created on: Mar 2, 2012
  *      Author: per
  */
+#include <sstream>
+#include <time.h>
+
 //Singletons
 #include "Engine.h"
 #include "Camera.h"
@@ -13,6 +16,8 @@
 #include "Node.h"
 #include "Mesh.h"
 #include "ShaderData.h"
+#include "Target.h"
+#include "HitBox.h"
 
 //CUDA
 #include "cuda/Ocean.cuh"
@@ -23,6 +28,8 @@
 
 //Important to include glut AFTER OpenGL
 #include <GL/glut.h>
+
+
 
 static void Reshape(int w, int h)
 {
@@ -160,6 +167,10 @@ void Engine::loadResources(const char * _file)
 {
     //same as cudaoceantest
 
+     xzBoundsIs(0.f, 100.f, 0.f ,100.f);
+     nrTargetsIs(5);
+     targetSpawnRateIs(5.f);
+
     gameCam_ = new Camera();
     gameCam_->projectionIs(45.f, 1.f, 1.f, 10000.f);
     gameCam_->positionIs(Vector3(11.1429, -5.2408, 10.2673));
@@ -201,32 +212,11 @@ void Engine::loadResources(const char * _file)
 
     root_ = new Node("root");
 
+    srand(1986);
 
-    std::string nodeStr("sixten");
-    Node * node = new Node(nodeStr);
-    nodes_[nodeStr] = node;
-    node->parentIs(root_);
-    node->translate(Vector3(50,0,50));
-    node->rotateY(180.0f);
+    loadTargets();
 
-    std::string meshStr("sixten");
-    Mesh * mesh = new Mesh(meshStr, node);
-    meshes_[meshStr] = mesh;
-
-    std::string phongStr("phong");
-    ShaderData * shader = new ShaderData("../shaders/phong");
-    shaders_[phongStr] = shader;
-    shader->enableMatrix(MODELVIEW);
-    shader->enableMatrix(PROJECTION);
-    shader->enableMatrix(NORMAL);
-
-    std::string tex("../textures/Galleon2.jpg");
-    std::string texName("diffuseMap");
-    shader->addTexture(texName, tex);
-
-    mesh->shaderDataIs(shader);
-    ASSIMP2MESH::read("../models/Galleon.3ds", "galleon", mesh, 0.3f);
-    CUDA::Ocean::init();
+   
 
 
    /* Camera::instance().maxYawIs(492.8+45.0);
@@ -378,6 +368,8 @@ void Engine::renderFrame(float _currentTime)
     //std::cout << "currentTime: " << currentTime << std::endl;
     //std::cout << "frameTime: " << frameTime << std::endl;
 
+    updateTargets(frameTime);
+
     activeCam_->BuildViewMatrix();
     activeCam_->updateShake(frameTime);
 
@@ -458,4 +450,82 @@ void Engine::start()
 {
     glutMainLoop();
 }
+
+void Engine::xzBoundsIs(float _xMin, float _xMax, float _zMin, float _zMax) {
+    xMin_ = _xMin;
+    xMax_ = _xMax;
+    zMin_ = _zMin;
+    zMax_ = _zMax;
+}
+
+void Engine::loadTargets() {
+
+    for (unsigned int i=0; i<nrTargets_; i++) {
+
+        std::ostringstream oss;
+        oss << std::setw(3) << std::setfill('0') << i ;
+
+        std::string nodeStr("battleCruiserNode"+oss.str());
+        Node * node = new Node(nodeStr);
+        nodes_[nodeStr] = node;
+        node->parentIs(root_);
+        float startX = Random::randomFloat(xMin_, xMax_);
+        node->translate(Vector3(startX, 0.f, zMax_));
+        node->rotateY(180.0f);
+
+        std::string meshStr("battleCruiser"+oss.str());
+        Mesh * mesh = new Mesh(meshStr, node);
+        meshes_[meshStr] = mesh;
+
+        std::string phongStr("phong");
+        ShaderData * shader = new ShaderData("../shaders/phong");
+        shaders_[phongStr] = shader;
+        shader->enableMatrix(MODELVIEW);
+        shader->enableMatrix(PROJECTION);
+        shader->enableMatrix(NORMAL);
+
+        std::string tex("../textures/Galleon2.jpg");
+        std::string texName("diffuseMap");
+        shader->addTexture(texName, tex);
+
+        mesh->shaderDataIs(shader);
+        ASSIMP2MESH::read("../models/Galleon.3ds", "galleon", mesh, 0.3f);
+        CUDA::Ocean::init();
+
+        std::string targetStr("battleCruiserTarget"+oss.str());
+        Target * target = new Target(targetStr, mesh, 100.f);
+        target->speedIs(Vector3(0.0f, 0.f, 6.0f));
+        target->hitBox()->p0.print();
+        target->hitBox()->p1.print();
+        targets_.push_back(target);
+    }
+}
+
+void Engine::nrTargetsIs(unsigned int _nrTargets) {
+    nrTargets_ = _nrTargets;
+}
+
+void Engine::targetSpawnRateIs(float _targetSpawnRate) {
+    targetSpawnRate_ = _targetSpawnRate;
+}
+
+void Engine::updateTargets(float _frameTime) {
+
+    std::vector<Target*>::iterator it;
+    for (it=targets_.begin(); it!=targets_.end(); it++) {
+
+        if ( (*it)->active() ) {
+            (*it)->updatePos(_frameTime);
+            (*it)->updateHitBox();
+            if ( (*it)->midPoint().z < zMin_ ) {
+                Vector3 t = Vector3(0.f, 0.f,-(*it)->midPoint().z-zMax_);
+                (*it)->mesh()->node()->translate(t);
+            }
+
+        }
+
+    }
+}
+
+
 

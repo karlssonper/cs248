@@ -10,11 +10,13 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 class Node;
 class Mesh;
 class ShaderData;
 class Camera;
+class Target;
 class Engine
 {
 public:
@@ -34,6 +36,13 @@ public:
     void widthIs(int _width);
     int height() const { return height_;};
     void heightIs(int _height);
+
+    unsigned int nrTargets() const { return nrTargets_; }
+    void nrTargetsIs(unsigned int _nrTargets);
+    float targetSpawnRate() const { return targetSpawnRate_; }
+    void targetSpawnRateIs(float _targetSpawnRate);
+
+    void xzBoundsIs(float _xMin, float _xMax, float _zMin, float _zMax);
 
     void cleanUp();
 private:
@@ -60,6 +69,10 @@ private:
     NodeMap nodes_;
     ShaderMap shaders_;
 
+    std::vector<Target*> targets_;
+
+    float xMax_, xMin_, zMax_, zMin_;
+    
     //Textures
     unsigned int phongTex_;
     unsigned int bloomTex_;
@@ -101,6 +114,12 @@ private:
     Engine();
     Engine(const Engine & );
     void operator=(const Engine & );
+
+    unsigned int nrTargets_;
+    float targetSpawnRate_;
+
+    void loadTargets();
+    void updateTargets(float _frameTime);
 };
 
 
