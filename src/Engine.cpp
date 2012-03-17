@@ -183,7 +183,7 @@ void Engine::loadResources(const char * _file)
 
     node = new Node("sixtenNode");
     mesh = new Mesh("sixten", node);
-    Camera::instance().projectionIs(45.f, 1.f, 1.f, 100.f);
+    Camera::instance().projectionIs(45.f, 1.f, 1.f, 10000.f);
     Camera::instance().positionIs(Vector3(11.1429, -5.2408, 10.2673));
     Camera::instance().rotationIs(492.8, 718.4);
 
@@ -220,10 +220,10 @@ void Engine::loadResources(const char * _file)
 
     BuildQuad();
 
-    Camera::instance().maxYawIs(492.8+45.0);
-    Camera::instance().minYawIs(492.8-45.0);
-    Camera::instance().maxPitchIs(718.4+10.0);
-    Camera::instance().minPitchIs(718.4-10.0);
+    //Camera::instance().maxYawIs(492.8+45.0);
+    //Camera::instance().minYawIs(492.8-45.0);
+    //Camera::instance().maxPitchIs(718.4+10.0);
+    //Camera::instance().minPitchIs(718.4-10.0);
 }
 
 void Engine::cleanUp() {
