@@ -103,6 +103,8 @@ void Node::update(bool _needsUpdate)
 {
     const bool upd = modelTransformLocalChanged_ || _needsUpdate;
 
+
+
     if (upd) {
         modelTransformGlobal_ = parent_->globalModelMtx() *modelTransformLocal_;
     }

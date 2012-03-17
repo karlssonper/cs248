@@ -71,6 +71,8 @@ public:
     static Matrix4 rotate(float _a, float _x, float _y, float _z);
     static Matrix4 translate(float _tx, float _ty, float _tz);
     static Matrix4 scale(float _sx, float _sy, float _sz);
+    static Matrix4 lookAt(Vector3 _eyePos, Vector3 _center, Vector3 _up);
+
     float m_[16];
 };
 
@@ -364,6 +366,35 @@ inline Matrix4 Matrix4::rotate(float _angle, float _x, float _y, float _z) {
     r[14] = 0.f;
     r[15] = 1.f;
     return Matrix4(r);
+}
+
+inline Matrix4 Matrix4::lookAt(Vector3 _eye, Vector3 _center, Vector3 _up)
+{
+    Matrix4 matrix;
+    Vector3 forward(_center - _eye);
+    forward = forward/forward.mag();
+    Vector3 side = forward.cross(_up);
+    side = side/side.mag();
+    Vector3 up = side.cross(forward);
+
+    matrix.m_[0] = side.x;
+    matrix.m_[4] = side.y;
+    matrix.m_[8] = side.z;
+    matrix.m_[12] = 0.0;
+    matrix.m_[1] = up.x;
+    matrix.m_[5] = up.y;
+    matrix.m_[9] = up.z;
+    matrix.m_[13] = 0.0;
+    matrix.m_[2] = -forward.x;
+    matrix.m_[6] = -forward.y;
+    matrix.m_[10] = -forward.z;
+    matrix.m_[14] = 0.0;
+    matrix.m_[3] =  0.0;
+    matrix.m_[7] =  0.0;
+    matrix.m_[11] = 0.0;
+    matrix.m_[15] = 1.0;
+
+    return matrix.translate(-_eye.x, -_eye.y, -_eye.z);
 }
 
 inline void Matrix4::print() const {

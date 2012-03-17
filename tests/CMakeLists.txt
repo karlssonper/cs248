@@ -1,8 +1,8 @@
 PROJECT (TESTS)
 
 SUBDIRS(
-        graphics
-        cudaocean
-        particlesystem
+        #graphics
+        #cudaocean
+        #particlesystem
         engine
         )

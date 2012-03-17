@@ -24,17 +24,10 @@
 //Important to include glut AFTER OpenGL
 #include <GL/glut.h>
 
-//remove
-Mesh * mesh;
-ShaderData * shader;
-Node * node;
-float currentTime = 0;
-float lastTime = 0;
-
 static void Reshape(int w, int h)
 {
     Graphics::instance().viewportIs(w,h);
-    Camera::instance().aspectRatioIs(static_cast<float>(w)/h);
+    Engine::instance().camera()->aspectRatioIs(static_cast<float>(w)/h);
     Engine::instance().widthIs(w);
     Engine::instance().heightIs(h);
 }
@@ -49,19 +42,19 @@ static void KeyPressed(unsigned char key, int x, int y) {
             Graphics::instance().cleanUp();
             exit(0);
         case 'w':
-            Camera::instance().move(0.5);
+            Engine::instance().camera()->move(0.5);
             break;
         case 's':
-            Camera::instance().move(-0.5);
+            Engine::instance().camera()->move(-0.5);
             break;
         case 'a':
-            Camera::instance().strafe(-0.5);
+            Engine::instance().camera()->strafe(-0.5);
             break;
         case 'd':
-            Camera::instance().strafe(0.5);
+            Engine::instance().camera()->strafe(0.5);
             break;
         case 'b':
-            Camera::instance().shake(2.f, 4.f);
+            Engine::instance().camera()->shake(2.f, 4.f);
             break;
 
     }
@@ -92,8 +85,8 @@ static void MouseFunc(int x,int y)
     int dy = y - Engine::instance().mouseY();
     Engine::instance().mouseXIs(x);
     Engine::instance().mouseYIs(y);
-    Camera::instance().yaw(1.6*dx);
-    Camera::instance().pitch(1.6*dy);
+    Engine::instance().camera()->yaw(1.6*dx);
+    Engine::instance().camera()->pitch(1.6*dy);
 }
 
 static void MouseMoveFunc(int x,int y)
@@ -105,22 +98,8 @@ static void MouseMoveFunc(int x,int y)
 static void GameLoop()
 {
     //the heart
-    lastTime = currentTime;
-    currentTime = (float)glutGet(GLUT_ELAPSED_TIME) / 1000.f;
-    float frameTime = currentTime - lastTime;
-    //std::cout << std::endl;
-    //std::cout << "lastTime: " << lastTime << std::endl;
-    //std::cout << "currentTime: " << currentTime << std::endl;
-    //std::cout << "frameTime: " << frameTime << std::endl;
-
-
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    Camera::instance().BuildViewMatrix();
-
-
-    Camera::instance().updateShake(frameTime);
-
-    Engine::instance().renderFrame();
+    float currentTime = (float)glutGet(GLUT_ELAPSED_TIME) / 1000.f;
+    Engine::instance().renderFrame(currentTime);
 
     //std::cout << "Yaw: " << Camera::instance().yaw() << std::endl;
     //std::cout << "Pitch: " << Camera::instance().pitch() << std::endl;
@@ -173,7 +152,7 @@ void Engine::init(int argc, char **argv, const char * _titlee, int _width, int _
     glutPassiveMotionFunc(MouseMoveFunc);
     glutDisplayFunc(GameLoop);
     glutIdleFunc(GameLoop);
-
+    currentTime_ = 0;
     state_ = RUNNING;
 }
 
@@ -181,14 +160,26 @@ void Engine::loadResources(const char * _file)
 {
     //same as cudaoceantest
 
+    gameCam_ = new Camera();
+    gameCam_->projectionIs(45.f, 1.f, 1.f, 10000.f);
+    gameCam_->positionIs(Vector3(11.1429, -5.2408, 10.2673));
+    gameCam_->rotationIs(492.8, 718.4);
+    activeCam_ = gameCam_;
 
+    freeCam_ = new Camera();
+    freeCam_->projectionIs(45.f, 1.f, 1.f, 10000.f);
+    freeCam_->positionIs(Vector3(11.1429, -5.2408, 10.2673));
+    freeCam_->rotationIs(492.8, 718.4);
 
-    Camera::instance().projectionIs(45.f, 1.f, 1.f, 10000.f);
-    Camera::instance().positionIs(Vector3(11.1429, -5.2408, 10.2673));
-    Camera::instance().rotationIs(492.8, 718.4);
+    Camera * lightCam_ = new Camera();
 
+    shadowSize_ = 1024;
     Graphics::instance().createTextureToFBO("shadow", shadowTex_,
-            shadowFB_, 1028, 1028);
+            shadowFB_, shadowSize_, shadowSize_);
+    std::string shadowShaderStr("../shaders/shadow");
+    shadowShader_ = new ShaderData(shadowShaderStr);
+    shadowShader_->enableMatrix(PROJECTION);
+    shadowShader_->enableMatrix(MODELVIEW);
 
     std::vector<unsigned int> colorTex(4);
     std::vector<std::string> colorTexNames;
@@ -208,10 +199,23 @@ void Engine::loadResources(const char * _file)
     BuildQuad();
     BuildSkybox();
 
+    root_ = new Node("root");
 
-    node = new Node("sixtenNode");
-    mesh = new Mesh("sixten", node);
-    shader = new ShaderData("../shaders/phong");
+
+    std::string nodeStr("sixten");
+    Node * node = new Node(nodeStr);
+    nodes_[nodeStr] = node;
+    node->parentIs(root_);
+    node->translate(Vector3(50,0,50));
+    node->rotateY(180.0f);
+
+    std::string meshStr("sixten");
+    Mesh * mesh = new Mesh(meshStr, node);
+    meshes_[meshStr] = mesh;
+
+    std::string phongStr("phong");
+    ShaderData * shader = new ShaderData("../shaders/phong");
+    shaders_[phongStr] = shader;
     shader->enableMatrix(MODELVIEW);
     shader->enableMatrix(PROJECTION);
     shader->enableMatrix(NORMAL);
@@ -232,9 +236,9 @@ void Engine::loadResources(const char * _file)
 }
 
 void Engine::cleanUp() {
-    delete node;
-    delete mesh;
-    delete shader;
+    //delete node;
+    //delete mesh;
+    //delete shader;
 }
 
 void Engine::BuildQuad()
@@ -361,10 +365,26 @@ void Engine::BuildSkybox()
     g.bindGeometry(sID, skyboxVAO_, skyboxVBO_, 3, stride, posLoc, 0);
 }
 
-void Engine::renderFrame()
+void Engine::renderFrame(float _currentTime)
 {
     //todo remove GL call
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    float lastTime = currentTime_;
+    currentTime_ = _currentTime;
+    float frameTime = currentTime_ - lastTime;
+    //std::cout << std::endl;
+    //std::cout << "lastTime: " << lastTime << std::endl;
+    //std::cout << "currentTime: " << currentTime << std::endl;
+    //std::cout << "frameTime: " << frameTime << std::endl;
+
+    activeCam_->BuildViewMatrix();
+    activeCam_->updateShake(frameTime);
+
+    CUDA::Ocean::performIFFT(currentTime_, false);
+    CUDA::Ocean::updateVBO(false);
+
+    root_->update();
 
     RenderShadowMap();
 
@@ -375,7 +395,13 @@ void Engine::renderFrame()
 
 void Engine::RenderShadowMap()
 {
-
+    void enableFramebuffer(GLuint _depthFBO, GLuint _width, GLuint _height);
+    Graphics::instance().enableFramebuffer(shadowFB_, shadowSize_, shadowSize_);
+    for (MeshMap::const_iterator it =meshes_.begin(); it!= meshes_.end();++it) {
+        it->second->display();
+    }
+    CUDA::Ocean::display();
+    Graphics::instance().disableFramebuffer();
 }
 
 void Engine::RenderFirstPass()
@@ -387,15 +413,17 @@ void Engine::RenderFirstPass()
                                             4,
                                             width(),
                                             height());
+
+    //Skybox
     Matrix4 * modelView = skyBoxShader_->stdMatrix4Data(MODELVIEW);
     Matrix4 * projection = skyBoxShader_->stdMatrix4Data(PROJECTION);
-    *modelView = Camera::instance().viewMtx();
-    *projection = Camera::instance().projectionMtx();
+    *modelView = camera()->viewMtx();
+    *projection = camera()->projectionMtx();
     Graphics::instance().drawIndices(skyboxVAO_, skyboxIdxVBO_,36,skyBoxShader_);
 
-    mesh->display();
-    CUDA::Ocean::performIFFT(currentTime, false);
-    CUDA::Ocean::updateVBO(false);
+    for (MeshMap::const_iterator it =meshes_.begin(); it!= meshes_.end();++it) {
+        it->second->display();
+    }
     CUDA::Ocean::display();
 
     Graphics::instance().disableFramebuffer();

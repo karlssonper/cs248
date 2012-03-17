@@ -1,12 +1,13 @@
-uniform sampler2D normalMap;
+uniform sampler2D diffuseMap;
 
 varying vec2 texcoord;
 varying vec3 eyePosition;
 varying vec3 normal;
-varying vec3 tangent;
-varying vec3 bitangent;
+//varying vec3 tangent;
+//varying vec3 bitangent;
 varying vec3 L;
 
+/*
 vec3 getNormal()
 {
     vec3 SampledNormal = 2.0 * texture2D(normalMap, texcoord).rgb -
@@ -15,8 +16,9 @@ vec3 getNormal()
     vec3 TangentNormal = TBN * SampledNormal;
     return normalize( TangentNormal);
 }
+*/
 
-vec3 diffuse(vec3 L, vec3 N, vec3 V, vec3 diffuseRGB)
+vec3 diffuse(vec3 L, vec3 N, vec3 diffuseRGB)
 {
     // Calculate the diffuse color coefficient, and sample the diffuse texture
     float Rd = max(0.0, dot(L, N));
@@ -32,14 +34,18 @@ vec3 specular(vec3 L, vec3 N, vec3 V, vec3 specularRGB)
 }
 
 void main() {
-	vec3 N = getNormal();
+
+	L = normalize(L);
+	
+	vec3 diffuseTexture = texture2D(diffuseMap, texcoord).rgb;
+	vec3 N = normalize(normal);
 	vec3 V = normalize(-eyePosition);
 	//vec3 L1 = normalize(gl_LightSource[0].position.xyz);
 	//vec3 L2 = normalize(gl_LightSource[1].position.xyz - eyePosition);
-	vec3 totDiffuse = diffuse(L, N, V, vec3(0.5, 0.5, 0.1));
-    vec3 totSpecular = specular(L, N, V, vec3(1,1,1));
+	vec3 totDiffuse = diffuse(L, N, vec3(0.7, 0.7, 0.7));
+    vec3 totSpecular = specular(L, N, V, vec3(0.3, 0.3, 0.3));
 	vec3 totAmbient = 0.1;
-	//gl_FragColor = vec4(totDiffuse+totAmbient+totSpecular, 1);
+	
 	//gl_FragColor = vec4(texcoord.x, 0,0,1);
 
 
@@ -47,7 +53,10 @@ void main() {
 	gl_FragData[0] = vec4(1,1,1,1);
 
 	//Phong Tex
-	gl_FragData[1] = vec4(0,1,0,1);
+	//gl_FragData[1] = vec4(1,0,0,1);
+	//gl_FragData[1] = vec4(diffusTexture,1);
+	//gl_FragData[1] = vec4(0.5*N + vec3(0.5, 0.5, 0.5) ,1);
+	gl_FragData[1] = vec4(totDiffuse+totSpecular+totAmbient, 1) * vec4(diffuseTexture,1 );
 
 	//Bloom Tex
 	gl_FragData[2] = vec4(0,0,1,1);

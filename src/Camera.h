@@ -16,9 +16,6 @@
 class Camera
 {
 public:
-    //todo remove
-    static Camera& instance() { static Camera c; return c; };
-
     Camera();
     Camera(const Vector3 &_pos, float _yaw, float _pitch);
 

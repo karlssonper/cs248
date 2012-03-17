@@ -2,6 +2,7 @@
 
 #include "Emitter.cuh"
 #include "../Graphics.h"
+#include "../Engine.h"
 #include "../Camera.h"
 #include <cuda.h>
 #include <cuda_runtime.h>
@@ -248,8 +249,8 @@ void Emitter::display() const
 {
     Matrix4 * modelView = shaderData_->stdMatrix4Data(MODELVIEW);
     Matrix4 * projection = shaderData_->stdMatrix4Data(PROJECTION);
-    *modelView = Camera::instance().viewMtx();
-    *projection = Camera::instance().projectionMtx();
+    *modelView = Engine::instance().camera()->viewMtx();
+    *projection = Engine::instance().camera()->projectionMtx();
     bool additive = params_.blendMode_ == BLEND_FIRE ? true : false;
     Graphics::instance().drawArrays(VAO_, params_.numParticles_,
             shaderData_, additive);

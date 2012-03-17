@@ -9,7 +9,7 @@
 #include "Node.h"
 #include "ShaderData.h"
 #include "Graphics.h"
-
+#include "Engine.h"
 #include "Camera.h"
 #include <limits>
 
@@ -97,31 +97,13 @@ void Mesh::display() const
     if (!loadedInGPU_) return;
     unsigned int n = indices_.size();
 
-    const Matrix4 & view = Camera::instance().viewMtx();
+    const Matrix4 & view = Engine::instance().camera()->viewMtx();
     Matrix4 * modelView = shaderData_->stdMatrix4Data(MODELVIEW);
     Matrix4 * projection = shaderData_->stdMatrix4Data(PROJECTION);
 
-    //*modelView = view * node_->globalModelMtx();
+    *modelView = view * node_->globalModelMtx();
 
-    float mv[16] = {1,
-            0,
-            0,
-            0,
-            0,
-            0,
-            -1,
-            0,
-            0,
-            1,
-            0,
-            0,
-            0,
-            0,
-            0,
-            1};
-    *modelView = view;//* Matrix4(mv);
-
-    *projection = Camera::instance().projectionMtx();
+    *projection = Engine::instance().camera()->projectionMtx();
 
     Matrix3 * normal = shaderData_->stdMatrix3Data(NORMAL);
     *normal = Matrix3(*modelView).inverse().transpose();

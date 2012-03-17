@@ -8,6 +8,7 @@
 
 #include "linux_helper.h"
 #include "../Graphics.h"
+#include "../Engine.h"
 #include "../Camera.h"
 #include <cuda_gl_interop.h>
 #include <cufft.h>
@@ -405,16 +406,15 @@ float maxHeight()
 
 void display()
 {
-    const Matrix4 & view = Camera::instance().viewMtx();
     Matrix4 * modelView = shaderData->stdMatrix4Data(MODELVIEW);
     Matrix4 * projection = shaderData->stdMatrix4Data(PROJECTION);
     Matrix4 * invView = shaderData->stdMatrix4Data(INVERSEVIEW);
     Matrix3 * normal = shaderData->stdMatrix3Data(NORMAL);
 
-    *modelView = Camera::instance().viewMtx();
-    *projection = Camera::instance().projectionMtx();
+    *modelView = Engine::instance().camera()->viewMtx();
+    *projection = Engine::instance().camera()->projectionMtx();
     *normal = Matrix3(*modelView).inverse().transpose();
-    *invView = Camera::instance().viewMtx().inverse();
+    *invView = Engine::instance().camera()->viewMtx().inverse();
     Graphics::instance().drawIndices(VAO, VBO_IDX, idxSize, shaderData);
 }
 
