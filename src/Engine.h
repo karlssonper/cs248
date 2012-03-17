@@ -58,7 +58,16 @@ private:
     unsigned int quadVAO_;
     ShaderData * quadShader_;
 
+    //Skybox
+    struct SkyboxVertex{ float pos[3];};
+    unsigned int skyboxVBO_;
+    unsigned int skyboxIdxVBO_;
+    unsigned int skyboxVAO_;
+    ShaderData * skyBoxShader_;
+
     void BuildQuad();
+    void BuildSkybox();
+
 
     void RenderShadowMap();
     void RenderFirstPass();

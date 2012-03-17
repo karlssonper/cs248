@@ -26,7 +26,7 @@
 #define TWO_PI 6.2831853071f
 #define DAMP_WAVES 0.5f
 #define SHORTEST_WAVELENGTH 0.02f
-#define WAVE_HEIGHT 2.0f
+#define WAVE_HEIGHT 2.5f
 #define WIND_ALIGN 2
 #define CHOPPYNESS 0.5f
 
@@ -173,7 +173,7 @@ void updatePositions(const float scale,
     float dzdu;
     float dxdv;
     float dzdv;
-    float delta = scaleY /(scale*2.0f);
+    float delta = scaleY;//(scale*2.0f);
 
     if (disp) {
         dxdu = (xIn[idxRight] - xIn[idxLeft]) * delta;
@@ -181,14 +181,14 @@ void updatePositions(const float scale,
         dzdu = (zIn[idxRight] - zIn[idxLeft]) * delta;
         dzdv = (zIn[idxTop] - zIn[idxBot]) * delta;
     } else {
-        dxdu = scaleY*1.0f;
+        dxdu = 1.0f*scale;
         dxdv = 0.0f;
         dzdu = 0.0f;
-        dzdv = scaleY*1.0f;
+        dzdv = 1.0f*scale;
     }
 
-    float dydu = (yIn[idxRight] - yIn[idxLeft])*delta;
-    float dydv = (yIn[idxTop] - yIn[idxBot])*delta;
+    float dydu = (yIn[idxRight] - yIn[idxLeft]) * scaleY;
+    float dydv = (yIn[idxTop] - yIn[idxBot]) * scaleY;;
 
     if (disp){
         float2 dx = make_float2((xIn[idxRight] - xIn[idxLeft])* CHOPPYNESS * N/WORLD_SIZE,
@@ -301,7 +301,7 @@ void updateVBO(bool disp)
                                                         positions,
                                                         odata[DIR_Y]);
     }
-
+/*
     float * lol = (float*)malloc(N*N*sizeof(OceanVertex));
     cudaMemcpy(lol, positions, N*N*sizeof(OceanVertex),
             cudaMemcpyDeviceToHost);
@@ -313,7 +313,16 @@ void updateVBO(bool disp)
         std::cerr << lol[i*10 + 6] << std::endl;
         std::cerr << lol[i*10 + 7] << std::endl;
         std::cerr << lol[i*10 + 8] << std::endl;
+
+        Vector3 v1(lol[i*10 + 3], lol[i*10 + 4], lol[i*10 + 5]);
+        Vector3 v2(lol[i*10 + 6], lol[i*10 + 7], lol[i*10 + 8]);
+
+        Vector3 cross = v1.cross(v2);
+        cross = cross / cross.mag();
+        std::cerr << "Cross: " << cross.x << " " << cross.y << " " << cross.z << std::endl;
+
     }
+    free(lol);*/
     cudaGraphicsUnmapResources(1, &VBO_CUDA, 0);
 }
 
@@ -397,11 +406,13 @@ void display()
     const Matrix4 & view = Camera::instance().viewMtx();
     Matrix4 * modelView = shaderData->stdMatrix4Data(MODELVIEW);
     Matrix4 * projection = shaderData->stdMatrix4Data(PROJECTION);
+    Matrix4 * invView = shaderData->stdMatrix4Data(INVERSEVIEW);
     Matrix3 * normal = shaderData->stdMatrix3Data(NORMAL);
 
     *modelView = Camera::instance().viewMtx();
     *projection = Camera::instance().projectionMtx();
     *normal = Matrix3(*modelView).inverse().transpose();
+    *invView = Camera::instance().viewMtx().inverse();
     Graphics::instance().drawIndices(VAO, VBO_IDX, idxSize, shaderData);
 }
 
@@ -513,6 +524,18 @@ void init()
     shaderData->enableMatrix(MODELVIEW);
     shaderData->enableMatrix(PROJECTION);
     shaderData->enableMatrix(NORMAL);
+    shaderData->enableMatrix(INVERSEVIEW);
+
+    std::string cubeMapStr("CubeMap");
+    std::string cubeMapShaderStr("skyboxTex");
+    std::vector<std::string> cubeMapTexs(6);
+    cubeMapTexs[0] = std::string("../textures/POSITIVE_X.png");
+    cubeMapTexs[1] = std::string("../textures/NEGATIVE_X.png");
+    cubeMapTexs[2] = std::string("../textures/POSITIVE_Y.png");
+    cubeMapTexs[3] = std::string("../textures/NEGATIVE_Y.png");
+    cubeMapTexs[4] = std::string("../textures/POSITIVE_Z.png");
+    cubeMapTexs[5] = std::string("../textures/NEGATIVE_Z.png");
+    shaderData->addCubeTexture(cubeMapShaderStr, cubeMapStr, cubeMapTexs);
 
     Graphics::instance().geometryIs(VBO_GL, VBO_IDX, vertexData, indices, VBO_DYNAMIC);
     int id = shaderData->shaderID();
@@ -522,8 +545,8 @@ void init()
     int locFold = Graphics::instance().shaderAttribLoc(id,"foldIn");
 
     Graphics::instance().bindGeometry(id, VAO, VBO_GL,3,sizeof(OceanVertex),locPos,0);
-    Graphics::instance().bindGeometry(id, VAO, VBO_GL,2,sizeof(OceanVertex),locPU,12);
-    Graphics::instance().bindGeometry(id, VAO, VBO_GL,2,sizeof(OceanVertex),locPV,24);
+    Graphics::instance().bindGeometry(id, VAO, VBO_GL,3,sizeof(OceanVertex),locPU,12);
+    Graphics::instance().bindGeometry(id, VAO, VBO_GL,3,sizeof(OceanVertex),locPV,24);
     Graphics::instance().bindGeometry(id, VAO, VBO_GL,1,sizeof(OceanVertex),locFold,36);
 
     cudaGraphicsGLRegisterBuffer(&VBO_CUDA, VBO_GL,

@@ -343,8 +343,8 @@ void Graphics::loadShaderData(const ShaderData * _shaderData) const
     }
 
     for (int i = 0; ctexIt != _shaderData->cubeTextures_.end(); ++ctexIt, ++i){
-       glUniform1i(ctexIt->second.location, i+1);
-       glActiveTexture(GL_TEXTURE0 + i+1);
+       glUniform1i(ctexIt->second.location, i);
+       glActiveTexture(GL_TEXTURE0 + i);
        glBindTexture(GL_TEXTURE_CUBE_MAP, ctexIt->second.data);
     }
 
@@ -415,11 +415,10 @@ GLuint Graphics::texture(const std::string & _name,
         for (unsigned int face = 0; face < 6; face++){
             FreeImage2Texture FI2T(_img[face]);
             glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, GL_RGBA,
-                    FI2T.w, FI2T.h, 0 , GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-            glCopyTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face,
-                    0, 0, 0, 0, 0, FI2T.w, FI2T.h);
+                    FI2T.w, FI2T.h, 0 , GL_RGBA, GL_UNSIGNED_BYTE, FI2T.data);
+            //glCopyTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face,
+            //        0, 0, 0, 0, 0, FI2T.w, FI2T.h);
         }
-
         glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
         texture_[_name] = texID;
         return texID;

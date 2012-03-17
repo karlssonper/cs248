@@ -14,14 +14,12 @@ varying vec3 lightDir;
 void main() {
 	vec4 eyeTemp =  ModelViewMatrix * vec4(positionIn, 1);
 
+	//vec3 crossNormal = cross(partialUIn, -partialVIn);
+	vec3 crossNormal = cross(partialUIn, -partialVIn);
+	normal = NormalMatrix * crossNormal;
+	//normal = crossNormal;
 
-	//normal  = NormalMatrix *cross( vec3(0.0, slopeIn.y*0.5, 2.0 / 128.0), vec3(2.0 / 128.0, slopeIn.x*0.5, 0.0));
-
-	vec3 crossNormal = cross(partialUIn,partialVIn);
-	//normal = NormalMatrix * crossNormal;
-	normal = crossNormal;
-	//normal = partialUIn;
-	lightDir = NormalMatrix * vec3(0.0, -1.0, 0.0);
+	lightDir = (NormalMatrix * vec3(0.0, 1.0, 1.0)).xyz;
 
 	eyePosition = eyeTemp.xyz;
 	gl_Position = ProjectionMatrix * eyeTemp;

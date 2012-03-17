@@ -84,7 +84,7 @@ void ShaderData::addCubeTexture(const std::string & _name,
                                 const std::vector<std::string> &_img)
 {
     unsigned int id = Graphics::instance().texture(_texNameID, _img);
-    ShaderAttribute<unsigned int> &V = textures_[_texNameID];
+    ShaderAttribute<unsigned int> &V = cubeTextures_[_texNameID];
     V.data = id;
     V.location = Graphics::instance().shaderUniformLoc(shaderID_, _name);
 }

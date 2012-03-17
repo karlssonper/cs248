@@ -181,24 +181,10 @@ void Engine::loadResources(const char * _file)
 {
     //same as cudaoceantest
 
-    node = new Node("sixtenNode");
-    mesh = new Mesh("sixten", node);
-    Camera::instance().projectionIs(45.f, 1.f, 1.f, 100.f);
+
+    Camera::instance().projectionIs(45.f, 1.f, 1.f, 1000.f);
     Camera::instance().positionIs(Vector3(11.1429, -5.2408, 10.2673));
     Camera::instance().rotationIs(492.8, 718.4);
-
-    shader = new ShaderData("../shaders/phong");
-    shader->enableMatrix(MODELVIEW);
-    shader->enableMatrix(PROJECTION);
-    shader->enableMatrix(NORMAL);
-
-    std::string tex("../textures/armadillo_n.jpg");
-    std::string texName("normalMap");
-    shader->addTexture(texName, tex);
-
-    mesh->shaderDataIs(shader);
-    ASSIMP2MESH::read("../models/armadillo.3ds", "0", mesh);
-    CUDA::Ocean::init();
 
     Graphics::instance().createTextureToFBO("shadow", shadowTex_,
             shadowFB_, 1028, 1028);
@@ -219,11 +205,28 @@ void Engine::loadResources(const char * _file)
             firstPassFB_, firstPassDepthFB_, width(), height());
 
     BuildQuad();
+    BuildSkybox();
 
-    Camera::instance().maxYawIs(492.8+45.0);
+    node = new Node("sixtenNode");
+    mesh = new Mesh("sixten", node);
+    shader = new ShaderData("../shaders/phong");
+    shader->enableMatrix(MODELVIEW);
+    shader->enableMatrix(PROJECTION);
+    shader->enableMatrix(NORMAL);
+
+    std::string tex("../textures/armadillo_n.jpg");
+    std::string texName("normalMap");
+    shader->addTexture(texName, tex);
+
+    mesh->shaderDataIs(shader);
+    ASSIMP2MESH::read("../models/armadillo.3ds", "0", mesh);
+    CUDA::Ocean::init();
+
+
+   /* Camera::instance().maxYawIs(492.8+45.0);
     Camera::instance().minYawIs(492.8-45.0);
     Camera::instance().maxPitchIs(718.4+10.0);
-    Camera::instance().minPitchIs(718.4-10.0);
+    Camera::instance().minPitchIs(718.4-10.0);*/
 }
 
 void Engine::cleanUp() {
@@ -302,6 +305,60 @@ void Engine::BuildQuad()
     g.bindGeometry(sID, quadVAO_, quadVBO_, 2, stride, texLoc, 12);
 }
 
+void Engine::BuildSkybox()
+{
+    std::vector<SkyboxVertex> v(8);
+    const float scale = 100;
+    v[0].pos[0] = -scale; v[0].pos[1] = -scale; v[0].pos[2] = -scale;
+    v[1].pos[0] = scale;  v[1].pos[1] = -scale; v[1].pos[2] = -scale;
+    v[2].pos[0] = -scale; v[2].pos[1] = -scale; v[2].pos[2] = scale;
+    v[3].pos[0] = scale;  v[3].pos[1] = -scale; v[3].pos[2] = scale;
+    v[4].pos[0] = -scale; v[4].pos[1] = scale;  v[4].pos[2] = -scale;
+    v[5].pos[0] = scale;  v[5].pos[1] = scale;  v[5].pos[2] = -scale;
+    v[6].pos[0] = -scale; v[6].pos[1] = scale;  v[6].pos[2] = scale;
+    v[7].pos[0] = scale;  v[7].pos[1] = scale;  v[7].pos[2] = scale;
+
+    std::vector<unsigned int> i(3*6*2);
+    i[0]  = 0; i[1]  = 1; i[2]  = 2;
+    i[3]  = 1; i[4]  = 2; i[5]  = 3;
+    i[6]  = 4; i[7]  = 5; i[8]  = 6;
+    i[9]  = 5; i[10] = 6; i[11] = 7;
+    i[12] = 1; i[13] = 3; i[14] = 7;
+    i[15] = 1; i[16] = 5; i[17] = 7;
+    i[18] = 0; i[19] = 2; i[20] = 6;
+    i[21] = 0; i[22] = 4; i[23] = 6;
+    i[24] = 2; i[25] = 3; i[26] = 7;
+    i[27] = 2; i[28] = 6; i[29] = 7;
+    i[30] = 0; i[31] = 1; i[32] = 5;
+    i[33] = 0; i[34] = 4; i[35] = 5;
+
+    std::string boxName("skybox");
+    Graphics & g = Graphics::instance();
+    g.buffersNew(boxName, skyboxVAO_, skyboxVBO_, skyboxIdxVBO_);
+    g.geometryIs(skyboxVBO_,skyboxIdxVBO_, v,i,VBO_STATIC);
+
+    std::string skyboxShaderStr("../shaders/skybox");
+    skyBoxShader_ = new ShaderData(skyboxShaderStr);
+    skyBoxShader_->enableMatrix(PROJECTION);
+    skyBoxShader_->enableMatrix(MODELVIEW);
+    std::string cubeMapStr("CubeMap");
+    std::string cubeMapShaderStr("skyboxTex");
+    std::vector<std::string> cubeMapTexs(6);
+    cubeMapTexs[0] = std::string("../textures/POSITIVE_X.png");
+    cubeMapTexs[1] = std::string("../textures/NEGATIVE_X.png");
+    cubeMapTexs[2] = std::string("../textures/POSITIVE_Y.png");
+    cubeMapTexs[3] = std::string("../textures/NEGATIVE_Y.png");
+    cubeMapTexs[4] = std::string("../textures/POSITIVE_Z.png");
+    cubeMapTexs[5] = std::string("../textures/NEGATIVE_Z.png");
+    skyBoxShader_->addCubeTexture(cubeMapShaderStr, cubeMapStr, cubeMapTexs);
+
+    const int stride = sizeof(SkyboxVertex);
+    unsigned int sID = skyBoxShader_->shaderID();
+    std::string posStr("positionIn");
+    int posLoc = g.shaderAttribLoc(sID , posStr);
+    g.bindGeometry(sID, skyboxVAO_, skyboxVBO_, 3, stride, posLoc, 0);
+}
+
 void Engine::renderFrame()
 {
     //todo remove GL call
@@ -328,6 +385,12 @@ void Engine::RenderFirstPass()
                                             4,
                                             width(),
                                             height());
+    Matrix4 * modelView = skyBoxShader_->stdMatrix4Data(MODELVIEW);
+    Matrix4 * projection = skyBoxShader_->stdMatrix4Data(PROJECTION);
+    *modelView = Camera::instance().viewMtx();
+    *projection = Camera::instance().projectionMtx();
+    Graphics::instance().drawIndices(skyboxVAO_, skyboxIdxVBO_,36,skyBoxShader_);
+
     mesh->display();
     CUDA::Ocean::performIFFT(currentTime, false);
     CUDA::Ocean::updateVBO(false);
