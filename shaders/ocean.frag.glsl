@@ -22,6 +22,6 @@ void main() {
     vec3 N = normalize(normal);
 	//gl_FragColor = vec4(0.5*L + vec3(0.5),1);
     //gl_FragColor = vec4(diffuse(L,N,-eyePosition,vec3(0.2,0.5,1)),1);
-    gl_FragColor = vec4(0.5*N + vec3(0.5),1);
+    gl_FragColor = vec4(0.5*N + vec3(0.5f,0.5f,0.5f),1);
 
 }
