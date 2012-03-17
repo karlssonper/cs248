@@ -182,7 +182,8 @@ void Engine::loadResources(const char * _file)
     //same as cudaoceantest
 
 
-    Camera::instance().projectionIs(45.f, 1.f, 1.f, 1000.f);
+
+    Camera::instance().projectionIs(45.f, 1.f, 1.f, 10000.f);
     Camera::instance().positionIs(Vector3(11.1429, -5.2408, 10.2673));
     Camera::instance().rotationIs(492.8, 718.4);
 
@@ -207,6 +208,7 @@ void Engine::loadResources(const char * _file)
     BuildQuad();
     BuildSkybox();
 
+
     node = new Node("sixtenNode");
     mesh = new Mesh("sixten", node);
     shader = new ShaderData("../shaders/phong");
@@ -214,12 +216,12 @@ void Engine::loadResources(const char * _file)
     shader->enableMatrix(PROJECTION);
     shader->enableMatrix(NORMAL);
 
-    std::string tex("../textures/armadillo_n.jpg");
-    std::string texName("normalMap");
+    std::string tex("../textures/Galleon2.jpg");
+    std::string texName("diffuseMap");
     shader->addTexture(texName, tex);
 
     mesh->shaderDataIs(shader);
-    ASSIMP2MESH::read("../models/armadillo.3ds", "0", mesh);
+    ASSIMP2MESH::read("../models/Galleon.3ds", "galleon", mesh, 0.3f);
     CUDA::Ocean::init();
 
 

@@ -248,7 +248,7 @@ void initParticleSystem() {
     shader->addTexture(texName, tex);
 
     mesh->shaderDataIs(shader);
-    ASSIMP2MESH::read("../models/armadillo.3ds", "0", mesh);
+    ASSIMP2MESH::read("../models/armadillo.3ds", "0", mesh, 1.0f);
 }
 
 void cleanUp() {

@@ -181,10 +181,10 @@ void updatePositions(const float scale,
         dzdu = (zIn[idxRight] - zIn[idxLeft]) * delta;
         dzdv = (zIn[idxTop] - zIn[idxBot]) * delta;
     } else {
-        dxdu = 1.0f*scale;
+        dxdu = scale;
         dxdv = 0.0f;
         dzdu = 0.0f;
-        dzdv = 1.0f*scale;
+        dzdv = scale;
     }
 
     float dydu = (yIn[idxRight] - yIn[idxLeft]) * scaleY;
@@ -305,13 +305,15 @@ void updateVBO(bool disp)
     float * lol = (float*)malloc(N*N*sizeof(OceanVertex));
     cudaMemcpy(lol, positions, N*N*sizeof(OceanVertex),
             cudaMemcpyDeviceToHost);
+    /*
     for (int i = 0; i < N*N; ++i){
+        std::cerr << "vert: " << verticalScale << std::endl;
         std::cerr << lol[i*10 + 3] << std::endl;
-        std::cerr << lol[i*10 + 4] << std::endl;
+        std::cerr << verticalScale*lol[i*10 + 4] << std::endl;
         std::cerr << lol[i*10 + 5] << std::endl;
 
         std::cerr << lol[i*10 + 6] << std::endl;
-        std::cerr << lol[i*10 + 7] << std::endl;
+        std::cerr << verticalScale*lol[i*10 + 7] << std::endl;
         std::cerr << lol[i*10 + 8] << std::endl;
 
         Vector3 v1(lol[i*10 + 3], lol[i*10 + 4], lol[i*10 + 5]);
