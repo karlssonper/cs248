@@ -1,5 +1,6 @@
 attribute vec3 positionIn;
-attribute vec2 slopeIn;
+attribute vec3 partialUIn;
+attribute vec3 partialVIn;
 attribute float foldIn;
 
 uniform mat4 ModelViewMatrix;
@@ -16,7 +17,10 @@ void main() {
 
 	//normal  = NormalMatrix *cross( vec3(0.0, slopeIn.y*0.5, 2.0 / 128.0), vec3(2.0 / 128.0, slopeIn.x*0.5, 0.0));
 
-	normal = NormalMatrix * normalize(vec3(slopeIn.x,200.0/128.0,slopeIn.y));
+	vec3 crossNormal = cross(partialUIn,partialVIn);
+	//normal = NormalMatrix * crossNormal;
+	normal = crossNormal;
+	//normal = partialUIn;
 	lightDir = NormalMatrix * vec3(0.0, -1.0, 0.0);
 
 	eyePosition = eyeTemp.xyz;
