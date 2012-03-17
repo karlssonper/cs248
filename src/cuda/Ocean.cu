@@ -181,10 +181,10 @@ void updatePositions(const float scale,
         dzdu = (zIn[idxRight] - zIn[idxLeft]) * delta;
         dzdv = (zIn[idxTop] - zIn[idxBot]) * delta;
     } else {
-        dxdu = scaleY*1.0f;
+        dxdu = 1.0f;
         dxdv = 0.0f;
         dzdu = 0.0f;
-        dzdv = scaleY*1.0f;
+        dzdv = 1.0f;
     }
 
     float dydu = (yIn[idxRight] - yIn[idxLeft])*delta;
@@ -305,15 +305,17 @@ void updateVBO(bool disp)
     float * lol = (float*)malloc(N*N*sizeof(OceanVertex));
     cudaMemcpy(lol, positions, N*N*sizeof(OceanVertex),
             cudaMemcpyDeviceToHost);
+    /*
     for (int i = 0; i < N*N; ++i){
+        std::cerr << "vert: " << verticalScale << std::endl;
         std::cerr << lol[i*10 + 3] << std::endl;
-        std::cerr << lol[i*10 + 4] << std::endl;
+        std::cerr << verticalScale*lol[i*10 + 4] << std::endl;
         std::cerr << lol[i*10 + 5] << std::endl;
 
         std::cerr << lol[i*10 + 6] << std::endl;
-        std::cerr << lol[i*10 + 7] << std::endl;
+        std::cerr << verticalScale*lol[i*10 + 7] << std::endl;
         std::cerr << lol[i*10 + 8] << std::endl;
-    }
+    }*/
     cudaGraphicsUnmapResources(1, &VBO_CUDA, 0);
 }
 
@@ -522,8 +524,8 @@ void init()
     int locFold = Graphics::instance().shaderAttribLoc(id,"foldIn");
 
     Graphics::instance().bindGeometry(id, VAO, VBO_GL,3,sizeof(OceanVertex),locPos,0);
-    Graphics::instance().bindGeometry(id, VAO, VBO_GL,2,sizeof(OceanVertex),locPU,12);
-    Graphics::instance().bindGeometry(id, VAO, VBO_GL,2,sizeof(OceanVertex),locPV,24);
+    Graphics::instance().bindGeometry(id, VAO, VBO_GL,3,sizeof(OceanVertex),locPU,12);
+    Graphics::instance().bindGeometry(id, VAO, VBO_GL,3,sizeof(OceanVertex),locPV,24);
     Graphics::instance().bindGeometry(id, VAO, VBO_GL,1,sizeof(OceanVertex),locFold,36);
 
     cudaGraphicsGLRegisterBuffer(&VBO_CUDA, VBO_GL,

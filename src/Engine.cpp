@@ -192,12 +192,12 @@ void Engine::loadResources(const char * _file)
     shader->enableMatrix(PROJECTION);
     shader->enableMatrix(NORMAL);
 
-    std::string tex("../textures/armadillo_n.jpg");
-    std::string texName("normalMap");
+    std::string tex("../textures/Galleon2.jpg");
+    std::string texName("diffuseMap");
     shader->addTexture(texName, tex);
 
     mesh->shaderDataIs(shader);
-    ASSIMP2MESH::read("../models/armadillo.3ds", "0", mesh);
+    ASSIMP2MESH::read("../models/Galleon.3ds", "galleon", mesh, 0.3f);
     CUDA::Ocean::init();
 
     Graphics::instance().createTextureToFBO("shadow", shadowTex_,

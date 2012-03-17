@@ -119,7 +119,7 @@ void Mesh::display() const
             0,
             0,
             1};
-    *modelView = view * Matrix4(mv);
+    *modelView = view;//* Matrix4(mv);
 
     *projection = Camera::instance().projectionMtx();
 
