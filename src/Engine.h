@@ -17,6 +17,7 @@ class Mesh;
 class ShaderData;
 class Camera;
 class Target;
+class MeshedWeapon;
 class Engine
 {
 public:
@@ -48,6 +49,8 @@ public:
     void targetSpawnRateIs(float _targetSpawnRate);
 
     void xzBoundsIs(float _xMin, float _xMax, float _zMin, float _zMax);
+
+    MeshedWeapon * rocketLauncher() const { return rocketLauncher_; }
 
     void cleanUp();
 private:
@@ -140,10 +143,15 @@ private:
     void displayParticles();
     void updateParticles(float _dt);
 
+    void loadWeapons();
+    void updateProjectiles(float _dt);
+
     ShaderData * fireEmitter1sd_;
     ShaderData * fireEmitter2sd_;
     ShaderData * smokeEmittersd_;
     ShaderData * debrisEmittersd_;
+
+    MeshedWeapon * rocketLauncher_;
 };
 
 

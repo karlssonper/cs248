@@ -5,6 +5,9 @@
  *      Author: per
  */
 
+#include <stdlib.h>
+#include <stdio.h>
+
 #include "Sound.h"
 #ifdef _WIN32
     #include "al.h"
@@ -17,9 +20,11 @@
 #endif
 #include <string>
 
+
 static std::string SoundFiles[Sound::NUM_SOUNDS] = {
         "../sound/theme.wav",
-        "../sound/test.wav"
+        "../sound/impact.wav",
+        "../sound/cannon.wav"
 };
 
 Sound::Sound()
@@ -42,7 +47,8 @@ Sound::Sound()
         ALvoid* data = alutLoadMemoryFromFile(
                 SoundFiles[i].c_str(), &format, &size, &freq);
         alBufferData(buffers_[i],format,data,size,freq);
-        free(data);
+        //free(data);
+        
 
         if (alGetError() != AL_NO_ERROR) std::cerr << "Error in Sound class!\n";
         alSourcei(source_[i], AL_BUFFER, buffers_[i]);

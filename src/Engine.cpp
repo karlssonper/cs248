@@ -18,6 +18,8 @@
 #include "Mesh.h"
 #include "ShaderData.h"
 #include "Target.h"
+#include "MeshedWeapon.h"
+#include "MeshedProjectile.h"
 #include "HitBox.h"
 #include "ParticleSystem.h"
 #include "cuda/Emitter.cuh"
@@ -64,8 +66,7 @@ static void KeyPressed(unsigned char key, int x, int y) {
             Engine::instance().camera()->strafe(0.5);
             break;
         case 'b':
-            Sound::instance().play(Sound::EXPLOSION, Vector3(0,0,0));
-            Engine::instance().camera()->shake(2.f, 4.f);
+            Engine::instance().rocketLauncher()->fire(Vector3(-1.f, 0.f, 0.f));
             break;
         //ZIMMERMAN!!!
         case 'z':
@@ -109,6 +110,10 @@ static void KeyPressed(unsigned char key, int x, int y) {
             if (Engine::instance().targets().at(4)->active())
                 Engine::instance().targets().at(4)->explode();
             break;
+        case 'f':
+            
+            break;
+
 
 
     }
@@ -261,6 +266,7 @@ void Engine::loadResources(const char * _file)
     BuildQuad();
     BuildSkybox();
     LoadTargets();
+    loadWeapons();
     LoadOcean();
 }
 
@@ -290,6 +296,9 @@ void Engine::renderFrame(float _currentTime)
     SpawnTargets();
     root_->update();
     UpdateTargets(frameTime);
+
+    root_->update();
+    updateProjectiles(frameTime);
 
     updateParticles(frameTime);
     displayParticles();
@@ -551,6 +560,89 @@ void Engine::LoadOcean()
     shaders_[oceanShaderStr] = CUDA::Ocean::oceanShaderData();
     CUDA::Ocean::oceanShaderData()->addTexture("shadowMap", "shadow");
     CUDA::Ocean::oceanShaderData()->addFloat("shadowMapDx", 1.0f / shadowSize_);
+}
+
+void Engine::loadWeapons() {
+
+    // load rocket launcher projectile
+    std::string phongStr("phong");
+    ShaderData * shader = new ShaderData("../shaders/phong");
+    shaders_[phongStr] = shader;
+    shader->enableMatrix(MODELVIEW);
+    shader->enableMatrix(NORMAL);
+    shader->enableMatrix(PROJECTION);
+    Matrix4 * proj = shader->stdMatrix4Data(PROJECTION);
+    *proj = Engine::instance().camera()->projectionMtx();
+
+    std::string tex("../textures/Galleon2.jpg");
+    std::string texName("diffuseMap");
+    shader->addTexture(texName, tex);
+
+    std::string nodeStr("rocketNode");
+    Node * node = new Node(nodeStr);
+    nodes_[nodeStr] = node;
+    node->parentIs(root_);
+
+    std::string meshStr("rocketMesh");
+    Mesh * mesh = new Mesh(meshStr, node);
+    meshes_[meshStr] = mesh;
+    mesh->node()->rotateY(180.0f);
+
+    mesh->showIs(false);
+
+    mesh->shaderDataIs(shader);
+    ASSIMP2MESH::read("../models/Galleon.3ds", "rocket", mesh, 0.1f);
+
+    rocketLauncher_ = new MeshedWeapon( Vector3(0.f, 0.f, 50.f),
+                                        100.f,
+                                        50.f);
+
+    MeshedProjectile * rocket = new MeshedProjectile( Vector3(0.f, 0.f, 0.f),
+                                                      Vector3(0.f, 0.f, 0.f),
+                                                      rocketLauncher_->power(),
+                                                      mesh,
+                                                      100.f);
+    rocketLauncher_->addProjectile(rocket);                                                
+}
+
+void Engine::updateProjectiles(float _dt) {
+    std::vector<MeshedProjectile*> projectiles = rocketLauncher_->projectiles();
+    for (unsigned int i=0; i<projectiles.size(); ++i) {
+
+        projectiles.at(i)->update(_dt);
+
+        if (projectiles.at(i)->active()) {
+
+            projectiles.at(i)->position().print();
+
+            for (unsigned int j=0; j<targets_.size(); ++j) {
+
+                /*
+                std::cout << std::endl;
+                std::cout << "Checking projectile:";
+                projectiles.at(i)->position().print();
+                std::cout << "Against hit box:" << std::endl;
+                targets_.at(j)->hitBox()->p0.print();
+                targets_.at(j)->hitBox()->p1.print();
+                */
+                if (targets_.at(j)->active()) {
+                    if (projectiles.at(i)->checkCollision(targets_.at(j)->hitBox())) {
+                        targets_.at(j)->explode();
+                        projectiles.at(i)->activeIs(false);
+                        // TODO: handle power/energy
+                    }
+                }
+            }
+
+        }
+
+        if (projectiles.at(i)->active()) {
+            projectiles.at(i)->mesh()->showIs(true);
+        } else {
+            projectiles.at(i)->mesh()->showIs(false);
+        }
+
+    }
 }
 
 void Engine::LoadTargets() {
