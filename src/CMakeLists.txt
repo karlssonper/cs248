@@ -12,7 +12,8 @@ CUDA_ADD_LIBRARY(engine STATIC
                             Camera
                             ShaderData
                             ParticleSystem
-                            Weapon
+                            MeshedWeapon
+                            MeshedProjectile
                             Target
                             HitBox
                             Sound

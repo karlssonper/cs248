@@ -90,6 +90,7 @@ private:
     //Textures
     unsigned int phongTex_;
     unsigned int bloomTex_;
+    unsigned int bloom2Tex_;
     unsigned int motionTex_;
     unsigned int cocTex_;
 
@@ -97,6 +98,8 @@ private:
     unsigned int firstPassFB_;
     unsigned int firstPassDepthFB_;
     unsigned int secondPassFB_;
+    unsigned int horBlurFB_;
+    unsigned int horBlurDepthFB_;
 
     //Shadow mapping
     unsigned int shadowFB_;
@@ -110,6 +113,7 @@ private:
     unsigned int quadIdxVBO_;
     unsigned int quadVAO_;
     ShaderData * quadShader_;
+    ShaderData * horizontalGaussianShader_;
 
     //Skybox
     struct SkyboxVertex{ float pos[3];};
@@ -124,6 +128,7 @@ private:
     void RenderShadowMap();
     void RenderFirstPass();
     void RenderSecondPass();
+    void BlurTextures();
 
     Engine();
     Engine(const Engine & );

@@ -163,14 +163,16 @@ void Graphics::createTextureToFBO(const std::vector<std::string> &_names,
 
     for (unsigned int i = 0; i < _names.size(); ++i) {
         // The position buffer
-        glActiveTexture(GL_TEXTURE0 + i); // Use texture unit 0 for position
-        glGenTextures(1, &_colorTex[i]);
-        texture_[_names[i]] = _colorTex[i];
-        glBindTexture(GL_TEXTURE_2D, _colorTex[i]);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, _width, _height, 0,
-                GL_RGB, GL_UNSIGNED_BYTE, NULL);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        if (texture_.find(_names[i]) == texture_.end()) {
+            glActiveTexture(GL_TEXTURE0 + i); // Use texture unit 0 for position
+            glGenTextures(1, &_colorTex[i]);
+            texture_[_names[i]] = _colorTex[i];
+            glBindTexture(GL_TEXTURE_2D, _colorTex[i]);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, _width, _height, 0,
+                    GL_RGB, GL_UNSIGNED_BYTE, NULL);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        }
     }
 
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,

@@ -23,6 +23,19 @@ vec3 getNormal()
 }
 */
 
+float rgb2lum(vec3 color)
+{
+    return 0.2126 * color.r + 0.7152 * color.g + 0.0722 * color.b;
+
+}
+
+vec3 bloom(vec3 color, float lumTresh)
+{
+    return color *
+           (1.0 / (1.0 - lumTresh)) *
+           clamp(rgb2lum(color) - lumTresh, 0.0, 1.0);
+}
+
 vec3 diffuse(vec3 L, vec3 N, vec3 diffuseRGB)
 {
     // Calculate the diffuse color coefficient, and sample the diffuse texture
@@ -51,6 +64,7 @@ void main() {
     vec3 totSpecular = specular(L, N, V, vec3(0.3, 0.3, 0.3));
 	vec3 totAmbient = 0.1;
 	
+	vec4 phong = vec4(totDiffuse+totSpecular+totAmbient, 1) * vec4(diffuseTexture,1 );
 	//gl_FragColor = vec4(texcoord.x, 0,0,1);
 
 
@@ -61,10 +75,10 @@ void main() {
 	//gl_FragData[1] = vec4(1,0,0,1);
 	//gl_FragData[1] = vec4(diffusTexture,1);
 	//gl_FragData[1] = vec4(0.5*N + vec3(0.5, 0.5, 0.5) ,1);
-	gl_FragData[1] = vec4(totDiffuse+totSpecular+totAmbient, 1) * vec4(diffuseTexture,1 );
+	gl_FragData[1] = phong;
 
 	//Bloom Tex
-	gl_FragData[2] = vec4(totDiffuse+totSpecular+totAmbient, 1) * vec4(diffuseTexture,1 );
+	gl_FragData[2] = vec4(bloom(phong.rgb,0.7),1);
 
 	//Motion Tex
 	gl_FragData[3] = vec4(0.5*normalize(N) + vec3(0.5),1);
