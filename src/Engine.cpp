@@ -66,7 +66,7 @@ static void KeyPressed(unsigned char key, int x, int y) {
             Engine::instance().camera()->strafe(0.5);
             break;
         case 'b':
-            Engine::instance().rocketLauncher()->fire(Vector3(-1.f, 0.f, 0.f));
+            Engine::instance().rocketLauncher()->fire(Vector3(1.f, 0.f, 0.f));
             break;
         //ZIMMERMAN!!!
         case 'z':
@@ -296,8 +296,7 @@ void Engine::renderFrame(float _currentTime)
     SpawnTargets();
     root_->update();
     UpdateTargets(frameTime);
-
-    root_->update();
+    
     updateProjectiles(frameTime);
 
     updateParticles(frameTime);
@@ -613,7 +612,7 @@ void Engine::updateProjectiles(float _dt) {
 
         if (projectiles.at(i)->active()) {
 
-            projectiles.at(i)->position().print();
+           // projectiles.at(i)->position().print();
 
             for (unsigned int j=0; j<targets_.size(); ++j) {
 

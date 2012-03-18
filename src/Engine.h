@@ -50,6 +50,8 @@ public:
 
     void xzBoundsIs(float _xMin, float _xMax, float _zMin, float _zMax);
 
+    Node * root() const { return root_; }
+
     MeshedWeapon * rocketLauncher() const { return rocketLauncher_; }
 
     void cleanUp();

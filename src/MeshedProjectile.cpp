@@ -2,6 +2,7 @@
 #include "Mesh.h"
 #include "HitBox.h"
 #include "Node.h"
+#include "Engine.h"
 
 MeshedProjectile::MeshedProjectile(Vector3 _pos,
                                    Vector3 _speed,
@@ -21,14 +22,16 @@ void MeshedProjectile::update(float _dt) {
     if (!active_) return;
     Vector3 d = speed_*_dt;
 
-    mesh_->node()->translate(d);
-
-    Node * node = mesh_->node();
-    Matrix4 globalT = node->globalModelMtx();
-    position_ = globalT*position_;
+    mesh_->node()->translate(d*-1);
+    position_ = position_ + d;
+    //Node * node = mesh_->node();
+    //Matrix4 globalT = node->globalModelMtx();
+    //position_ = globalT*position_;
 
     flightDistance_ += d.mag();
-    std::cout << "flightDist :" << flightDistance_ << std::endl;
+    std::cout << "Flying ";
+    position_.print();
+    //std::cout << "flightDist :" << flightDistance_ << std::endl;
 
     if (flightDistance_ > maxDistance_) active_ = false;
 }
@@ -65,12 +68,24 @@ void MeshedProjectile::activeIs(bool _active) {
 
 void MeshedProjectile::positionIs(Vector3 _position) {
 
-    Vector3 diff = position_ -  _position;
+    std::cout << std::endl;
+    std::cout << "Projectile position ";
+    position_.print();
+
+    std::cout << "New position";
+    _position.print();
+
+    Vector3 diff = position_ - _position;
+    std::cout << "Diff ";
+    diff.print();
+
     mesh_->node()->translate(diff);
 
-    Node * node = mesh_->node();
-    Matrix4 globalT = node->globalModelMtx();
-    position_ = globalT*position_;
+    position_ = _position;
+
+    //Node * node = mesh_->node();
+    //Matrix4 globalT = node->globalModelMtx();
+    //position_ = globalT*position_;
 
 }
 
