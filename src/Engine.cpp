@@ -184,6 +184,13 @@ void Engine::init(int argc, char **argv,
     currentTime_ = 0;
     nextSpawn_ = 0.f;
     state_ = RUNNING;
+    srand(1986);
+    root_ = new Node("root");
+}
+
+void Engine::start()
+{
+    glutMainLoop();
 }
 
 void Engine::renderTexture(float v)
@@ -212,73 +219,18 @@ void Engine::loadResources(const char * _file)
 {
     //same as cudaoceantest
 
-     xzBoundsIs(0.f, 100.f, 0.f ,100.f);
-     nrTargetsIs(5);
-     targetSpawnRateIs(3.f);
+    xzBoundsIs(0.f, 100.f, 0.f ,100.f);
+    nrTargetsIs(5);
+    targetSpawnRateIs(3.f);
 
-    gameCam_ = new Camera();
-    gameCam_->projectionIs(45.f, 1.f, 1.f, 10000.f);
-    gameCam_->positionIs(Vector3(11.1429, -5.2408, 10.2673));
-    gameCam_->rotationIs(492.8, 718.4);
-    /*gameCam_->maxYawIs(492.8+45.0);
-    gameCam_->minYawIs(492.8-45.0);
-    gameCam_->maxPitchIs(718.4+10.0);
-    gameCam_->minPitchIs(718.4-10.0);*/
-    activeCam_ = gameCam_;
-    updateCamView_ = true;
-
-    freeCam_ = new Camera();
-    freeCam_->projectionIs(45.f, 1.f, 1.f, 10000.f);
-    freeCam_->positionIs(Vector3(11.1429, -5.2408, 10.2673));
-    freeCam_->rotationIs(492.8, 718.4);
-
-    lightCam_ = new Camera();
-    //activeCam_ = lightCam_;
-    shadowSize_ = 1024;
-    Graphics::instance().createTextureToFBO("shadow", shadowTex_,
-            shadowFB_, shadowSize_, shadowSize_);
-    std::string shadowShaderStr("../shaders/shadow");
-    shadowShader_ = new ShaderData(shadowShaderStr);
-    shadowShader_->enableMatrix(PROJECTION);
-    shadowShader_->enableMatrix(MODELVIEW);
-    lightCam_->lookAt(
-            Vector3(51.0,0.5, 51.0),
-            Vector3(50,0,50.0),
-            Vector3(0,1.0,0));
-    lightCam_->BuildOrthoProjection(
-            Vector3(-100,-50,-100),
-            Vector3(100,50,100));
-    Matrix4 * shadowProj = shadowShader_->stdMatrix4Data(PROJECTION);
-    *shadowProj = Engine::instance().lightCamera()->projectionMtx();
-
-    std::vector<unsigned int> colorTex(4);
-    std::vector<std::string> colorTexNames;
-    colorTexNames.push_back("Phong");
-    colorTexNames.push_back("Bloom");
-    colorTexNames.push_back("Motion");
-    colorTexNames.push_back("CoC");
-
-    phongTex_ = colorTex[0];
-    bloomTex_ = colorTex[1];
-    motionTex_ = colorTex[2];
-    cocTex_ = colorTex[3];
-
-    Graphics::instance().createTextureToFBO(colorTexNames, colorTex,
-            firstPassFB_, firstPassDepthFB_, width(), height());
-
+    //Order here is important.
+    LoadCameras();
+    LoadLight();
+    CreateFramebuffer();
     BuildQuad();
     BuildSkybox();
-
-    root_ = new Node("root");
-
-    srand(1986);
-
-    loadTargets();
-    CUDA::Ocean::init();
-    std::string oceanShaderStr("ocean");
-    shaders_[oceanShaderStr] = CUDA::Ocean::oceanShaderData();
-    CUDA::Ocean::oceanShaderData()->addTexture("shadowMap", "shadow");
-    CUDA::Ocean::oceanShaderData()->addFloat("shadowMapDx", 1.0f / shadowSize_);
+    LoadTargets();
+    LoadOcean();
 }
 
 void Engine::cleanUp() {
@@ -303,11 +255,11 @@ void Engine::renderFrame(float _currentTime)
 
     CUDA::Ocean::performIFFT(currentTime_, false);
     CUDA::Ocean::updateVBO(false);
-    spawnTargets();
+    SpawnTargets();
 
     root_->update();
 
-    updateTargets(frameTime);
+    UpdateTargets(frameTime);
 
     RenderShadowMap();
 
@@ -495,11 +447,6 @@ void Engine::heightIs(int _height)
     height_ = _height;
 }
 
-void Engine::start()
-{
-    glutMainLoop();
-}
-
 void Engine::xzBoundsIs(float _xMin, float _xMax, float _zMin, float _zMax) {
     xMin_ = _xMin;
     xMax_ = _xMax;
@@ -507,14 +454,84 @@ void Engine::xzBoundsIs(float _xMin, float _xMax, float _zMin, float _zMax) {
     zMax_ = _zMax;
 }
 
-void Engine::loadTargets() {
+void Engine::CreateFramebuffer()
+{
+    std::vector<unsigned int> colorTex(4);
+    std::vector<std::string> colorTexNames;
+    colorTexNames.push_back("Phong");
+    colorTexNames.push_back("Bloom");
+    colorTexNames.push_back("Motion");
+    colorTexNames.push_back("CoC");
+
+    phongTex_ = colorTex[0];
+    bloomTex_ = colorTex[1];
+    motionTex_ = colorTex[2];
+    cocTex_ = colorTex[3];
+
+    Graphics::instance().createTextureToFBO(colorTexNames, colorTex,
+            firstPassFB_, firstPassDepthFB_, width(), height());
+}
+
+void Engine::LoadCameras()
+{
+    gameCam_ = new Camera();
+    gameCam_->projectionIs(45.f, 1.f, 1.f, 10000.f);
+    gameCam_->positionIs(Vector3(11.1429, -5.2408, 10.2673));
+    gameCam_->rotationIs(492.8, 718.4);
+    /*gameCam_->maxYawIs(492.8+45.0);
+    gameCam_->minYawIs(492.8-45.0);
+    gameCam_->maxPitchIs(718.4+10.0);
+    gameCam_->minPitchIs(718.4-10.0);*/
+    activeCam_ = gameCam_;
+    updateCamView_ = true;
+
+    freeCam_ = new Camera();
+    freeCam_->projectionIs(45.f, 1.f, 1.f, 10000.f);
+    freeCam_->positionIs(Vector3(11.1429, -5.2408, 10.2673));
+    freeCam_->rotationIs(492.8, 718.4);
+
+    lightCam_ = new Camera();
+}
+
+void Engine::LoadLight()
+{
+    shadowSize_ = 1024;
+    Graphics::instance().createTextureToFBO("shadow", shadowTex_,
+            shadowFB_, shadowSize_, shadowSize_);
+    std::string shadowShaderStr("../shaders/shadow");
+    shadowShader_ = new ShaderData(shadowShaderStr);
+    shadowShader_->enableMatrix(PROJECTION);
+    shadowShader_->enableMatrix(MODELVIEW);
+    lightCam_->lookAt(
+            Vector3(51.0,0.5, 51.0),
+            Vector3(50,0,50.0),
+            Vector3(0,1.0,0));
+    lightCam_->BuildOrthoProjection(
+            Vector3(-100,-50,-100),
+            Vector3(100,50,100));
+    Matrix4 * shadowProj = shadowShader_->stdMatrix4Data(PROJECTION);
+    *shadowProj = Engine::instance().lightCamera()->projectionMtx();
+}
+
+void Engine::LoadOcean()
+{
+    CUDA::Ocean::init();
+    std::string oceanShaderStr("ocean");
+    shaders_[oceanShaderStr] = CUDA::Ocean::oceanShaderData();
+    CUDA::Ocean::oceanShaderData()->addTexture("shadowMap", "shadow");
+    CUDA::Ocean::oceanShaderData()->addFloat("shadowMapDx", 1.0f / shadowSize_);
+}
+
+void Engine::LoadTargets() {
 
     std::string phongStr("phong");
     ShaderData * shader = new ShaderData("../shaders/phong");
     shaders_[phongStr] = shader;
     shader->enableMatrix(MODELVIEW);
-    shader->enableMatrix(PROJECTION);
     shader->enableMatrix(NORMAL);
+    shader->enableMatrix(PROJECTION);
+    Matrix4 * proj = shader->stdMatrix4Data(PROJECTION);
+    *proj = Engine::instance().camera()->projectionMtx();
 
     std::string tex("../textures/Galleon2.jpg");
     std::string texName("diffuseMap");
@@ -559,7 +576,7 @@ void Engine::targetSpawnRateIs(float _targetSpawnRate) {
     targetSpawnRate_ = _targetSpawnRate;
 }
 
-void Engine::updateTargets(float _frameTime) {
+void Engine::UpdateTargets(float _frameTime) {
 
     nextSpawn_ -= _frameTime;
 
@@ -581,7 +598,7 @@ void Engine::updateTargets(float _frameTime) {
     }
 }
 
-void Engine::spawnTargets() {
+void Engine::SpawnTargets() {
 
     if (nextSpawn_ < 0.f) {
         std::vector<Target*>::iterator it;

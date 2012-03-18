@@ -126,9 +126,13 @@ private:
     float targetSpawnRate_;
     float nextSpawn_;
 
-    void loadTargets();
-    void updateTargets(float _frameTime);
-    void spawnTargets();
+    void CreateFramebuffer();
+    void LoadCameras();
+    void LoadLight();
+    void LoadOcean();
+    void LoadTargets();
+    void UpdateTargets(float _frameTime);
+    void SpawnTargets();
 };
 
 
