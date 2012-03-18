@@ -40,6 +40,8 @@ public:
     int height() const { return height_;};
     void heightIs(int _height);
 
+    std::vector<Target*> targets() const { return targets_; }
+
     unsigned int nrTargets() const { return nrTargets_; }
     void nrTargetsIs(unsigned int _nrTargets);
     float targetSpawnRate() const { return targetSpawnRate_; }

@@ -13,7 +13,7 @@ TARGET_LINK_LIBRARIES(enginetest
                                     freeimage
                                     cudart
                                     cufft
-                                    IrrKlang
+                                    #IrrKlang
                                      )
 
 INSTALL (TARGETS enginetest DESTINATION bin)

@@ -578,25 +578,19 @@ void Engine::targetSpawnRateIs(float _targetSpawnRate) {
     targetSpawnRate_ = _targetSpawnRate;
 }
 
+
 void Engine::UpdateTargets(float _frameTime) {
-
     nextSpawn_ -= _frameTime;
-
     std::vector<Target*>::iterator it;
     for (it=targets_.begin(); it!=targets_.end(); it++) {
-
         if ( (*it)->active() ) {
             (*it)->updatePos(_frameTime);
             (*it)->updateHitBox();
             if ( (*it)->midPoint().z < zMin_ ) {
-             
                 (*it)->activeIs(false);
                 (*it)->mesh()->showIs(false);
-      
             }
-
         }
-
     }
 }
 

@@ -3,9 +3,12 @@
 
 #include "MathEngine.h"
 #include <string>
+#include <vector>
 
 class Mesh;
 class HitBox;
+class ParticleSystem;
+class Emitter;
 class Target {
 public:
     Target(std::string _name, 
@@ -30,6 +33,11 @@ public:
     Vector3 midPoint() const { return midPoint_; }
     void explode();
 
+    ParticleSystem * particleSystem() const { return particleSystem_; }
+    void particleSystemIs(ParticleSystem * _particleSystem);
+    
+    std::vector<Emitter*> emitters() { return emitters_; }
+
 private:
     float energy_;
     Vector3 midPoint_;
@@ -43,6 +51,10 @@ private:
     Mesh * mesh_;
     std::string name_;
     bool active_;
+
+    ParticleSystem * particleSystem_;
+    std::vector<Emitter*> emitters_;
+
 };
 
 #endif
