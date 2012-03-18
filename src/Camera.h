@@ -35,6 +35,7 @@ public:
     void minYawIs(float _minYaw);
     float yaw() const { return yawDegrees_; }
     float pitch() const { return pitchDegrees_; }
+    Vector3 position() const { return pos_; }
 
     const Matrix4 & viewMtx() const {return viewMtx_;};
     const Matrix4 & inverseViewMtx() const {return inverseViewMtx_;};
