@@ -24,12 +24,16 @@ MESSAGE ( "To change -DUSE_GLEW = 1 for GLEW and -DUSE_GLEW=0 for gl3w\n")
 #CUDA
 FIND_PACKAGE(CUDA)
 
-LINK_DIRECTORIES(/usr/local/cuda/lib64)
+LINK_DIRECTORIES(
+                 /usr/local/cuda/lib64
+                 $ENV{IRRKLANG}/bin/linux-gcc
+                 )
 
 SET(ENGINE_STATIC_LIB $ENV{CS248_PROJECT}/lib/libengine.a)
 
 INCLUDE_DIRECTORIES($ENV{GL3W}/include
 					$ENV{CS248_PROJECT}/src
-					$ENV{ASSIMP_INCLUDE})
+					$ENV{ASSIMP_INCLUDE}
+					$ENV{IRRKLANG}/include)
 
 SUBDIRS ( ${BUILD_SUBDIR} )

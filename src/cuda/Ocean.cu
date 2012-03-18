@@ -474,8 +474,6 @@ void init()
     bLine = N/2;
     padding = N/2 + 1;
 
-    verticalScale = WAVE_HEIGHT / maxHeight();
-
     std::vector<float> vertexData(sizeof(OceanVertex)*N*N);
     std::vector<unsigned int> indices(6*(N-1)*(N-1));
     unsigned int triIdx = 0;
@@ -537,6 +535,7 @@ void init()
 
     cudaGraphicsGLRegisterBuffer(&VBO_CUDA, VBO_GL,
             cudaGraphicsMapFlagsWriteDiscard);
+    verticalScale = WAVE_HEIGHT / maxHeight();
 }
 
 std::vector<float> height(std::vector<std::pair<float,float> > _worldPos)

@@ -14,7 +14,8 @@ CUDA_ADD_LIBRARY(engine STATIC
                             ParticleSystem
                             Weapon
                             Target
-                            HitBox)
+                            HitBox
+                            Sound)
 
 TARGET_LINK_LIBRARIES(engine 
                                     ${GL_EXT_LIB} 
@@ -24,7 +25,9 @@ TARGET_LINK_LIBRARIES(engine
                                                assimp
                                                freeimage
                                                cudart
-                                               cufft)
+                                               cufft
+                                               IrrKlang
+                                               )
 
 INSTALL (TARGETS engine DESTINATION lib)
 

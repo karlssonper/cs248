@@ -22,6 +22,7 @@ void display();
 void init();
 
 std::vector<float> height(std::vector<std::pair<float,float> > _worldPos);
+
 ShaderData* oceanShaderData();
 
 } //end namespace Ocean

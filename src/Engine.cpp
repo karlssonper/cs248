@@ -9,10 +9,11 @@
 
 //Singletons
 #include "Engine.h"
-#include "Camera.h"
 #include "Graphics.h"
+//#include "Sound.h"
 
 //Elements
+#include "Camera.h"
 #include "Node.h"
 #include "Mesh.h"
 #include "ShaderData.h"
@@ -61,6 +62,7 @@ static void KeyPressed(unsigned char key, int x, int y) {
             Engine::instance().camera()->strafe(0.5);
             break;
         case 'b':
+            //Sound::instance().play(Sound::EXPLOSION, Vector3(0,0,0));
             Engine::instance().camera()->shake(2.f, 4.f);
             break;
         case '1':

@@ -6,12 +6,14 @@ CUDA_ADD_EXECUTABLE(enginetest Main)
 TARGET_LINK_LIBRARIES(enginetest 
                                     ${ENGINE_STATIC_LIB}
                                     ${GL_EXT_LIB} 
-                                               GL 
-                                               GLU 
-                                               glut 
-                                               assimp
-                                               freeimage
-                                               cudart
-                                               cufft)
+                                    GL 
+                                    GLU 
+                                    glut 
+                                    assimp
+                                    freeimage
+                                    cudart
+                                    cufft
+                                    IrrKlang
+                                     )
 
 INSTALL (TARGETS enginetest DESTINATION bin)
