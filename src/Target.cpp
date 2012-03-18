@@ -52,3 +52,9 @@ void Target::speedIs(Vector3 _speed) {
 void Target::activeIs(bool _active) {
     active_ = _active;
 }
+
+void Target::explode() {
+    std::cout << name_ << " EXPLODED" << std::endl;
+    active_ = false;
+    mesh_->showIs(false);
+}

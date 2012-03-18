@@ -41,6 +41,8 @@ public:
     void nodeIs(Node * _node);
     void display() const;
 
+    void showIs(bool _show);
+
     // return two Vector3's, min and max position coords
     std::vector<Vector3> minMax() const;
 
@@ -53,6 +55,8 @@ private:
     unsigned int indexVBO_;
 
     bool loadedInGPU_;
+
+    bool show_;
 
     std::vector<Vector3> position_;
     std::vector<Vector2> texCoord_;

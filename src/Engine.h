@@ -117,9 +117,11 @@ private:
 
     unsigned int nrTargets_;
     float targetSpawnRate_;
+    float nextSpawn_;
 
     void loadTargets();
     void updateTargets(float _frameTime);
+    void spawnTargets();
 };
 
 

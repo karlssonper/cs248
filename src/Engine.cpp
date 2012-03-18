@@ -106,6 +106,7 @@ static void GameLoop()
 {
     //the heart
     float currentTime = (float)glutGet(GLUT_ELAPSED_TIME) / 1000.f;
+
     Engine::instance().renderFrame(currentTime);
 
     //std::cout << "Yaw: " << Camera::instance().yaw() << std::endl;
@@ -160,6 +161,7 @@ void Engine::init(int argc, char **argv, const char * _titlee, int _width, int _
     glutDisplayFunc(GameLoop);
     glutIdleFunc(GameLoop);
     currentTime_ = 0;
+    nextSpawn_ = 0.f;
     state_ = RUNNING;
 }
 
@@ -169,7 +171,7 @@ void Engine::loadResources(const char * _file)
 
      xzBoundsIs(0.f, 100.f, 0.f ,100.f);
      nrTargetsIs(5);
-     targetSpawnRateIs(5.f);
+     targetSpawnRateIs(3.f);
 
     gameCam_ = new Camera();
     gameCam_->projectionIs(45.f, 1.f, 1.f, 10000.f);
@@ -215,7 +217,7 @@ void Engine::loadResources(const char * _file)
     srand(1986);
 
     loadTargets();
-
+    CUDA::Ocean::init();
    
 
 
@@ -346,7 +348,7 @@ void Engine::BuildSkybox()
     cubeMapTexs[3] = std::string("../textures/NEGATIVE_Y.png");
     cubeMapTexs[4] = std::string("../textures/POSITIVE_Z.png");
     cubeMapTexs[5] = std::string("../textures/NEGATIVE_Z.png");
-    skyBoxShader_->addCubeTexture(cubeMapShaderStr, cubeMapStr, cubeMapTexs);
+   // skyBoxShader_->addCubeTexture(cubeMapShaderStr, cubeMapStr, cubeMapTexs);
 
     const int stride = sizeof(SkyboxVertex);
     unsigned int sID = skyBoxShader_->shaderID();
@@ -368,8 +370,8 @@ void Engine::renderFrame(float _currentTime)
     //std::cout << "currentTime: " << currentTime << std::endl;
     //std::cout << "frameTime: " << frameTime << std::endl;
 
-    updateTargets(frameTime);
-
+    spawnTargets();
+  
     activeCam_->BuildViewMatrix();
     activeCam_->updateShake(frameTime);
 
@@ -377,6 +379,8 @@ void Engine::renderFrame(float _currentTime)
     CUDA::Ocean::updateVBO(false);
 
     root_->update();
+
+    updateTargets(frameTime);
 
     RenderShadowMap();
 
@@ -469,13 +473,16 @@ void Engine::loadTargets() {
         Node * node = new Node(nodeStr);
         nodes_[nodeStr] = node;
         node->parentIs(root_);
-        float startX = Random::randomFloat(xMin_, xMax_);
-        node->translate(Vector3(startX, 0.f, zMax_));
-        node->rotateY(180.0f);
+        //float startX = Random::randomFloat(xMin_, xMax_);
+        //node->translate(Vector3(startX, 0.f, zMax_));
+        //node->rotateY(180.0f);
 
         std::string meshStr("battleCruiser"+oss.str());
         Mesh * mesh = new Mesh(meshStr, node);
         meshes_[meshStr] = mesh;
+        mesh->node()->rotateY(180.0f);
+
+        mesh->showIs(false);
 
         std::string phongStr("phong");
         ShaderData * shader = new ShaderData("../shaders/phong");
@@ -490,11 +497,10 @@ void Engine::loadTargets() {
 
         mesh->shaderDataIs(shader);
         ASSIMP2MESH::read("../models/Galleon.3ds", "galleon", mesh, 0.3f);
-        CUDA::Ocean::init();
 
         std::string targetStr("battleCruiserTarget"+oss.str());
         Target * target = new Target(targetStr, mesh, 100.f);
-        target->speedIs(Vector3(0.0f, 0.f, 6.0f));
+        target->speedIs(Vector3(0.0f, 0.f, 15.0f));
         target->hitBox()->p0.print();
         target->hitBox()->p1.print();
         targets_.push_back(target);
@@ -511,6 +517,8 @@ void Engine::targetSpawnRateIs(float _targetSpawnRate) {
 
 void Engine::updateTargets(float _frameTime) {
 
+    nextSpawn_ -= _frameTime;
+
     std::vector<Target*>::iterator it;
     for (it=targets_.begin(); it!=targets_.end(); it++) {
 
@@ -518,13 +526,42 @@ void Engine::updateTargets(float _frameTime) {
             (*it)->updatePos(_frameTime);
             (*it)->updateHitBox();
             if ( (*it)->midPoint().z < zMin_ ) {
-                Vector3 t = Vector3(0.f, 0.f,-(*it)->midPoint().z-zMax_);
-                (*it)->mesh()->node()->translate(t);
+             
+                (*it)->activeIs(false);
+                (*it)->mesh()->showIs(false);
+      
             }
 
         }
 
     }
+}
+
+void Engine::spawnTargets() {
+
+    if (nextSpawn_ < 0.f) {
+        std::vector<Target*>::iterator it;
+        for (it=targets_.begin(); it!=targets_.end(); it++) {
+            
+            if ( !(*it)->active() ) {
+                //std::cout << "Activating " << (*it)->name() << std::endl;
+
+                float startX = Random::randomFloat(xMin_, xMax_);
+                Vector3 startPos(startX, 0.f, zMax_);
+                Vector3 currentPos = (Vector3((*it)->midPoint().x, 
+                                              0.f,
+                                              (*it)->midPoint().z));
+                (*it)->mesh()->node()->translate(currentPos-startPos);
+                (*it)->activeIs(true);
+                (*it)->mesh()->showIs(true);
+
+                break;
+            }
+        }
+
+        nextSpawn_ = targetSpawnRate_;
+    }
+
 }
 
 

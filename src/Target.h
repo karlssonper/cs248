@@ -28,6 +28,8 @@ public:
     void activeIs(bool _active);
     void speedIs(Vector3 _speed);
     Vector3 midPoint() const { return midPoint_; }
+    void explode();
+
 private:
     float energy_;
     Vector3 midPoint_;
