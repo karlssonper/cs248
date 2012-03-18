@@ -18,7 +18,6 @@ Target::Target(std::string _name,
     std::vector<Vector3> minMax = mesh_->minMax();
     hitBox_ = new HitBox(name_ + "HitBox", minMax.at(0), minMax.at(1));
     hitBoxLocal_ = new HitBox(name_+"HitBoxLocal", minMax.at(0), minMax.at(1));
-    //updateHitBox();
 }
 
 void Target::energyDec(float _e) {

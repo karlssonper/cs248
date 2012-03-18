@@ -651,7 +651,6 @@ void Engine::SpawnTargets() {
                 Vector3 currentPos = (Vector3((*it)->midPoint().x, 
                                               0.f,
                                               (*it)->midPoint().z));
-
                 (*it)->mesh()->node()->translate(currentPos-startPos);
                 (*it)->activeIs(true);
                 (*it)->mesh()->showIs(true);
@@ -713,7 +712,7 @@ void Engine::initParticleSystems() {
         Emitter * fireEmitter1 = ps->newEmitter(300, fireEmitter1sd_);
         fireEmitter1->posIs((*it)->midPoint());
         fireEmitter1->burstSizeIs(300);
-        fireEmitter1->typeIs(Emitter::EMITTER_BURST);
+        fireEmitter1->typeIs(Emitter::EMITTER_STREAM);
         fireEmitter1->blendModeIs(Emitter::BLEND_FIRE);
         fireEmitter1->rateIs(0.02f);
         fireEmitter1->lifeTimeIs(40.f);

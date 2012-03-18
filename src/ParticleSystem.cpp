@@ -28,6 +28,5 @@ void ParticleSystem::display() const
 {
     for (unsigned int i =0; i < emitter_.size(); ++i) {
         emitter_[i]->display();
-
     }
 }

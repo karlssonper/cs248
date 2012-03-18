@@ -262,8 +262,6 @@ void Emitter::burst() {
 
     //std::cout << "bursting" << std::endl;
 
-   // copyPosToHostAndPrint();
-
     cudaGLMapBufferObject((void**)&d_pos_, vboPos_);
     cudaGLMapBufferObject((void**)&d_size_, vboSize_);
     cudaGLMapBufferObject((void**)&d_time_, vboTime_);
@@ -342,6 +340,8 @@ void Emitter::update(float _dt) {
     cudaGLUnmapBufferObject(vboPos_);
     cudaGLUnmapBufferObject(vboSize_);
     cudaGLUnmapBufferObject(vboTime_);
+
+    //copyPosToHostAndPrint();
 
 }
 

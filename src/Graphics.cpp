@@ -40,7 +40,7 @@ Graphics::Graphics()
 
     glEnable(GL_DEPTH_TEST);
     CUDA::init();
-    //glEnable(GL_POINT_SPRITE);
+    glEnable(GL_POINT_SPRITE);
 }
 
 void Graphics::viewportIs(int _width, int _height)
