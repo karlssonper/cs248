@@ -15,6 +15,8 @@ public:
     std::vector<MeshedProjectile*> projectiles() { return projectiles_; }
     void fire(Vector3 _direction);
     void addProjectile(MeshedProjectile* _meshedProjectile);
+    void positionIs(Vector3 _position);
+    void translate(Vector3 _t);
     float power() const { return power_; }
 private:
     float power_;

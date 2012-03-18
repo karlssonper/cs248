@@ -46,6 +46,10 @@ public:
     void strafe(float _dx);
     void BuildViewMatrix();
 
+
+    Vector3 viewVector() const;
+    Vector3 worldPos() const { return worldPos_; }
+
     void shake(float _duration, float _magnitude);
     void updateShake(float _dt);
 
@@ -65,6 +69,7 @@ private:
     Matrix4 viewMtx_;
     Matrix4 inverseViewMtx_;
     Vector3 pos_;
+    Vector3 worldPos_;
     float yawDegrees_;
     float yawRadians_;
     float pitchDegrees_;

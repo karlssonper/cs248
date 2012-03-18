@@ -21,7 +21,6 @@ MeshedProjectile::MeshedProjectile(Vector3 _pos,
 void MeshedProjectile::update(float _dt) {
     if (!active_) return;
     Vector3 d = speed_*_dt;
-
     mesh_->node()->translate(d*-1);
     position_ = position_ + d;
     //Node * node = mesh_->node();
@@ -29,8 +28,8 @@ void MeshedProjectile::update(float _dt) {
     //position_ = globalT*position_;
 
     flightDistance_ += d.mag();
-    std::cout << "Flying ";
-    position_.print();
+    //std::cout << "Flying ";
+    //position_.print();
     //std::cout << "flightDist :" << flightDistance_ << std::endl;
 
     if (flightDistance_ > maxDistance_) active_ = false;
@@ -48,9 +47,9 @@ bool MeshedProjectile::checkCollision(HitBox* _hitBox) {
     }
 
     if (p0.y < p1.y) {
-        if (position_.y < p0.y || position_.y > p1.y) return false;
+        if (-position_.y < p0.y || -position_.y > p1.y) return false;
     } else {
-        if (position_.y < p1.y || position_.y > p0.y) return false;
+        if (-position_.y < p1.y || -position_.y > p0.y) return false;
     }
 
     if (p0.z < p1.z) {
@@ -68,16 +67,16 @@ void MeshedProjectile::activeIs(bool _active) {
 
 void MeshedProjectile::positionIs(Vector3 _position) {
 
-    std::cout << std::endl;
-    std::cout << "Projectile position ";
-    position_.print();
+   // std::cout << std::endl;
+    //std::cout << "Projectile position ";
+    //position_.print();
 
-    std::cout << "New position";
-    _position.print();
+    //std::cout << "New position";
+    //_position.print();
 
     Vector3 diff = position_ - _position;
-    std::cout << "Diff ";
-    diff.print();
+   // std::cout << "Diff ";
+    //diff.print();
 
     mesh_->node()->translate(diff);
 

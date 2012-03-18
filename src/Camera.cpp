@@ -39,6 +39,7 @@ Camera::Camera(const Vector3 &_pos, float _yaw, float _pitch) :
     nearPlane_(1.f),
     farPlane_(100.f),
     pos_(_pos),
+    worldPos_(_pos),
     yawDegrees_(_yaw),
     yawRadians_(Degree2Radians(_yaw)),
     pitchDegrees_(_pitch),
@@ -105,6 +106,7 @@ void Camera::farPlaneIs(float _farPlane)
 void Camera::positionIs(const Vector3&_pos)
 {
     pos_ = _pos;
+    worldPos_ = Vector3(-_pos.x, _pos.y, -_pos.z);
 }
 
 void Camera::rotationIs(float _totalYaw, float _totalPitch)
@@ -137,12 +139,17 @@ void Camera::move(float _dx)
     pos_.x -= _dx*sin(yawRadians_);
     pos_.y += _dx*sin(pitchRadians_);
     pos_.z += _dx*cos(yawRadians_);
+    worldPos_.x += _dx*sin(yawRadians_);
+    worldPos_.y += _dx*sin(pitchRadians_);
+    worldPos_.z -= _dx*cos(yawRadians_);
 }
 
 void Camera::strafe(float _dx)
 {
     pos_.x -= _dx*cos(yawRadians_);
     pos_.z -= _dx*sin(yawRadians_);
+    worldPos_.x += _dx*cos(yawRadians_);
+    worldPos_.z += _dx*sin(yawRadians_);
 }
 
 void Camera::BuildProjectionMatrix()
@@ -261,6 +268,17 @@ void Camera::BuildOrthoProjection(Vector3 _min, Vector3 _max)
     projectionMtx_.m_[13] = (_max.y + _min.y) / (_min.y - _max.y);
     projectionMtx_.m_[14] = (_max.z + _min.z) / (_min.z - _max.z);
     projectionMtx_.m_[15] = 1.0f;
+}
+
+Vector3 Camera::viewVector() const { 
+    float dx = 1.f;
+    Vector3 lookAhead = worldPos_;
+    lookAhead.x += dx*sin(yawRadians_);
+    lookAhead.y += dx*sin(pitchRadians_);
+    lookAhead.z -= dx*cos(yawRadians_);
+    Vector3 dir = lookAhead - worldPos_;
+    return dir.normalize();
+
 }
 
 
