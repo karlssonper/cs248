@@ -302,30 +302,7 @@ void updateVBO(bool disp)
                                                         positions,
                                                         odata[DIR_Y]);
     }
-/*
-    float * lol = (float*)malloc(N*N*sizeof(OceanVertex));
-    cudaMemcpy(lol, positions, N*N*sizeof(OceanVertex),
-            cudaMemcpyDeviceToHost);
-    /*
-    for (int i = 0; i < N*N; ++i){
-        std::cerr << "vert: " << verticalScale << std::endl;
-        std::cerr << lol[i*10 + 3] << std::endl;
-        std::cerr << verticalScale*lol[i*10 + 4] << std::endl;
-        std::cerr << lol[i*10 + 5] << std::endl;
 
-        std::cerr << lol[i*10 + 6] << std::endl;
-        std::cerr << verticalScale*lol[i*10 + 7] << std::endl;
-        std::cerr << lol[i*10 + 8] << std::endl;
-
-        Vector3 v1(lol[i*10 + 3], lol[i*10 + 4], lol[i*10 + 5]);
-        Vector3 v2(lol[i*10 + 6], lol[i*10 + 7], lol[i*10 + 8]);
-
-        Vector3 cross = v1.cross(v2);
-        cross = cross / cross.mag();
-        std::cerr << "Cross: " << cross.x << " " << cross.y << " " << cross.z << std::endl;
-
-    }
-    free(lol);*/
     cudaGraphicsUnmapResources(1, &VBO_CUDA, 0);
 }
 
@@ -560,6 +537,35 @@ void init()
 
     cudaGraphicsGLRegisterBuffer(&VBO_CUDA, VBO_GL,
             cudaGraphicsMapFlagsWriteDiscard);
+}
+
+std::vector<float> height(std::vector<std::pair<float,float> > _worldPos)
+{
+    std::vector<float> h(_worldPos.size());
+    cudaGraphicsMapResources(1, &VBO_CUDA, 0);
+    float* positions;
+    size_t num_bytes;
+    cudaGraphicsResourceGetMappedPointer((void**)&positions,
+                                          &num_bytes,
+                                          VBO_CUDA);
+    for (unsigned int k = 0 ; k < _worldPos.size(); ++k) {
+        int i = _worldPos[k].first*N/WORLD_SIZE;
+        int j = _worldPos[k].second*N/WORLD_SIZE;
+
+        //the last +1 is to get Y value from VBO
+        //*10 because each vertex has 10 floats
+        int idx = (i + j * N) * 10 + 1;
+
+        float temp;
+        cudaMemcpy(&temp, positions+idx, sizeof(float),
+                cudaMemcpyDeviceToHost);
+
+        std::cerr << "Height at (" << _worldPos[k].first << ", " <<
+                _worldPos[k].second << "): " << temp << std::endl;
+        h[k] = temp;
+    }
+    cudaGraphicsUnmapResources(1, &VBO_CUDA, 0);
+    return h;
 }
 
 ShaderData* oceanShaderData()
