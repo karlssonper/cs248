@@ -49,6 +49,7 @@ public:
 
     Vector3 viewVector() const;
     Vector3 worldPos() const { return worldPos_; }
+   
 
     void shake(float _duration, float _magnitude);
     void updateShake(float _dt);
