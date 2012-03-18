@@ -37,6 +37,8 @@ public:
     
     std::vector<Emitter*> emitters() { return emitters_; }
 
+    float heightDiff_;
+
 private:
     float energy_;
     Vector3 midPoint_;

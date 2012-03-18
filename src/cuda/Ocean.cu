@@ -555,14 +555,15 @@ std::vector<float> height(std::vector<std::pair<float,float> > _worldPos)
         //the last +1 is to get Y value from VBO
         //*10 because each vertex has 10 floats
         int idx = (i + j * N) * 10 + 1;
-
+        
         float temp;
         cudaMemcpy(&temp, positions+idx, sizeof(float),
                 cudaMemcpyDeviceToHost);
 
-        std::cerr << "Height at (" << _worldPos[k].first << ", " <<
-                _worldPos[k].second << "): " << temp << std::endl;
+        //std::cerr << "Height at (" << _worldPos[k].first << ", " <<
+                //_worldPos[k].second << "): " << temp << std::endl;
         h[k] = temp;
+        
     }
     cudaGraphicsUnmapResources(1, &VBO_CUDA, 0);
     return h;

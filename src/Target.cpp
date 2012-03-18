@@ -46,6 +46,7 @@ void Target::updateHitBox() {
 
 void Target::updatePos(float _dt) {
     mesh_->node()->translate(speed_*_dt);
+    mesh_->node()->translate(Vector3(0.f, -heightDiff_, 0.f));
 }
 
 void Target::speedIs(Vector3 _speed) {

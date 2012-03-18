@@ -81,6 +81,26 @@ static void KeyPressed(unsigned char key, int x, int y) {
         case 'q':
             Engine::instance().changeCamera();
             break;
+        case 't':
+            if (Engine::instance().targets().at(0)->active())
+                Engine::instance().targets().at(0)->explode();
+            break;
+        case 'y':
+            if (Engine::instance().targets().at(1)->active())
+                Engine::instance().targets().at(1)->explode();
+            break;
+        case 'u':
+            if (Engine::instance().targets().at(2)->active())
+                Engine::instance().targets().at(2)->explode();
+            break;
+        case 'i':
+            if (Engine::instance().targets().at(3)->active())
+                Engine::instance().targets().at(3)->explode();
+            break;
+        case 'o':
+            if (Engine::instance().targets().at(4)->active())
+                Engine::instance().targets().at(4)->explode();
+            break;
 
     }
 }
@@ -100,26 +120,6 @@ static void KeyReleased(unsigned char key, int x, int y) {
             break;
         case 'd':
             //Camera::instance().strafe(0.5);
-            break;
-        case '1':
-            if (Engine::instance().targets().at(0)->active())
-                Engine::instance().targets().at(0)->explode();
-            break;
-        case '2':
-            if (Engine::instance().targets().at(1)->active())
-                Engine::instance().targets().at(1)->explode();
-            break;
-        case '3':
-            if (Engine::instance().targets().at(2)->active())
-                Engine::instance().targets().at(2)->explode();
-            break;
-        case '4':
-            if (Engine::instance().targets().at(3)->active())
-                Engine::instance().targets().at(3)->explode();
-            break;
-        case '5':
-            if (Engine::instance().targets().at(4)->active())
-                Engine::instance().targets().at(4)->explode();
             break;
     }
 }
@@ -598,17 +598,41 @@ void Engine::targetSpawnRateIs(float _targetSpawnRate) {
 
 
 void Engine::UpdateTargets(float _frameTime) {
+
     nextSpawn_ -= _frameTime;
+
     std::vector<Target*>::iterator it;
+
+    std::vector<std::pair<float,float> > xzPositions;
     for (it=targets_.begin(); it!=targets_.end(); it++) {
+        std::pair<float, float> xzPair;
+        xzPair.first = (*it)->midPoint().x;
+        xzPair.second = (*it)->midPoint().z;
+        xzPositions.push_back(xzPair);
+    }
+    std::vector<float> heights = CUDA::Ocean::height(xzPositions);
+
+    unsigned int i=0;
+    for (it=targets_.begin(); it!=targets_.end(); it++) {
+
         if ( (*it)->active() ) {
-            (*it)->updatePos(_frameTime);
-            (*it)->updateHitBox();
+
+            float currentHeight = (*it)->midPoint().y;
+            float oceanHeight = heights.at(i);
+            float heightDiff = currentHeight - oceanHeight;
+            (*it)->heightDiff_ = heightDiff;
+
             if ( (*it)->midPoint().z < zMin_ ) {
                 (*it)->activeIs(false);
                 (*it)->mesh()->showIs(false);
             }
+
+            (*it)->updatePos(_frameTime);
+
+            (*it)->updateHitBox();
+
         }
+        i++;
     }
 }
 
@@ -626,6 +650,7 @@ void Engine::SpawnTargets() {
                 Vector3 currentPos = (Vector3((*it)->midPoint().x, 
                                               0.f,
                                               (*it)->midPoint().z));
+
                 (*it)->mesh()->node()->translate(currentPos-startPos);
                 (*it)->activeIs(true);
                 (*it)->mesh()->showIs(true);

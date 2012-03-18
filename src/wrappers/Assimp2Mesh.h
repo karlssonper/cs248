@@ -37,7 +37,7 @@ void readNode(Mesh * _mesh,
               Matrix4 _parentTransform) 
 {
 
-    std::cout << "readNode reading node " << _node->mName.data << std::endl;
+   // std::cout << "readNode reading node " << _node->mName.data << std::endl;
 
     Matrix4 nodeTransform = _parentTransform;
 
@@ -65,15 +65,15 @@ void readNode(Mesh * _mesh,
 
     nodeTransform = nodeTransform*parentTransform;
 
-    std::cout << "Node " << _node->mName.data << " has " << 
-        _node->mNumMeshes << " meshes" << std::endl;
+    //std::cout << "Node " << _node->mName.data << " has " << 
+       // _node->mNumMeshes << " meshes" << std::endl;
 
     for (unsigned int i=0; i<_node->mNumMeshes; ++i) {
 
         aiMesh * mesh = _scene->mMeshes[_node->mMeshes[i]];
-        std::cout << "Processing mesh " << mesh->mName.data << std::endl;
-        std::cout << "Mesh has " << mesh->mNumVertices << " vertices " << std::endl;
-        std::cout << "Current position array size: " << _position->size() << std::endl;
+        //std::cout << "Processing mesh " << mesh->mName.data << std::endl;
+        //std::cout << "Mesh has " << mesh->mNumVertices << " vertices " << std::endl;
+        //std::cout << "Current position array size: " << _position->size() << std::endl;
 
         unsigned int indexOffset = _position->size();
 
@@ -171,8 +171,8 @@ void read(std::string _fileStr, std::string _meshStr, Mesh * _mesh, float _scale
              &indices,
              transform);
 
-    std::cout << "DONE!" << std::endl;
-    std::cout << "position.size(): " << position.size() << std::endl;
+    //std::cout << "DONE!" << std::endl;
+    //std::cout << "position.size(): " << position.size() << std::endl;
    
     _mesh->geometryIs(position, texCoord, normal, tangent, bitangent, indices);
 
