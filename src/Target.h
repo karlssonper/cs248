@@ -24,16 +24,25 @@ public:
     Mesh * mesh() const { return mesh_; }
     std::string name() const { return name_; }
     Vector3 speed() const { return speed_; }
+    bool active() const { return active_; }
+    void activeIs(bool _active);
+    void speedIs(Vector3 _speed);
+    Vector3 midPoint() const { return midPoint_; }
+    void explode();
+
 private:
     float energy_;
+    Vector3 midPoint_;
     Vector3 frontAnchor_;
     Vector3 backAnchor_;
     Vector3 middleAnchor_;
     Vector3 speed_;
     float angle_;
+    HitBox * hitBoxLocal_;
     HitBox * hitBox_;
     Mesh * mesh_;
     std::string name_;
+    bool active_;
 };
 
 #endif

@@ -32,6 +32,7 @@ static std::string ShaderAttributes[NUM_SHADER_ATTRIBUTES] = {
 
 Mesh::Mesh(std::string _name, Node * _node) : name_(_name), node_(_node)
 {
+    show_ = true;
     loadedInGPU_ = false;
 }
 
@@ -94,6 +95,8 @@ void Mesh::geometryIs(const std::vector<Vector3> &_position,
 
 void Mesh::display() const
 {
+
+    if (!show_) return;
     if (!loadedInGPU_) return;
     unsigned int n = indices_.size();
 
@@ -194,4 +197,8 @@ std::vector<Vector3> Mesh::minMax() const {
     result.push_back(minCoords);
     result.push_back(maxCoords);
     return result;
+}
+
+void Mesh::showIs(bool _show) {
+    show_ = _show;
 }

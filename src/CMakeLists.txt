@@ -11,7 +11,10 @@ CUDA_ADD_LIBRARY(engine STATIC
                             Node
                             Camera
                             ShaderData
-                            ParticleSystem)
+                            ParticleSystem
+                            Weapon
+                            Target
+                            HitBox)
 
 TARGET_LINK_LIBRARIES(engine 
                                     ${GL_EXT_LIB} 

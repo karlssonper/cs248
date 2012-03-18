@@ -4,6 +4,9 @@
  *  Created on: Mar 2, 2012
  *      Author: per
  */
+#include <sstream>
+#include <time.h>
+
 //Singletons
 #include "Engine.h"
 #include "Camera.h"
@@ -13,6 +16,8 @@
 #include "Node.h"
 #include "Mesh.h"
 #include "ShaderData.h"
+#include "Target.h"
+#include "HitBox.h"
 
 //CUDA
 #include "cuda/Ocean.cuh"
@@ -23,6 +28,8 @@
 
 //Important to include glut AFTER OpenGL
 #include <GL/glut.h>
+
+
 
 static void Reshape(int w, int h)
 {
@@ -117,6 +124,7 @@ static void GameLoop()
 {
     //the heart
     float currentTime = (float)glutGet(GLUT_ELAPSED_TIME) / 1000.f;
+
     Engine::instance().renderFrame(currentTime);
 
     //std::cout << "Yaw: " << Camera::instance().yaw() << std::endl;
@@ -155,7 +163,10 @@ Engine::~Engine() {
     std::cout << "~Engine()" << std::endl;
 }
 
-void Engine::init(int argc, char **argv, const char * _titlee, int _width, int _height)
+void Engine::init(int argc, char **argv,
+                  const char * _titlee,
+                  int _width,
+                  int _height)
 {
     widthIs(_width);
     heightIs(_height);
@@ -171,6 +182,7 @@ void Engine::init(int argc, char **argv, const char * _titlee, int _width, int _
     glutDisplayFunc(GameLoop);
     glutIdleFunc(GameLoop);
     currentTime_ = 0;
+    nextSpawn_ = 0.f;
     state_ = RUNNING;
 }
 
@@ -200,6 +212,10 @@ void Engine::loadResources(const char * _file)
 {
     //same as cudaoceantest
 
+     xzBoundsIs(0.f, 100.f, 0.f ,100.f);
+     nrTargetsIs(5);
+     targetSpawnRateIs(3.f);
+
     gameCam_ = new Camera();
     gameCam_->projectionIs(45.f, 1.f, 1.f, 10000.f);
     gameCam_->positionIs(Vector3(11.1429, -5.2408, 10.2673));
@@ -225,8 +241,13 @@ void Engine::loadResources(const char * _file)
     shadowShader_ = new ShaderData(shadowShaderStr);
     shadowShader_->enableMatrix(PROJECTION);
     shadowShader_->enableMatrix(MODELVIEW);
-    lightCam_->lookAt(Vector3(51.0,0.5, 51.0), Vector3(50,0,50.0), Vector3(0,1.0,0));
-    lightCam_->BuildOrthoProjection(Vector3(-100,-50,-10), Vector3(100,50,100));
+    lightCam_->lookAt(
+            Vector3(51.0,0.5, 51.0),
+            Vector3(50,0,50.0),
+            Vector3(0,1.0,0));
+    lightCam_->BuildOrthoProjection(
+            Vector3(-100,-50,-100),
+            Vector3(100,50,100));
     Matrix4 * shadowProj = shadowShader_->stdMatrix4Data(PROJECTION);
     *shadowProj = Engine::instance().lightCamera()->projectionMtx();
 
@@ -250,46 +271,9 @@ void Engine::loadResources(const char * _file)
 
     root_ = new Node("root");
 
+    srand(1986);
 
-    std::string nodeStr("sixten");
-    Node * node = new Node(nodeStr);
-    nodes_[nodeStr] = node;
-    node->parentIs(root_);
-    node->translate(Vector3(50,0,50));
-    node->rotateY(180.0f);
-
-    std::string meshStr("sixten");
-    Mesh * mesh = new Mesh(meshStr, node);
-    meshes_[meshStr] = mesh;
-
-    std::string phongStr("phong");
-    ShaderData * shader = new ShaderData("../shaders/phong");
-    shaders_[phongStr] = shader;
-    shader->enableMatrix(MODELVIEW);
-    shader->enableMatrix(NORMAL);
-    shader->enableMatrix(MODEL);
-
-    shader->enableMatrix(PROJECTION);
-    Matrix4 * projection = shader->stdMatrix4Data(PROJECTION);
-    *projection = camera()->projectionMtx();
-
-    shader->enableMatrix(LIGHTVIEW);
-    Matrix4 * lightView = shader->stdMatrix4Data(LIGHTVIEW);
-     *lightView = lightCamera()->viewMtx();
-
-    shader->enableMatrix(LIGHTPROJECTION);
-    Matrix4 * lightProj = shader->stdMatrix4Data(LIGHTPROJECTION);
-    *lightProj = lightCamera()->projectionMtx();
-
-    shader->addTexture("shadowMap", "shadow");
-    shader->addFloat("shadowMapDx", 1.0f / shadowSize_);
-
-    std::string tex("../textures/Galleon2.jpg");
-    std::string texName("diffuseMap");
-    shader->addTexture(texName, tex);
-
-    mesh->shaderDataIs(shader);
-    ASSIMP2MESH::read("../models/Galleon.3ds", "galleon", mesh, 0.3f);
+    loadTargets();
     CUDA::Ocean::init();
     std::string oceanShaderStr("ocean");
     shaders_[oceanShaderStr] = CUDA::Ocean::oceanShaderData();
@@ -311,10 +295,6 @@ void Engine::renderFrame(float _currentTime)
     float lastTime = currentTime_;
     currentTime_ = _currentTime;
     float frameTime = currentTime_ - lastTime;
-    //std::cout << std::endl;
-    //std::cout << "lastTime: " << lastTime << std::endl;
-    //std::cout << "currentTime: " << currentTime << std::endl;
-    //std::cout << "frameTime: " << frameTime << std::endl;
 
     if (updateCamView_) {
         activeCam_->BuildViewMatrix();
@@ -323,8 +303,11 @@ void Engine::renderFrame(float _currentTime)
 
     CUDA::Ocean::performIFFT(currentTime_, false);
     CUDA::Ocean::updateVBO(false);
+    spawnTargets();
 
     root_->update();
+
+    updateTargets(frameTime);
 
     RenderShadowMap();
 
@@ -357,7 +340,10 @@ void Engine::RenderFirstPass()
     Matrix4 * modelView = skyBoxShader_->stdMatrix4Data(MODELVIEW);
     *modelView = camera()->viewMtx();
 
-    Graphics::instance().drawIndices(skyboxVAO_, skyboxIdxVBO_,36,skyBoxShader_);
+    Graphics::instance().drawIndices(skyboxVAO_,
+                                     skyboxIdxVBO_,
+                                     36,
+                                     skyBoxShader_);
 
     for (MeshMap::const_iterator it =meshes_.begin(); it!= meshes_.end();++it) {
         it->second->display();
@@ -480,7 +466,7 @@ void Engine::BuildSkybox()
     cubeMapTexs[3] = std::string("../textures/NEGATIVE_Y.png");
     cubeMapTexs[4] = std::string("../textures/POSITIVE_Z.png");
     cubeMapTexs[5] = std::string("../textures/NEGATIVE_Z.png");
-    skyBoxShader_->addCubeTexture(cubeMapShaderStr, cubeMapStr, cubeMapTexs);
+   // skyBoxShader_->addCubeTexture(cubeMapShaderStr, cubeMapStr, cubeMapTexs);
 
     const int stride = sizeof(SkyboxVertex);
     unsigned int sID = skyBoxShader_->shaderID();
@@ -513,4 +499,114 @@ void Engine::start()
 {
     glutMainLoop();
 }
+
+void Engine::xzBoundsIs(float _xMin, float _xMax, float _zMin, float _zMax) {
+    xMin_ = _xMin;
+    xMax_ = _xMax;
+    zMin_ = _zMin;
+    zMax_ = _zMax;
+}
+
+void Engine::loadTargets() {
+
+    std::string phongStr("phong");
+    ShaderData * shader = new ShaderData("../shaders/phong");
+    shaders_[phongStr] = shader;
+    shader->enableMatrix(MODELVIEW);
+    shader->enableMatrix(PROJECTION);
+    shader->enableMatrix(NORMAL);
+
+    std::string tex("../textures/Galleon2.jpg");
+    std::string texName("diffuseMap");
+    shader->addTexture(texName, tex);
+
+    for (unsigned int i = 0; i < nrTargets_; i++) {
+        std::ostringstream oss;
+        oss << std::setw(3) << std::setfill('0') << i ;
+
+        std::string nodeStr("battleCruiserNode"+oss.str());
+        Node * node = new Node(nodeStr);
+        nodes_[nodeStr] = node;
+        node->parentIs(root_);
+        //float startX = Random::randomFloat(xMin_, xMax_);
+        //node->translate(Vector3(startX, 0.f, zMax_));
+        //node->rotateY(180.0f);
+
+        std::string meshStr("battleCruiser"+oss.str());
+        Mesh * mesh = new Mesh(meshStr, node);
+        meshes_[meshStr] = mesh;
+        mesh->node()->rotateY(180.0f);
+
+        mesh->showIs(false);
+
+        mesh->shaderDataIs(shader);
+        ASSIMP2MESH::read("../models/Galleon.3ds", "galleon", mesh, 0.3f);
+
+        std::string targetStr("battleCruiserTarget"+oss.str());
+        Target * target = new Target(targetStr, mesh, 100.f);
+        target->speedIs(Vector3(0.0f, 0.f, 15.0f));
+        target->hitBox()->p0.print();
+        target->hitBox()->p1.print();
+        targets_.push_back(target);
+    }
+}
+
+void Engine::nrTargetsIs(unsigned int _nrTargets) {
+    nrTargets_ = _nrTargets;
+}
+
+void Engine::targetSpawnRateIs(float _targetSpawnRate) {
+    targetSpawnRate_ = _targetSpawnRate;
+}
+
+void Engine::updateTargets(float _frameTime) {
+
+    nextSpawn_ -= _frameTime;
+
+    std::vector<Target*>::iterator it;
+    for (it=targets_.begin(); it!=targets_.end(); it++) {
+
+        if ( (*it)->active() ) {
+            (*it)->updatePos(_frameTime);
+            (*it)->updateHitBox();
+            if ( (*it)->midPoint().z < zMin_ ) {
+             
+                (*it)->activeIs(false);
+                (*it)->mesh()->showIs(false);
+      
+            }
+
+        }
+
+    }
+}
+
+void Engine::spawnTargets() {
+
+    if (nextSpawn_ < 0.f) {
+        std::vector<Target*>::iterator it;
+        for (it=targets_.begin(); it!=targets_.end(); it++) {
+            
+            if ( !(*it)->active() ) {
+                //std::cout << "Activating " << (*it)->name() << std::endl;
+
+                float startX = Random::randomFloat(xMin_, xMax_);
+                Vector3 startPos(startX, 0.f, zMax_);
+                Vector3 currentPos = (Vector3((*it)->midPoint().x, 
+                                              0.f,
+                                              (*it)->midPoint().z));
+                (*it)->mesh()->node()->translate(currentPos-startPos);
+                (*it)->activeIs(true);
+                (*it)->mesh()->showIs(true);
+
+                break;
+            }
+        }
+
+        nextSpawn_ = targetSpawnRate_;
+    }
+
+}
+
+
 
