@@ -38,7 +38,7 @@ typedef std::map<std::string, ShaderAttribute<unsigned int> > attribMapTex;
 class ShaderData
 {
 public:
-    ShaderData(const std::string & _shader);
+    ShaderData(const std::string & _shader, bool geomShader = false);
 
     unsigned int shaderID() const { return shaderID_; } ;
     void addFloat(const std::string & _name, float _value);

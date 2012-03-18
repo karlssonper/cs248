@@ -108,7 +108,7 @@ public:
 
     void deleteTexture(const std::string & _img);
     void deleteTexture(unsigned int _texID);
-    GLuint shader(const std::string & _shader);
+    GLuint shader(const std::string & _shader, bool geomShader = false);
     void deleteShader(const std::string & _shader);
     void deleteShader(unsigned int _shaderID);
 
@@ -137,6 +137,7 @@ private:
     {
         GLuint vertexShaderId;
         GLuint fragmentShaderID;
+        GLuint geomShaderID;
         GLuint programID;
     };
     typedef std::map<std::string, ShaderID> ShaderMap;
@@ -150,7 +151,7 @@ private:
 
     void loadShaderData(const ShaderData * _shaderData) const;
     void unloadShaderData() const;
-    GLuint LoadShader(const std::string _shader);
+    GLuint LoadShader(const std::string _shader, bool geoShader = false);
     std::vector<char> ReadSource(const std::string _file);
 
     Graphics(const Graphics &);

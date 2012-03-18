@@ -39,6 +39,7 @@ Graphics::Graphics()
 #endif
 
     glEnable(GL_DEPTH_TEST);
+
     CUDA::init();
 
 }
@@ -276,7 +277,7 @@ void Graphics::drawArrays(GLuint _VAO,
 {
     //glEnable(GL_POINT_SIZE);
     // draw
-    glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
+    //glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
     glEnable(GL_BLEND);
 
     if (additiveBlending) {
@@ -446,16 +447,16 @@ void Graphics::deleteTexture(unsigned int _texID)
     std::cerr << "Can't remove texture #" << _texID << std::endl;
 }
 
-GLuint Graphics::shader(const std::string & _shader)
+GLuint Graphics::shader(const std::string & _shader, bool geoShader)
 {
     if(shader_.find(_shader) == shader_.end()){
-        return LoadShader(_shader);
+        return LoadShader(_shader, geoShader);
     } else {
         return shader_[_shader].programID;
     }
 }
 
-GLuint Graphics::LoadShader(const std::string _shader)
+GLuint Graphics::LoadShader(const std::string _shader, bool geoShader)
 {
     const GLchar* source[1];
     int length = 0;
@@ -476,10 +477,26 @@ GLuint Graphics::LoadShader(const std::string _shader)
     glShaderSource(vertexShaderID, 1, source, &length);
     glCompileShader(vertexShaderID);
 
+    GLuint geomShaderID;
+    if (geoShader) {
+        // Load the geometry shader and compile
+        std::vector<char> geomSource = ReadSource(_shader + ".geom.glsl");
+        source[0] = &geomSource.front();
+        length = geomSource.size()-1;
+        geomShaderID = glCreateShader(GL_GEOMETRY_SHADER);
+        glShaderSource(geomShaderID, 1, source, &length);
+        glCompileShader(geomShaderID);
+    }
+
     // Create the vertex program
     GLuint programID = glCreateProgram();
     glAttachShader(programID, fragmentShaderID);
     glAttachShader(programID, vertexShaderID);
+    if (geoShader){
+        //glProgramParameteri(programID,GL_GEOMETRY_INPUT_TYPE,GL_POINTS);
+        //glProgramParameteri(programID,GL_GEOMETRY_OUTPUT_TYPE,GL_TRIANGLE_STRIP);
+        glAttachShader(programID, geomShaderID);
+    }
     glLinkProgram(programID);
 
    // bool loaded;
@@ -498,6 +515,9 @@ GLuint Graphics::LoadShader(const std::string _shader)
         glGetShaderInfoLog(vertexShaderID, ERROR_BUFSIZE, &length,tempErrorLog);
         error += "Vertex shader errors:\n";
         error += std::string(tempErrorLog, length) + "\n";
+        glGetShaderInfoLog(geomShaderID, ERROR_BUFSIZE, &length,tempErrorLog);
+        error += "Geom shader errors:\n";
+        error += std::string(tempErrorLog, length) + "\n";
         glGetProgramInfoLog(programID, ERROR_BUFSIZE, &length, tempErrorLog);
         error += "Linker errors:\n";
         error += std::string(tempErrorLog, length) + "\n";
@@ -507,6 +527,7 @@ GLuint Graphics::LoadShader(const std::string _shader)
     ShaderID &S = shader_[_shader];
     S.vertexShaderId = vertexShaderID;
     S.fragmentShaderID = fragmentShaderID;
+    S.geomShaderID = geomShaderID;
     S.programID = programID;
 
     return programID;

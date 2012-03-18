@@ -153,7 +153,6 @@ static void GameLoop()
 {
     //the heart
     float currentTime = (float)glutGet(GLUT_ELAPSED_TIME) / 1000.f;
-
     Engine::instance().renderFrame(currentTime);
 
     //std::cout << "Yaw: " << Camera::instance().yaw() << std::endl;
@@ -292,7 +291,6 @@ void Engine::renderFrame(float _currentTime)
     UpdateTargets(frameTime);
 
     updateParticles(frameTime);
-    displayParticles();
     
     RenderShadowMap();
     RenderFirstPass();
@@ -332,6 +330,7 @@ void Engine::RenderFirstPass()
         it->second->display();
     }
     CUDA::Ocean::display();
+    displayParticles();
 
     Graphics::instance().disableFramebuffer();
 }
@@ -679,10 +678,10 @@ void Engine::initParticleSystems() {
     std::string s3("../shaders/particle");
     std::string s4("../shaders/particle");
 
-    fireEmitter1sd_ = new ShaderData(s1);
-    fireEmitter2sd_ = new ShaderData(s2);
-    debrisEmittersd_ = new ShaderData(s3);
-    smokeEmittersd_ = new ShaderData(s4);
+    fireEmitter1sd_ = new ShaderData(s1,true);
+    fireEmitter2sd_ = new ShaderData(s2,true);
+    debrisEmittersd_ = new ShaderData(s3,true);
+    smokeEmittersd_ = new ShaderData(s4,true);
 
     std::string t1("sprite");
     std::string t2("sprite");
@@ -703,6 +702,16 @@ void Engine::initParticleSystems() {
     fireEmitter2sd_->enableMatrix(PROJECTION);
     debrisEmittersd_->enableMatrix(PROJECTION);
     smokeEmittersd_->enableMatrix(PROJECTION);
+
+    Matrix4 * proj1 = fireEmitter1sd_->stdMatrix4Data(PROJECTION);
+    Matrix4 * proj2 = fireEmitter2sd_->stdMatrix4Data(PROJECTION);
+    Matrix4 * proj3 = debrisEmittersd_->stdMatrix4Data(PROJECTION);
+    Matrix4 * proj4 = smokeEmittersd_->stdMatrix4Data(PROJECTION);
+
+    *proj1 = camera()->projectionMtx();
+    *proj2 = camera()->projectionMtx();
+    *proj3 = camera()->projectionMtx();
+    *proj4 = camera()->projectionMtx();
 
     fireEmitter1sd_->addTexture(t1,p1);
     fireEmitter2sd_->addTexture(t2,p2);

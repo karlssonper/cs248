@@ -11,7 +11,7 @@
 #include <Camera.h>
 #include <Mesh.h>
 #include <Node.h>
-#include <wrappers/Assimp2Mesh.h>
+#include "wrappers/Assimp2Mesh.h"
 
 float width = 500;
 float height = 500;
@@ -22,6 +22,7 @@ ParticleSystem *sp;
 Mesh * mesh;
 ShaderData * shader;
 Node * node;
+Camera * cam;
 //Renderer *renderer;
 //Shader *shader;
 
@@ -30,7 +31,7 @@ ShaderData *fireEmitter1sd, *fireEmitter2sd, *debrisEmittersd, *smokeEmittersd;
 int mouseX, mouseY;
 
 void initGL() {
-    Camera::instance().projectionIs(fov, width/height, 1.f, 100.f);
+    cam->projectionIs(fov, width/height, 1.f, 100.f);
     /*glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
     glEnable(GL_DEPTH_TEST);
 
@@ -58,7 +59,7 @@ void idle() {
 
 void display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    Camera::instance().BuildViewMatrix();
+    cam->BuildViewMatrix();
     mesh->display();
     sp->display();
      /*glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT ); 
@@ -79,16 +80,16 @@ static void keyboard(unsigned char key, int x, int y) {
         case 27:
             exit(0);
         case 'w':
-            Camera::instance().move(0.5);
+            cam->move(0.5);
             break;
         case 's':
-            Camera::instance().move(-0.5);
+            cam->move(-0.5);
             break;
         case 'a':
-            Camera::instance().strafe(-0.5);
+            cam->strafe(-0.5);
             break;
         case 'd':
-            Camera::instance().strafe(0.5);
+            cam->strafe(0.5);
             break;
         case 'e':
         case 'E':
@@ -106,8 +107,8 @@ void mouseFunc(int x,int y)
     int dy = y - mouseY;
     mouseX = x;
     mouseY = y;
-    Camera::instance().yaw(1.6*dx);
-    Camera::instance().pitch(1.6*dy);
+    cam->yaw(1.6*dx);
+    cam->pitch(1.6*dy);
 }
 void mouseMoveFunc(int x,int y)
 {
@@ -235,8 +236,9 @@ void initParticleSystem() {
 
     node = new Node("sixtenNode");
     mesh = new Mesh("sixten", node);
-    Camera::instance().positionIs(Vector3(11.1429, -5.2408, 10.2673));
-    Camera::instance().rotationIs(492.8, 718.4);
+    cam = new Camera();
+    cam->positionIs(Vector3(11.1429, -5.2408, 10.2673));
+    cam->rotationIs(492.8, 718.4);
     shader = new ShaderData("../shaders/phong");
 
     shader->enableMatrix(MODELVIEW);
