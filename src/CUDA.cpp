@@ -21,7 +21,7 @@ void init()
     if (initialized) return;
     cudaGLSetGLDevice(0);
     initialized = true;
-//    glEnable(GL_POINT_SPRITE);
 }
 
 }
+

@@ -18,9 +18,10 @@ static std::string STDMatricesStr[NUM_STD_MATRICES] = {
         "NormalMatrix",
 };
 
-ShaderData::ShaderData(const std::string & _shader) : shaderName_(_shader)
+ShaderData::ShaderData(const std::string & _shader, bool geomShader)
+        : shaderName_(_shader)
 {
-    shaderID_ = Graphics::instance().shader(_shader);
+    shaderID_ = Graphics::instance().shader(_shader, geomShader);
     stdMatrices_.resize(NUM_STD_MATRICES);
     for (int i = 0; i < NUM_STD_MATRICES -1 ; ++i){
         stdMatrices_[i].first = false;
