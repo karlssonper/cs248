@@ -83,6 +83,26 @@ static void KeyReleased(unsigned char key, int x, int y) {
         case 'd':
             //Camera::instance().strafe(0.5);
             break;
+        case '1':
+            if (Engine::instance().targets().at(0)->active())
+                Engine::instance().targets().at(0)->explode();
+            break;
+        case '2':
+            if (Engine::instance().targets().at(1)->active())
+                Engine::instance().targets().at(1)->explode();
+            break;
+        case '3':
+            if (Engine::instance().targets().at(2)->active())
+                Engine::instance().targets().at(2)->explode();
+            break;
+        case '4':
+            if (Engine::instance().targets().at(3)->active())
+                Engine::instance().targets().at(3)->explode();
+            break;
+        case '5':
+            if (Engine::instance().targets().at(4)->active())
+                Engine::instance().targets().at(4)->explode();
+            break;
     }
 }
 
@@ -516,24 +536,17 @@ void Engine::targetSpawnRateIs(float _targetSpawnRate) {
 }
 
 void Engine::updateTargets(float _frameTime) {
-
     nextSpawn_ -= _frameTime;
-
     std::vector<Target*>::iterator it;
     for (it=targets_.begin(); it!=targets_.end(); it++) {
-
         if ( (*it)->active() ) {
             (*it)->updatePos(_frameTime);
             (*it)->updateHitBox();
             if ( (*it)->midPoint().z < zMin_ ) {
-             
                 (*it)->activeIs(false);
                 (*it)->mesh()->showIs(false);
-      
             }
-
         }
-
     }
 }
 

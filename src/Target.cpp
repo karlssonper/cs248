@@ -2,6 +2,7 @@
 #include "Mesh.h"
 #include "HitBox.h"
 #include "Node.h"
+#include "ParticleSystem.h"
 #include <iostream>
 
 Target::Target(std::string _name, 
@@ -17,6 +18,8 @@ Target::Target(std::string _name,
     hitBox_ = new HitBox(name_ + "HitBox", minMax.at(0), minMax.at(1));
     hitBoxLocal_ = new HitBox(name_+"HitBoxLocal", minMax.at(0), minMax.at(1));
     updateHitBox();
+
+    particleSystem_ = new ParticleSystem(4);
 }
 
 void Target::energyDec(float _e) {
