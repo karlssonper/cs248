@@ -6,9 +6,15 @@
  */
 
 #include "Sound.h"
-#include <AL/al.h>
-#include <AL/alc.h>
-#include <AL/alut.h>
+#ifdef _WIN32
+    #include "al.h"
+    #include "alc.h"
+    #include "alut.h"
+#else
+    #include <AL/al.h>
+    #include <AL/alc.h>
+    #include <AL/alut.h>
+#endif
 #include <string>
 
 static std::string SoundFiles[Sound::NUM_SOUNDS] = {
