@@ -13,7 +13,8 @@ TARGET_LINK_LIBRARIES(enginetest
                                     freeimage
                                     cudart
                                     cufft
-                                    #IrrKlang
+                                    openal
+                                    alut
                                      )
 
 INSTALL (TARGETS enginetest DESTINATION bin)

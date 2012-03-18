@@ -11,16 +11,14 @@
 #include "MathEngine.h"
 #include <vector>
 
-namespace irrklang{
-    class ISoundEngine;
-    class ISoundSource;
-}
 class Sound
 {
 public:
     static Sound& instance() { static Sound s; return s; };
     enum SoundEnum{
-        EXPLOSION = 0, NUM_SOUNDS = 1
+        THEME = 0,
+        EXPLOSION = 1,
+        NUM_SOUNDS = 2
     };
 
     void play(SoundEnum _se, Vector3 _pos) const;
@@ -31,7 +29,7 @@ private:
     Sound(const Sound &);
     void operator=(const Sound &);
 
-    irrklang::ISoundEngine* engine_;
-    std::vector<irrklang::ISoundSource*> sounds_;
+    unsigned int buffers_[NUM_SOUNDS];
+    unsigned int source_[NUM_SOUNDS];
 };
 #endif /* SOUND_H_ */

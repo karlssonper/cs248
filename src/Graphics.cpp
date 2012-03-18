@@ -40,7 +40,7 @@ Graphics::Graphics()
 
     glEnable(GL_DEPTH_TEST);
     CUDA::init();
-    glEnable(GL_POINT_SPRITE);
+
 }
 
 void Graphics::viewportIs(int _width, int _height)
@@ -573,7 +573,7 @@ GLint Graphics::shaderUniformLoc(GLuint _shader, const std::string & _name)
 {
     GLint loc = glGetUniformLocation(_shader, _name.c_str());
     if (loc < 0){
-        std::cerr << "Couldn't find location for " << _name << std::endl;
+        //std::cerr << "Couldn't find location for " << _name << std::endl;
     }
     return loc;
 }
@@ -582,7 +582,7 @@ GLint Graphics::shaderAttribLoc(GLuint _shader, const std::string & _name)
 {
     GLint loc = glGetAttribLocation(_shader, _name.c_str());
     if (loc < 0){
-            std::cerr << "Couldn't find location for " << _name << std::endl;
+            //std::cerr << "Couldn't find location for " << _name << std::endl;
         }
     return loc;
 }

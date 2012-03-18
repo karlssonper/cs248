@@ -15,7 +15,7 @@ CUDA_ADD_LIBRARY(engine STATIC
                             Weapon
                             Target
                             HitBox
-                            #Sound
+                            Sound
                             )
 
 TARGET_LINK_LIBRARIES(engine 
@@ -27,7 +27,8 @@ TARGET_LINK_LIBRARIES(engine
                                                freeimage
                                                cudart
                                                cufft
-                                               #IrrKlang
+                                               openal
+                                               alut
                                                )
 
 INSTALL (TARGETS engine DESTINATION lib)

@@ -6,42 +6,72 @@
  */
 
 #include "Sound.h"
-#include <irrKlang.h>
+#include <AL/al.h>
+#include <AL/alc.h>
+#include <AL/alut.h>
 #include <string>
 
 static std::string SoundFiles[Sound::NUM_SOUNDS] = {
-        "../sound/test.mp3"
+        "../sound/theme.wav",
+        "../sound/test.wav"
 };
 
 Sound::Sound()
 {
-    engine_ = irrklang::createIrrKlangDevice();
+    // Init openAL
+    alutInit(0, NULL);
+    // Clear Error Code (so we can catch any new errors)
+    if (alGetError() != AL_NO_ERROR) std::cerr << "Error in Sound class!\n";
+
+    alGenBuffers(NUM_SOUNDS, buffers_);
+    alGenSources(NUM_SOUNDS, source_);
+    if (alGetError() != AL_NO_ERROR) std::cerr << "Error in Sound class!\n";
+
+    std::cout << "Loading sound files";
+    float zeros[3] = {0.0f, 0.0f, 0.0f};
     for (unsigned int i = 0; i < NUM_SOUNDS; ++i) {
-        sounds_[i] = engine_->addSoundSourceFromFile(SoundFiles[i].c_str());
+        ALenum     format;
+        ALsizei    size;
+        ALfloat    freq;
+        ALvoid* data = alutLoadMemoryFromFile(
+                SoundFiles[i].c_str(), &format, &size, &freq);
+        alBufferData(buffers_[i],format,data,size,freq);
+        free(data);
+
+        if (alGetError() != AL_NO_ERROR) std::cerr << "Error in Sound class!\n";
+        alSourcei(source_[i], AL_BUFFER, buffers_[i]);
+        alSourcefv (source_[i], AL_VELOCITY, zeros);
+        alSourcefv (source_[i], AL_DIRECTION, zeros);
+        std::cout << "..";
     }
-    engine_->setListenerPosition(irrklang::vec3df(0,1,0),
-                                 irrklang::vec3df(1,1,1));
+    std::cout << "done." << std::endl;
+
+
+    alListenerfv(AL_POSITION,zeros);
+    alListenerfv(AL_VELOCITY,zeros);
+    float orientation[6] = {
+            1.0f, 0.0f, 1.0f,
+            0.0f, 1.0f, 0.0f
+            };
+    alListenerfv(AL_ORIENTATION,orientation);
 }
 
 Sound::~Sound()
 {
-    for (unsigned int i = 0; i < NUM_SOUNDS; ++i) {
-        sounds_[i]->drop();
-    }
+    alDeleteSources(NUM_SOUNDS, source_);
+    alDeleteBuffers(NUM_SOUNDS, buffers_);
+
+    alutExit();
+
 }
 
 void Sound::play(SoundEnum _se, Vector3 _pos) const
 {
-    irrklang::ISound* sound = engine_->play3D(sounds_[_se],
-            irrklang::vec3df(_pos.x, _pos.y, _pos.z),
-                                    false,
-                                    false,
-                                    true);
-    sound->setMinDistance(0.0f);
+    alSourcefv (source_[_se], AL_POSITION, &_pos.x);
+    alSourcePlay(source_[_se]);
 }
 
 void Sound::listenerPositionIs(Vector3 _pos)
 {
-    engine_->setListenerPosition(irrklang::vec3df(_pos.x, _pos.y, _pos.z),
-            irrklang::vec3df(1,1,1));
+    alListenerfv(AL_POSITION, &_pos.x);
 }

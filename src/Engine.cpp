@@ -10,7 +10,7 @@
 //Singletons
 #include "Engine.h"
 #include "Graphics.h"
-//#include "Sound.h"
+#include "Sound.h"
 
 //Elements
 #include "Camera.h"
@@ -64,8 +64,12 @@ static void KeyPressed(unsigned char key, int x, int y) {
             Engine::instance().camera()->strafe(0.5);
             break;
         case 'b':
-            //Sound::instance().play(Sound::EXPLOSION, Vector3(0,0,0));
+            Sound::instance().play(Sound::EXPLOSION, Vector3(0,0,0));
             Engine::instance().camera()->shake(2.f, 4.f);
+            break;
+        //ZIMMERMAN!!!
+        case 'z':
+            Sound::instance().play(Sound::THEME, Vector3(0,0,0));
             break;
         case '1':
             Engine::instance().renderTexture(1.0f);
@@ -206,9 +210,11 @@ void Engine::init(int argc, char **argv,
     glutPassiveMotionFunc(MouseMoveFunc);
     glutDisplayFunc(GameLoop);
     glutIdleFunc(GameLoop);
+
     currentTime_ = 0;
     nextSpawn_ = 0.f;
     state_ = RUNNING;
+    Sound::instance().listenerPositionIs(Vector3(0.f, 0.f, 0.f));
     srand(1986);
     root_ = new Node("root");
 }

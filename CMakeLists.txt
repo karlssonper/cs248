@@ -26,7 +26,6 @@ FIND_PACKAGE(CUDA)
 
 LINK_DIRECTORIES(
                  /usr/local/cuda/lib64
-                 $ENV{IRRKLANG}/bin/linux-gcc
                  )
 
 SET(ENGINE_STATIC_LIB $ENV{CS248_PROJECT}/lib/libengine.a)
