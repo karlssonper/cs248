@@ -548,7 +548,7 @@ void Engine::loadWeapons() {
     Matrix4 * proj = shader->stdMatrix4Data(PROJECTION);
     *proj = Engine::instance().camera()->projectionMtx();
 
-    std::string tex("../textures/cookie.jpg");
+    std::string tex("../textures/missile.jpg");
     std::string texName("diffuseMap");
     shader->addTexture(texName, tex);
 
@@ -560,12 +560,12 @@ void Engine::loadWeapons() {
     std::string meshStr("rocketMesh");
     Mesh * mesh = new Mesh(meshStr, node);
     meshes_[meshStr] = mesh;
-    mesh->node()->rotateY(180.0f);
+    mesh->node()->rotateY(180.f);
 
     mesh->showIs(false);
 
     mesh->shaderDataIs(shader);
-    ASSIMP2MESH::read("../models/cookie.3ds", "rocket", mesh, 0.02f);
+    ASSIMP2MESH::read("../models/missile.3ds", "rocket", mesh, 0.3f);
 
     rocketLauncher_ = new MeshedWeapon( Engine::instance().camera()->worldPos(),
                                         100.f,
