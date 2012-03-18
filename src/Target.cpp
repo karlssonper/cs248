@@ -4,6 +4,7 @@
 #include "Node.h"
 #include "ParticleSystem.h"
 #include "cuda/Emitter.cuh"
+#include "Sound.h"
 #include <iostream>
 
 Target::Target(std::string _name, 
@@ -73,6 +74,8 @@ void Target::particleSystemIs(ParticleSystem * _particleSystem) {
 
 void Target::explode() {
     std::cout << name_ << " EXPLODED" << std::endl;
+
+    Sound::instance().play(Sound::IMPACT, midPoint_);
 
     for (unsigned int i=0; i<particleSystem_->numEmitters(); i++) {
         particleSystem_->emitter(i)->burst();

@@ -8,14 +8,15 @@
 class Weapon {
 public:
     enum WeaponType {
-        MACHINEGUN = 0,
-        ROCKETLAUNCHER
+        ROCKETLAUNCHER = 0,
+        MACHINEGUN
     };
     Weapon(std::string _name, 
            Vector3 _position,
            float _speed, 
            float _power,
-           float _maxDistance);
+           float _maxDistance,
+           unsigned int _maxProjectiles);
     std::string name() const { return name_; }
     void fire(Vector3 _direction);
     std::vector<Projectile> projectile;
@@ -26,6 +27,7 @@ private:
     float maxDistance_;
     float speed_;
     float power_;
+    unsigned int maxProjectiles_;
     Vector3 position_;
     WeaponType type_;
     std::string name_;

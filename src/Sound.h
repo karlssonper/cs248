@@ -17,8 +17,9 @@ public:
     static Sound& instance() { static Sound s; return s; };
     enum SoundEnum{
         THEME = 0,
-        EXPLOSION = 1,
-        NUM_SOUNDS = 2
+        IMPACT,
+        CANNON,
+        NUM_SOUNDS
     };
 
     void play(SoundEnum _se, Vector3 _pos) const;
