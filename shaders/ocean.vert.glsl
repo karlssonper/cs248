@@ -5,13 +5,17 @@ attribute float foldIn;
 
 uniform mat4 ModelViewMatrix;
 uniform mat4 ProjectionMatrix;
+uniform mat4 LightViewMatrix;
+uniform mat4 LightProjectionMatrix;
 uniform mat3 NormalMatrix;
 
 varying vec3 eyePosition;
 varying vec3 normal;
+varying vec4 shadowcoord;
 varying vec3 lightDir;
 
 void main() {
+    shadowcoord = 0.5 *(LightProjectionMatrix * LightViewMatrix * vec4(positionIn, 1)) + vec4(0.5,0.5,0.5,0.5);;
 	vec4 eyeTemp =  ModelViewMatrix * vec4(positionIn, 1);
 
 	//vec3 crossNormal = cross(partialUIn, -partialVIn);
@@ -19,7 +23,7 @@ void main() {
 	normal = NormalMatrix * crossNormal;
 	//normal = crossNormal;
 
-	lightDir = (NormalMatrix * vec3(0.0, 1.0, 1.0)).xyz;
+	lightDir = (NormalMatrix * vec3(1.0, 0.5, 1.0)).xyz;
 
 	eyePosition = eyeTemp.xyz;
 	gl_Position = ProjectionMatrix * eyeTemp;

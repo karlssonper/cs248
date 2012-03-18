@@ -373,28 +373,29 @@ inline Matrix4 Matrix4::lookAt(Vector3 _eye, Vector3 _center, Vector3 _up)
     Matrix4 matrix;
     Vector3 forward(_center - _eye);
     forward = forward/forward.mag();
+    _up = _up/_up.mag();
     Vector3 side = forward.cross(_up);
     side = side/side.mag();
     Vector3 up = side.cross(forward);
 
     matrix.m_[0] = side.x;
-    matrix.m_[4] = side.y;
-    matrix.m_[8] = side.z;
-    matrix.m_[12] = 0.0;
     matrix.m_[1] = up.x;
-    matrix.m_[5] = up.y;
-    matrix.m_[9] = up.z;
-    matrix.m_[13] = 0.0;
     matrix.m_[2] = -forward.x;
-    matrix.m_[6] = -forward.y;
-    matrix.m_[10] = -forward.z;
-    matrix.m_[14] = 0.0;
     matrix.m_[3] =  0.0;
+    matrix.m_[4] = side.y;
+    matrix.m_[5] = up.y;
+    matrix.m_[6] = -forward.y;
     matrix.m_[7] =  0.0;
+    matrix.m_[8] = side.z;
+    matrix.m_[9] = up.z;
+    matrix.m_[10] = -forward.z;
     matrix.m_[11] = 0.0;
+    matrix.m_[12] = 0.0;
+    matrix.m_[13] = 0.0;
+    matrix.m_[14] = 0.0;
     matrix.m_[15] = 1.0;
 
-    return matrix.translate(-_eye.x, -_eye.y, -_eye.z);
+    return matrix*Matrix4::translate(-_eye.x, -_eye.y, -_eye.z);
 }
 
 inline void Matrix4::print() const {

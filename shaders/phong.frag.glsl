@@ -1,10 +1,15 @@
 uniform sampler2D diffuseMap;
+uniform sampler2D shadowMap;
+
+uniform float shadowMapDx;
 
 varying vec2 texcoord;
 varying vec3 eyePosition;
 varying vec3 normal;
 //varying vec3 tangent;
 //varying vec3 bitangent;
+
+varying vec4 shadowcoord;
 varying vec3 L;
 
 /*
@@ -59,7 +64,7 @@ void main() {
 	gl_FragData[1] = vec4(totDiffuse+totSpecular+totAmbient, 1) * vec4(diffuseTexture,1 );
 
 	//Bloom Tex
-	gl_FragData[2] = vec4(0,0,1,1);
+	gl_FragData[2] = vec4(totDiffuse+totSpecular+totAmbient, 1) * vec4(diffuseTexture,1 );
 
 	//Motion Tex
 	gl_FragData[3] = vec4(0.5*normalize(N) + vec3(0.5),1);

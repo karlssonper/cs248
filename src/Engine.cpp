@@ -56,6 +56,24 @@ static void KeyPressed(unsigned char key, int x, int y) {
         case 'b':
             Engine::instance().camera()->shake(2.f, 4.f);
             break;
+        case '1':
+            Engine::instance().renderTexture(1.0f);
+            break;
+        case '2':
+            Engine::instance().renderTexture(2.0f);
+            break;
+        case '3':
+            Engine::instance().renderTexture(3.0f);
+            break;
+        case '4':
+            Engine::instance().renderTexture(4.0f);
+            break;
+        case '5':
+            Engine::instance().renderTexture(5.0f);
+            break;
+        case 'q':
+            Engine::instance().changeCamera();
+            break;
 
     }
 }
@@ -156,6 +174,28 @@ void Engine::init(int argc, char **argv, const char * _titlee, int _width, int _
     state_ = RUNNING;
 }
 
+void Engine::renderTexture(float v)
+{
+    static std::string debug("debug");
+    float* val = quadShader_->floatData(debug);
+    *val = v;
+}
+
+void Engine::changeCamera()
+{
+    if (activeCam_ == gameCam_) {
+        updateCamView_ = false;
+        activeCam_ = lightCam_;
+    } else {
+        updateCamView_ = true;
+        activeCam_ = gameCam_;
+    }
+    for (ShaderMap::iterator it = shaders_.begin(); it != shaders_.end(); ++it){
+        Matrix4 * projection = it->second->stdMatrix4Data(PROJECTION);
+        *projection = activeCam_->projectionMtx();
+    }
+}
+
 void Engine::loadResources(const char * _file)
 {
     //same as cudaoceantest
@@ -164,15 +204,20 @@ void Engine::loadResources(const char * _file)
     gameCam_->projectionIs(45.f, 1.f, 1.f, 10000.f);
     gameCam_->positionIs(Vector3(11.1429, -5.2408, 10.2673));
     gameCam_->rotationIs(492.8, 718.4);
+    /*gameCam_->maxYawIs(492.8+45.0);
+    gameCam_->minYawIs(492.8-45.0);
+    gameCam_->maxPitchIs(718.4+10.0);
+    gameCam_->minPitchIs(718.4-10.0);*/
     activeCam_ = gameCam_;
+    updateCamView_ = true;
 
     freeCam_ = new Camera();
     freeCam_->projectionIs(45.f, 1.f, 1.f, 10000.f);
     freeCam_->positionIs(Vector3(11.1429, -5.2408, 10.2673));
     freeCam_->rotationIs(492.8, 718.4);
 
-    Camera * lightCam_ = new Camera();
-
+    lightCam_ = new Camera();
+    //activeCam_ = lightCam_;
     shadowSize_ = 1024;
     Graphics::instance().createTextureToFBO("shadow", shadowTex_,
             shadowFB_, shadowSize_, shadowSize_);
@@ -180,6 +225,10 @@ void Engine::loadResources(const char * _file)
     shadowShader_ = new ShaderData(shadowShaderStr);
     shadowShader_->enableMatrix(PROJECTION);
     shadowShader_->enableMatrix(MODELVIEW);
+    lightCam_->lookAt(Vector3(51.0,0.5, 51.0), Vector3(50,0,50.0), Vector3(0,1.0,0));
+    lightCam_->BuildOrthoProjection(Vector3(-100,-50,-10), Vector3(100,50,100));
+    Matrix4 * shadowProj = shadowShader_->stdMatrix4Data(PROJECTION);
+    *shadowProj = Engine::instance().lightCamera()->projectionMtx();
 
     std::vector<unsigned int> colorTex(4);
     std::vector<std::string> colorTexNames;
@@ -217,8 +266,23 @@ void Engine::loadResources(const char * _file)
     ShaderData * shader = new ShaderData("../shaders/phong");
     shaders_[phongStr] = shader;
     shader->enableMatrix(MODELVIEW);
-    shader->enableMatrix(PROJECTION);
     shader->enableMatrix(NORMAL);
+    shader->enableMatrix(MODEL);
+
+    shader->enableMatrix(PROJECTION);
+    Matrix4 * projection = shader->stdMatrix4Data(PROJECTION);
+    *projection = camera()->projectionMtx();
+
+    shader->enableMatrix(LIGHTVIEW);
+    Matrix4 * lightView = shader->stdMatrix4Data(LIGHTVIEW);
+     *lightView = lightCamera()->viewMtx();
+
+    shader->enableMatrix(LIGHTPROJECTION);
+    Matrix4 * lightProj = shader->stdMatrix4Data(LIGHTPROJECTION);
+    *lightProj = lightCamera()->projectionMtx();
+
+    shader->addTexture("shadowMap", "shadow");
+    shader->addFloat("shadowMapDx", 1.0f / shadowSize_);
 
     std::string tex("../textures/Galleon2.jpg");
     std::string texName("diffuseMap");
@@ -227,12 +291,10 @@ void Engine::loadResources(const char * _file)
     mesh->shaderDataIs(shader);
     ASSIMP2MESH::read("../models/Galleon.3ds", "galleon", mesh, 0.3f);
     CUDA::Ocean::init();
-
-
-   /* Camera::instance().maxYawIs(492.8+45.0);
-    Camera::instance().minYawIs(492.8-45.0);
-    Camera::instance().maxPitchIs(718.4+10.0);
-    Camera::instance().minPitchIs(718.4-10.0);*/
+    std::string oceanShaderStr("ocean");
+    shaders_[oceanShaderStr] = CUDA::Ocean::oceanShaderData();
+    CUDA::Ocean::oceanShaderData()->addTexture("shadowMap", "shadow");
+    CUDA::Ocean::oceanShaderData()->addFloat("shadowMapDx", 1.0f / shadowSize_);
 }
 
 void Engine::cleanUp() {
@@ -241,42 +303,97 @@ void Engine::cleanUp() {
     //delete shader;
 }
 
+void Engine::renderFrame(float _currentTime)
+{
+    //todo remove GL call
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    float lastTime = currentTime_;
+    currentTime_ = _currentTime;
+    float frameTime = currentTime_ - lastTime;
+    //std::cout << std::endl;
+    //std::cout << "lastTime: " << lastTime << std::endl;
+    //std::cout << "currentTime: " << currentTime << std::endl;
+    //std::cout << "frameTime: " << frameTime << std::endl;
+
+    if (updateCamView_) {
+        activeCam_->BuildViewMatrix();
+    }
+    activeCam_->updateShake(frameTime);
+
+    CUDA::Ocean::performIFFT(currentTime_, false);
+    CUDA::Ocean::updateVBO(false);
+
+    root_->update();
+
+    RenderShadowMap();
+
+    RenderFirstPass();
+
+    RenderSecondPass();
+}
+
+void Engine::RenderShadowMap()
+{
+    Graphics::instance().enableFramebuffer(shadowFB_, shadowSize_, shadowSize_);
+    for (MeshMap::const_iterator it =meshes_.begin(); it!= meshes_.end();++it) {
+        it->second->displayShadowPass(shadowShader_);
+    }
+    //CUDA::Ocean::dsplay();
+    Graphics::instance().disableFramebuffer();
+}
+
+void Engine::RenderFirstPass()
+{
+    Graphics::instance().enableFramebuffer(
+                                            firstPassDepthFB_,
+                                            firstPassFB_,
+                                            0,
+                                            4,
+                                            width(),
+                                            height());
+
+    //Skybox
+    Matrix4 * modelView = skyBoxShader_->stdMatrix4Data(MODELVIEW);
+    *modelView = camera()->viewMtx();
+
+    Graphics::instance().drawIndices(skyboxVAO_, skyboxIdxVBO_,36,skyBoxShader_);
+
+    for (MeshMap::const_iterator it =meshes_.begin(); it!= meshes_.end();++it) {
+        it->second->display();
+    }
+    CUDA::Ocean::display();
+
+    Graphics::instance().disableFramebuffer();
+}
+
+
+
+void Engine::RenderSecondPass()
+{
+    Graphics::instance().drawIndices(quadVAO_, quadIdxVBO_, 6, quadShader_);
+}
+
 void Engine::BuildQuad()
 {
-    std::vector<QuadVertex> quadVertices(4);
-    quadVertices[0].pos[0] = -1.0f;
-    quadVertices[0].pos[1] = -1.0f;
-    quadVertices[0].pos[2] = 0.0f;
-    quadVertices[0].texCoords[0] = 0.0f;
-    quadVertices[0].texCoords[1] = 0.0f;
-    quadVertices[1].pos[0] = 1.0f;
-    quadVertices[1].pos[1] = -1.0f;
-    quadVertices[1].pos[2] = 0.0f;
-    quadVertices[1].texCoords[0] = 1.0f;
-    quadVertices[1].texCoords[1] = 0.0f;
-    quadVertices[2].pos[0] = 1.0f;
-    quadVertices[2].pos[1] = 1.0f;
-    quadVertices[2].pos[2] = 0.0f;
-    quadVertices[2].texCoords[0] = 1.0f;
-    quadVertices[2].texCoords[1] = 1.0f;
-    quadVertices[3].pos[0] = -1.0f;
-    quadVertices[3].pos[1] = 1.0f;
-    quadVertices[3].pos[2] = 0.0f;
-    quadVertices[3].texCoords[0] = 0.0f;
-    quadVertices[3].texCoords[1] = 1.0f;
+    std::vector<QuadVertex> v(4);
+    v[0].pos[0] = -1.0f; v[0].pos[1] = -1.0f; v[0].pos[2] = 0.0f;
+    v[0].texCoords[0] = 0.0f; v[0].texCoords[1] = 0.0f;
+    v[1].pos[0] = 1.0f; v[1].pos[1] = -1.0f; v[1].pos[2] = 0.0f;
+    v[1].texCoords[0] = 1.0f; v[1].texCoords[1] = 0.0f;
+    v[2].pos[0] = 1.0f; v[2].pos[1] = 1.0f; v[2].pos[2] = 0.0f;
+    v[2].texCoords[0] = 1.0f; v[2].texCoords[1] = 1.0f;
+    v[3].pos[0] = -1.0f; v[3].pos[1] = 1.0f; v[3].pos[2] = 0.0f;
+    v[3].texCoords[0] = 0.0f; v[3].texCoords[1] = 1.0f;
 
     std::vector<unsigned int> quadIdx(6);
-    quadIdx[0] = 0;
-    quadIdx[1] = 1;
-    quadIdx[2] = 2;
-    quadIdx[3] = 0;
-    quadIdx[4] = 2;
-    quadIdx[5] = 3;
+    quadIdx[0] = 0; quadIdx[1] = 1; quadIdx[2] = 2;
+    quadIdx[3] = 0; quadIdx[4] = 2; quadIdx[5] = 3;
 
     std::string quadName("quad");
     Graphics & g = Graphics::instance();
     g.buffersNew(quadName, quadVAO_, quadVBO_, quadIdxVBO_);
-    g.geometryIs(quadVBO_,quadIdxVBO_, quadVertices,quadIdx,VBO_STATIC);
+    g.geometryIs(quadVBO_,quadIdxVBO_, v,quadIdx,VBO_STATIC);
 
     const int stride = sizeof(QuadVertex);
 
@@ -289,17 +406,22 @@ void Engine::BuildQuad()
     colorTexNames.push_back("Bloom");
     colorTexNames.push_back("Motion");
     colorTexNames.push_back("CoC");
+    colorTexNames.push_back("shadow");
 
     std::vector<std::string> shaderTexNames;
     shaderTexNames.push_back("phongTex");
     shaderTexNames.push_back("bloomTex");
     shaderTexNames.push_back("motionTex");
     shaderTexNames.push_back("cocTex");
+    shaderTexNames.push_back("shadowTex");
 
     quadShader_->addTexture(shaderTexNames[0], colorTexNames[0]);
     quadShader_->addTexture(shaderTexNames[1], colorTexNames[1]);
     quadShader_->addTexture(shaderTexNames[2], colorTexNames[2]);
     quadShader_->addTexture(shaderTexNames[3], colorTexNames[3]);
+    quadShader_->addTexture(shaderTexNames[4], colorTexNames[4]);
+
+    quadShader_->addFloat("debug",1.0f);
 
     std::string posStr("positionIn");
     std::string texStr("texcoordIn");
@@ -346,6 +468,8 @@ void Engine::BuildSkybox()
     std::string skyboxShaderStr("../shaders/skybox");
     skyBoxShader_ = new ShaderData(skyboxShaderStr);
     skyBoxShader_->enableMatrix(PROJECTION);
+    Matrix4 * projection = skyBoxShader_->stdMatrix4Data(PROJECTION);
+    *projection = camera()->projectionMtx();
     skyBoxShader_->enableMatrix(MODELVIEW);
     std::string cubeMapStr("CubeMap");
     std::string cubeMapShaderStr("skyboxTex");
@@ -363,75 +487,6 @@ void Engine::BuildSkybox()
     std::string posStr("positionIn");
     int posLoc = g.shaderAttribLoc(sID , posStr);
     g.bindGeometry(sID, skyboxVAO_, skyboxVBO_, 3, stride, posLoc, 0);
-}
-
-void Engine::renderFrame(float _currentTime)
-{
-    //todo remove GL call
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    float lastTime = currentTime_;
-    currentTime_ = _currentTime;
-    float frameTime = currentTime_ - lastTime;
-    //std::cout << std::endl;
-    //std::cout << "lastTime: " << lastTime << std::endl;
-    //std::cout << "currentTime: " << currentTime << std::endl;
-    //std::cout << "frameTime: " << frameTime << std::endl;
-
-    activeCam_->BuildViewMatrix();
-    activeCam_->updateShake(frameTime);
-
-    CUDA::Ocean::performIFFT(currentTime_, false);
-    CUDA::Ocean::updateVBO(false);
-
-    root_->update();
-
-    RenderShadowMap();
-
-    RenderFirstPass();
-
-    RenderSecondPass();
-}
-
-void Engine::RenderShadowMap()
-{
-    void enableFramebuffer(GLuint _depthFBO, GLuint _width, GLuint _height);
-    Graphics::instance().enableFramebuffer(shadowFB_, shadowSize_, shadowSize_);
-    for (MeshMap::const_iterator it =meshes_.begin(); it!= meshes_.end();++it) {
-        it->second->display();
-    }
-    CUDA::Ocean::display();
-    Graphics::instance().disableFramebuffer();
-}
-
-void Engine::RenderFirstPass()
-{
-    Graphics::instance().enableFramebuffer(
-                                            firstPassDepthFB_,
-                                            firstPassFB_,
-                                            0,
-                                            4,
-                                            width(),
-                                            height());
-
-    //Skybox
-    Matrix4 * modelView = skyBoxShader_->stdMatrix4Data(MODELVIEW);
-    Matrix4 * projection = skyBoxShader_->stdMatrix4Data(PROJECTION);
-    *modelView = camera()->viewMtx();
-    *projection = camera()->projectionMtx();
-    Graphics::instance().drawIndices(skyboxVAO_, skyboxIdxVBO_,36,skyBoxShader_);
-
-    for (MeshMap::const_iterator it =meshes_.begin(); it!= meshes_.end();++it) {
-        it->second->display();
-    }
-    CUDA::Ocean::display();
-
-    Graphics::instance().disableFramebuffer();
-}
-
-void Engine::RenderSecondPass()
-{
-    Graphics::instance().drawIndices(quadVAO_, quadIdxVBO_, 6, quadShader_);
 }
 
 void Engine::mouseXIs(int x)

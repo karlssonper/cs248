@@ -49,7 +49,9 @@ public:
     void shake(float _duration, float _magnitude);
     void updateShake(float _dt);
 
-
+    //For Light Camera only
+    void lookAt(Vector3 _eye, Vector3 _center, Vector3 _up);
+    void BuildOrthoProjection(Vector3 _min, Vector3 _max);
 private:
     Camera(const Camera&);
     void operator=(const Camera&);

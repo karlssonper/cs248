@@ -407,12 +407,10 @@ float maxHeight()
 void display()
 {
     Matrix4 * modelView = shaderData->stdMatrix4Data(MODELVIEW);
-    Matrix4 * projection = shaderData->stdMatrix4Data(PROJECTION);
     Matrix4 * invView = shaderData->stdMatrix4Data(INVERSEVIEW);
     Matrix3 * normal = shaderData->stdMatrix3Data(NORMAL);
 
     *modelView = Engine::instance().camera()->viewMtx();
-    *projection = Engine::instance().camera()->projectionMtx();
     *normal = Matrix3(*modelView).inverse().transpose();
     *invView = Engine::instance().camera()->viewMtx().inverse();
     Graphics::instance().drawIndices(VAO, VBO_IDX, idxSize, shaderData);
@@ -524,9 +522,17 @@ void init()
     idxSize = indices.size();
     shaderData = new ShaderData("../shaders/ocean");
     shaderData->enableMatrix(MODELVIEW);
-    shaderData->enableMatrix(PROJECTION);
     shaderData->enableMatrix(NORMAL);
     shaderData->enableMatrix(INVERSEVIEW);
+    shaderData->enableMatrix(PROJECTION);
+    Matrix4 * projection = shaderData->stdMatrix4Data(PROJECTION);
+    *projection = Engine::instance().camera()->projectionMtx();
+    shaderData->enableMatrix(LIGHTVIEW);
+    Matrix4 * lightView = shaderData->stdMatrix4Data(LIGHTVIEW);
+     *lightView = Engine::instance().lightCamera()->viewMtx();
+     shaderData->enableMatrix(LIGHTPROJECTION);
+    Matrix4 * lightProj = shaderData->stdMatrix4Data(LIGHTPROJECTION);
+    *lightProj = Engine::instance().lightCamera()->projectionMtx();
 
     std::string cubeMapStr("CubeMap");
     std::string cubeMapShaderStr("skyboxTex");
@@ -546,13 +552,19 @@ void init()
     int locPV = Graphics::instance().shaderAttribLoc(id,"partialVIn");
     int locFold = Graphics::instance().shaderAttribLoc(id,"foldIn");
 
-    Graphics::instance().bindGeometry(id, VAO, VBO_GL,3,sizeof(OceanVertex),locPos,0);
-    Graphics::instance().bindGeometry(id, VAO, VBO_GL,3,sizeof(OceanVertex),locPU,12);
-    Graphics::instance().bindGeometry(id, VAO, VBO_GL,3,sizeof(OceanVertex),locPV,24);
-    Graphics::instance().bindGeometry(id, VAO, VBO_GL,1,sizeof(OceanVertex),locFold,36);
+    int bytes = sizeof(OceanVertex);
+    Graphics::instance().bindGeometry(id, VAO, VBO_GL, 3, bytes,locPos,0);
+    Graphics::instance().bindGeometry(id, VAO, VBO_GL, 3, bytes,locPU,12);
+    Graphics::instance().bindGeometry(id, VAO, VBO_GL, 3, bytes,locPV,24);
+    Graphics::instance().bindGeometry(id, VAO, VBO_GL, 1, bytes,locFold,36);
 
     cudaGraphicsGLRegisterBuffer(&VBO_CUDA, VBO_GL,
             cudaGraphicsMapFlagsWriteDiscard);
+}
+
+ShaderData* oceanShaderData()
+{
+    return shaderData;
 }
 
 } //end namespace

@@ -40,6 +40,7 @@ public:
                     const std::vector<unsigned int> & _idx);
     void nodeIs(Node * _node);
     void display() const;
+    void displayShadowPass(ShaderData * _shaderData) const;
 
     // return two Vector3's, min and max position coords
     std::vector<Vector3> minMax() const;

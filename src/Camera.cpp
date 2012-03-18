@@ -237,4 +237,30 @@ void Camera::minPitchIs(float _minPitch) {
     minPitch_ = _minPitch;
 }
 
+void Camera::lookAt(Vector3 _eye, Vector3 _center, Vector3 _up)
+{
+    viewMtx_ = Matrix4::lookAt(_eye, _center, _up);
+}
+
+void Camera::BuildOrthoProjection(Vector3 _min, Vector3 _max)
+{
+    std::cerr << "Building matrix!";
+    projectionMtx_.m_[0] = 2.0f / (_max.x - _min.x);
+    projectionMtx_.m_[1] = 0.0f;
+    projectionMtx_.m_[2] = 0.0f;
+    projectionMtx_.m_[3] = 0.0f;
+    projectionMtx_.m_[4] = 0.0f;
+    projectionMtx_.m_[5] = 2.0f / (_max.y - _min.y);
+    projectionMtx_.m_[6] = 0.0f;
+    projectionMtx_.m_[7] = 0.0f;
+    projectionMtx_.m_[8] = 0.0f;
+    projectionMtx_.m_[9] = 0.0f;
+    projectionMtx_.m_[10] = 2.0f / (_min.z - _max.z);
+    projectionMtx_.m_[11] = 0.0f;
+    projectionMtx_.m_[12] = (_max.x + _min.x) / (_min.x - _max.x);
+    projectionMtx_.m_[13] = (_max.y + _min.y) / (_min.y - _max.y);
+    projectionMtx_.m_[14] = (_max.z + _min.z) / (_min.z - _max.z);
+    projectionMtx_.m_[15] = 1.0f;
+}
+
 
