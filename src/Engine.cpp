@@ -9,15 +9,18 @@
 
 //Singletons
 #include "Engine.h"
-#include "Camera.h"
 #include "Graphics.h"
+//#include "Sound.h"
 
 //Elements
+#include "Camera.h"
 #include "Node.h"
 #include "Mesh.h"
 #include "ShaderData.h"
 #include "Target.h"
 #include "HitBox.h"
+#include "ParticleSystem.h"
+#include "cuda/Emitter.cuh"
 
 //CUDA
 #include "cuda/Ocean.cuh"
@@ -61,6 +64,7 @@ static void KeyPressed(unsigned char key, int x, int y) {
             Engine::instance().camera()->strafe(0.5);
             break;
         case 'b':
+            //Sound::instance().play(Sound::EXPLOSION, Vector3(0,0,0));
             Engine::instance().camera()->shake(2.f, 4.f);
             break;
         case '1':
@@ -81,26 +85,27 @@ static void KeyPressed(unsigned char key, int x, int y) {
         case 'q':
             Engine::instance().changeCamera();
             break;
-        case 't':
+        case 'y':
             if (Engine::instance().targets().at(0)->active())
                 Engine::instance().targets().at(0)->explode();
             break;
-        case 'y':
+        case 'u':
             if (Engine::instance().targets().at(1)->active())
                 Engine::instance().targets().at(1)->explode();
             break;
-        case 'u':
+        case 'i':
             if (Engine::instance().targets().at(2)->active())
                 Engine::instance().targets().at(2)->explode();
             break;
-        case 'i':
+        case 'o':
             if (Engine::instance().targets().at(3)->active())
                 Engine::instance().targets().at(3)->explode();
             break;
-        case 'o':
+        case 'p':
             if (Engine::instance().targets().at(4)->active())
                 Engine::instance().targets().at(4)->explode();
             break;
+
 
     }
 }
@@ -275,16 +280,16 @@ void Engine::renderFrame(float _currentTime)
 
     CUDA::Ocean::performIFFT(currentTime_, false);
     CUDA::Ocean::updateVBO(false);
+
     SpawnTargets();
-
     root_->update();
-
     UpdateTargets(frameTime);
 
+    updateParticles(frameTime);
+    displayParticles();
+    
     RenderShadowMap();
-
     RenderFirstPass();
-
     RenderSecondPass();
 }
 
@@ -565,9 +570,6 @@ void Engine::LoadTargets() {
         Node * node = new Node(nodeStr);
         nodes_[nodeStr] = node;
         node->parentIs(root_);
-        //float startX = Random::randomFloat(xMin_, xMax_);
-        //node->translate(Vector3(startX, 0.f, zMax_));
-        //node->rotateY(180.0f);
 
         std::string meshStr("battleCruiser"+oss.str());
         Mesh * mesh = new Mesh(meshStr, node);
@@ -581,11 +583,12 @@ void Engine::LoadTargets() {
 
         std::string targetStr("battleCruiserTarget"+oss.str());
         Target * target = new Target(targetStr, mesh, 100.f);
-        target->speedIs(Vector3(0.0f, 0.f, 15.0f));
-        target->hitBox()->p0.print();
-        target->hitBox()->p1.print();
+        target->speedIs(Vector3(0.0f, 0.f, 10.0f));
+        target->yOffsetIs(6.0f);
         targets_.push_back(target);
     }
+
+    initParticleSystems();
 }
 
 void Engine::nrTargetsIs(unsigned int _nrTargets) {
@@ -595,7 +598,6 @@ void Engine::nrTargetsIs(unsigned int _nrTargets) {
 void Engine::targetSpawnRateIs(float _targetSpawnRate) {
     targetSpawnRate_ = _targetSpawnRate;
 }
-
 
 void Engine::UpdateTargets(float _frameTime) {
 
@@ -619,17 +621,16 @@ void Engine::UpdateTargets(float _frameTime) {
 
             float currentHeight = (*it)->midPoint().y;
             float oceanHeight = heights.at(i);
-            float heightDiff = currentHeight - oceanHeight;
-            (*it)->heightDiff_ = heightDiff;
+            (*it)->heightDiffIs(currentHeight - oceanHeight);
 
-            if ( (*it)->midPoint().z < zMin_ ) {
+            (*it)->updatePos(_frameTime);
+            root_->update();
+            (*it)->updateHitBox();
+
+             if ( (*it)->midPoint().z < zMin_ ) {
                 (*it)->activeIs(false);
                 (*it)->mesh()->showIs(false);
             }
-
-            (*it)->updatePos(_frameTime);
-
-            (*it)->updateHitBox();
 
         }
         i++;
@@ -664,5 +665,124 @@ void Engine::SpawnTargets() {
 
 }
 
+void Engine::initParticleSystems() {
 
+    std::cout << "initParticleSystems" << std::endl;
 
+    std::string s1("../shaders/particle");
+    std::string s2("../shaders/particle");
+    std::string s3("../shaders/particle");
+    std::string s4("../shaders/particle");
+
+    fireEmitter1sd_ = new ShaderData(s1);
+    fireEmitter2sd_ = new ShaderData(s2);
+    debrisEmittersd_ = new ShaderData(s3);
+    smokeEmittersd_ = new ShaderData(s4);
+
+    std::string t1("sprite");
+    std::string t2("sprite");
+    std::string t3("sprite");
+    std::string t4("sprite");
+
+    std::string p1("../textures/fire1.png");
+    std::string p2("../textures/fire2.png");
+    std::string p3("../textures/debris.png");
+    std::string p4("../textures/smoke.png");
+
+    fireEmitter1sd_->enableMatrix(MODELVIEW);
+    fireEmitter2sd_->enableMatrix(MODELVIEW);
+    debrisEmittersd_->enableMatrix(MODELVIEW);
+    smokeEmittersd_->enableMatrix(MODELVIEW);
+
+    fireEmitter1sd_->enableMatrix(PROJECTION);
+    fireEmitter2sd_->enableMatrix(PROJECTION);
+    debrisEmittersd_->enableMatrix(PROJECTION);
+    smokeEmittersd_->enableMatrix(PROJECTION);
+
+    fireEmitter1sd_->addTexture(t1,p1);
+    fireEmitter2sd_->addTexture(t2,p2);
+    debrisEmittersd_->addTexture(t3,p3);
+    smokeEmittersd_->addTexture(t4,p4);
+
+    std::vector<Target*>::iterator it;
+    for (it=targets_.begin(); it!=targets_.end(); it++) {
+
+        ParticleSystem * ps = new ParticleSystem(4);   
+        (*it)->particleSystemIs(ps);
+
+        Emitter * fireEmitter1 = ps->newEmitter(300, fireEmitter1sd_);
+        fireEmitter1->posIs((*it)->midPoint());
+        fireEmitter1->burstSizeIs(300);
+        fireEmitter1->typeIs(Emitter::EMITTER_BURST);
+        fireEmitter1->blendModeIs(Emitter::BLEND_FIRE);
+        fireEmitter1->rateIs(0.02f);
+        fireEmitter1->lifeTimeIs(40.f);
+        fireEmitter1->massIs(1.f);
+        fireEmitter1->posRandWeightIs(0.03);
+        fireEmitter1->velIs(Vector3(0.f, 0.f, 0.f));
+        fireEmitter1->velRandWeightIs(0.01);
+        fireEmitter1->accIs(Vector3(0.f, -0.002f, 0.0f));
+        fireEmitter1->pointSizeIs(70.f);
+        fireEmitter1->growthFactorIs(0.99f);
+        
+        Emitter * fireEmitter2 = ps->newEmitter(300, fireEmitter2sd_);
+        fireEmitter2->posIs((*it)->midPoint());
+        fireEmitter2->burstSizeIs(300);
+        fireEmitter2->typeIs(Emitter::EMITTER_BURST);
+        fireEmitter2->blendModeIs(Emitter::BLEND_FIRE);
+        fireEmitter2->rateIs(0.02f);
+        fireEmitter2->lifeTimeIs(40.f);
+        fireEmitter2->massIs(1.f);
+        fireEmitter2->posRandWeightIs(0.03);
+        fireEmitter2->velIs(Vector3(0.f, 0.f, 0.f));
+        fireEmitter2->velRandWeightIs(0.01);
+        fireEmitter2->accIs(Vector3(0.f, -0.002f, 0.0f));
+        fireEmitter2->pointSizeIs(70.f);
+        fireEmitter2->growthFactorIs(0.99f);
+
+        Emitter * smokeEmitter = ps->newEmitter(5, smokeEmittersd_);
+        smokeEmitter->posIs((*it)->midPoint());
+        smokeEmitter->burstSizeIs(5);
+        smokeEmitter->typeIs(Emitter::EMITTER_BURST);
+        smokeEmitter->blendModeIs(Emitter::BLEND_SMOKE);
+        smokeEmitter->rateIs(0.02f);
+        smokeEmitter->lifeTimeIs(70.f);
+        smokeEmitter->massIs(1.f);
+        smokeEmitter->posRandWeightIs(0.2f);
+        smokeEmitter->velIs(Vector3(0.f, 0.001f, 0.f));
+        smokeEmitter->velRandWeightIs(0.001);
+        smokeEmitter->accIs(Vector3(0.f, 0.0f, 0.0f));
+        smokeEmitter->pointSizeIs(100.f);
+        smokeEmitter->growthFactorIs(1.02f);
+
+        Emitter * debrisEmitter = ps->newEmitter(100, debrisEmittersd_);
+        debrisEmitter->posIs((*it)->midPoint());
+        debrisEmitter->burstSizeIs(100);
+        debrisEmitter->typeIs(Emitter::EMITTER_BURST);
+        debrisEmitter->blendModeIs(Emitter::BLEND_SMOKE);
+        debrisEmitter->rateIs(0.02f);
+        debrisEmitter->lifeTimeIs(300.f);
+        debrisEmitter->massIs(1.f);
+        debrisEmitter->posRandWeightIs(0.02);
+        debrisEmitter->velIs(Vector3(0.f, 0.1f, 0.f));
+        debrisEmitter->velRandWeightIs(0.02);
+        debrisEmitter->accIs(Vector3(0.f, -0.004, 0.0f));
+        debrisEmitter->pointSizeIs(10.f);
+        debrisEmitter->growthFactorIs(1.f);
+
+    }
+}
+
+void Engine::displayParticles() {
+    std::vector<Target*>::iterator it;
+    for (it=targets_.begin(); it!=targets_.end(); it++) {
+        (*it)->particleSystem()->display();
+    }
+}
+
+void Engine::updateParticles(float _dt) {
+     std::vector<Target*>::iterator it;
+    for (it=targets_.begin(); it!=targets_.end(); it++) {
+        (*it)->particleSystem()->update(_dt);
+    }
+}

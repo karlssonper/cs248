@@ -260,6 +260,10 @@ void Emitter::burst() {
 
     if (params_.emitterType_ != Emitter::EMITTER_BURST) return;
 
+    //std::cout << "bursting" << std::endl;
+
+   // copyPosToHostAndPrint();
+
     cudaGLMapBufferObject((void**)&d_pos_, vboPos_);
     cudaGLMapBufferObject((void**)&d_size_, vboSize_);
     cudaGLMapBufferObject((void**)&d_time_, vboTime_);

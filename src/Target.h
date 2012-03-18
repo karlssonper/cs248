@@ -3,6 +3,7 @@
 
 #include "MathEngine.h"
 #include <string>
+#include <vector>
 
 class Mesh;
 class HitBox;
@@ -35,11 +36,15 @@ public:
     ParticleSystem * particleSystem() const { return particleSystem_; }
     void particleSystemIs(ParticleSystem * _particleSystem);
     
-    std::vector<Emitter*> emitters() { return emitters_; }
 
-    float heightDiff_;
+    float heightDiff() const { return heightDiff_; }
+    float yOffset() const { return yOffset_; }
+    void heightDiffIs(float _heightDiff);
+    void yOffsetIs(float _yOffset);
+
 
 private:
+
     float energy_;
     Vector3 midPoint_;
     Vector3 frontAnchor_;
@@ -54,7 +59,9 @@ private:
     bool active_;
 
     ParticleSystem * particleSystem_;
-    std::vector<Emitter*> emitters_;
+
+    float heightDiff_;
+    float yOffset_;
 
 };
 

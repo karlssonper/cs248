@@ -135,6 +135,15 @@ private:
     void LoadTargets();
     void UpdateTargets(float _frameTime);
     void SpawnTargets();
+
+    void initParticleSystems();
+    void displayParticles();
+    void updateParticles(float _dt);
+
+    ShaderData * fireEmitter1sd_;
+    ShaderData * fireEmitter2sd_;
+    ShaderData * smokeEmittersd_;
+    ShaderData * debrisEmittersd_;
 };
 
 

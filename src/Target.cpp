@@ -3,6 +3,7 @@
 #include "HitBox.h"
 #include "Node.h"
 #include "ParticleSystem.h"
+#include "cuda/Emitter.cuh"
 #include <iostream>
 
 Target::Target(std::string _name, 
@@ -17,9 +18,7 @@ Target::Target(std::string _name,
     std::vector<Vector3> minMax = mesh_->minMax();
     hitBox_ = new HitBox(name_ + "HitBox", minMax.at(0), minMax.at(1));
     hitBoxLocal_ = new HitBox(name_+"HitBoxLocal", minMax.at(0), minMax.at(1));
-    updateHitBox();
-
-    particleSystem_ = new ParticleSystem(4);
+    //updateHitBox();
 }
 
 void Target::energyDec(float _e) {
@@ -42,11 +41,15 @@ void Target::updateHitBox() {
                          (hitBox_->p0.y+hitBox_->p1.y)/2.f,
                          (hitBox_->p0.z+hitBox_->p1.z)/2.f );
 
+    for (unsigned int i=0; i<particleSystem_->numEmitters(); ++i) {
+        particleSystem_->emitter(i)->posIs(midPoint_);
+    }
+
 }
 
 void Target::updatePos(float _dt) {
     mesh_->node()->translate(speed_*_dt);
-    mesh_->node()->translate(Vector3(0.f, -heightDiff_, 0.f));
+    mesh_->node()->translate(Vector3(0.f, -heightDiff_+yOffset_, 0.f));
 }
 
 void Target::speedIs(Vector3 _speed) {
@@ -57,8 +60,25 @@ void Target::activeIs(bool _active) {
     active_ = _active;
 }
 
+void Target::yOffsetIs(float _yOffset) {
+    yOffset_ = _yOffset;
+}
+
+void Target::heightDiffIs(float _heightDiff) {
+    heightDiff_ = _heightDiff;
+}
+
+void Target::particleSystemIs(ParticleSystem * _particleSystem) {
+    particleSystem_ = _particleSystem;
+}
+
 void Target::explode() {
     std::cout << name_ << " EXPLODED" << std::endl;
+
+    for (unsigned int i=0; i<particleSystem_->numEmitters(); i++) {
+        particleSystem_->emitter(i)->burst();
+    }
+
     active_ = false;
     mesh_->showIs(false);
 }
