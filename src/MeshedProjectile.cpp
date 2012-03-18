@@ -29,8 +29,8 @@ void MeshedProjectile::update(float _dt) {
     //position_ = globalT*position_;
 
     flightDistance_ += d.mag();
-    std::cout << "Flying ";
-    position_.print();
+    //std::cout << "Flying ";
+    //position_.print();
     //std::cout << "flightDist :" << flightDistance_ << std::endl;
 
     if (flightDistance_ > maxDistance_) active_ = false;
@@ -68,16 +68,16 @@ void MeshedProjectile::activeIs(bool _active) {
 
 void MeshedProjectile::positionIs(Vector3 _position) {
 
-    std::cout << std::endl;
-    std::cout << "Projectile position ";
-    position_.print();
+   // std::cout << std::endl;
+    //std::cout << "Projectile position ";
+    //position_.print();
 
-    std::cout << "New position";
-    _position.print();
+    //std::cout << "New position";
+    //_position.print();
 
     Vector3 diff = position_ - _position;
-    std::cout << "Diff ";
-    diff.print();
+   // std::cout << "Diff ";
+    //diff.print();
 
     mesh_->node()->translate(diff);
 

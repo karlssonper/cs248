@@ -34,8 +34,6 @@
 //Important to include glut AFTER OpenGL
 #include <GL/glut.h>
 
-
-
 static void Reshape(int w, int h)
 {
     Graphics::instance().viewportIs(w,h);
@@ -66,7 +64,7 @@ static void KeyPressed(unsigned char key, int x, int y) {
             Engine::instance().camera()->strafe(0.5);
             break;
         case 'b':
-            Engine::instance().rocketLauncher()->fire(Vector3(1.f, 0.f, 0.f));
+            Engine::instance().rocketLauncher()->fire(Engine::instance().camera()->viewVector());
             break;
         //ZIMMERMAN!!!
         case 'z':
@@ -90,32 +88,6 @@ static void KeyPressed(unsigned char key, int x, int y) {
         case 'q':
             Engine::instance().changeCamera();
             break;
-        case 'y':
-            if (Engine::instance().targets().at(0)->active())
-                Engine::instance().targets().at(0)->explode();
-            break;
-        case 'u':
-            if (Engine::instance().targets().at(1)->active())
-                Engine::instance().targets().at(1)->explode();
-            break;
-        case 'i':
-            if (Engine::instance().targets().at(2)->active())
-                Engine::instance().targets().at(2)->explode();
-            break;
-        case 'o':
-            if (Engine::instance().targets().at(3)->active())
-                Engine::instance().targets().at(3)->explode();
-            break;
-        case 'p':
-            if (Engine::instance().targets().at(4)->active())
-                Engine::instance().targets().at(4)->explode();
-            break;
-        case 'f':
-            
-            break;
-
-
-
     }
 }
 
@@ -296,6 +268,7 @@ void Engine::renderFrame(float _currentTime)
     root_->update();
     UpdateTargets(frameTime);
     
+    rocketLauncher_->positionIs(Engine::instance().camera()->worldPos());
     updateProjectiles(frameTime);
 
     updateParticles(frameTime);
@@ -572,7 +545,7 @@ void Engine::loadWeapons() {
     Matrix4 * proj = shader->stdMatrix4Data(PROJECTION);
     *proj = Engine::instance().camera()->projectionMtx();
 
-    std::string tex("../textures/Galleon2.jpg");
+    std::string tex("../textures/cookie.jpg");
     std::string texName("diffuseMap");
     shader->addTexture(texName, tex);
 
@@ -589,9 +562,9 @@ void Engine::loadWeapons() {
     mesh->showIs(false);
 
     mesh->shaderDataIs(shader);
-    ASSIMP2MESH::read("../models/Galleon.3ds", "rocket", mesh, 0.1f);
+    ASSIMP2MESH::read("../models/cookie.3ds", "rocket", mesh, 0.02f);
 
-    rocketLauncher_ = new MeshedWeapon( Vector3(0.f, 0.f, 50.f),
+    rocketLauncher_ = new MeshedWeapon( Engine::instance().camera()->worldPos(),
                                         100.f,
                                         50.f);
 
@@ -599,7 +572,7 @@ void Engine::loadWeapons() {
                                                       Vector3(0.f, 0.f, 0.f),
                                                       rocketLauncher_->power(),
                                                       mesh,
-                                                      100.f);
+                                                      200.f);
     rocketLauncher_->addProjectile(rocket);                                                
 }
 
@@ -815,35 +788,35 @@ void Engine::initParticleSystems() {
         ParticleSystem * ps = new ParticleSystem(4);   
         (*it)->particleSystemIs(ps);
 
-        Emitter * fireEmitter1 = ps->newEmitter(300, fireEmitter1sd_);
+        Emitter * fireEmitter1 = ps->newEmitter(15, fireEmitter1sd_);
         fireEmitter1->posIs((*it)->midPoint());
-        fireEmitter1->burstSizeIs(300);
-        fireEmitter1->typeIs(Emitter::EMITTER_STREAM);
+        fireEmitter1->burstSizeIs(15);
+        fireEmitter1->typeIs(Emitter::EMITTER_BURST);
         fireEmitter1->blendModeIs(Emitter::BLEND_FIRE);
         fireEmitter1->rateIs(0.02f);
-        fireEmitter1->lifeTimeIs(40.f);
+        fireEmitter1->lifeTimeIs(1.f);
         fireEmitter1->massIs(1.f);
-        fireEmitter1->posRandWeightIs(0.03);
+        fireEmitter1->posRandWeightIs(0.f);
         fireEmitter1->velIs(Vector3(0.f, 0.f, 0.f));
-        fireEmitter1->velRandWeightIs(0.01);
-        fireEmitter1->accIs(Vector3(0.f, -0.002f, 0.0f));
-        fireEmitter1->pointSizeIs(70.f);
-        fireEmitter1->growthFactorIs(0.99f);
+        fireEmitter1->velRandWeightIs(1.f);
+        fireEmitter1->accIs(Vector3(0.f, -10.f, 0.0f));
+        fireEmitter1->pointSizeIs(5.f);
+        fireEmitter1->growthFactorIs(1.0f);
         
-        Emitter * fireEmitter2 = ps->newEmitter(300, fireEmitter2sd_);
+        Emitter * fireEmitter2 = ps->newEmitter(15, fireEmitter2sd_);
         fireEmitter2->posIs((*it)->midPoint());
-        fireEmitter2->burstSizeIs(300);
+        fireEmitter2->burstSizeIs(15);
         fireEmitter2->typeIs(Emitter::EMITTER_BURST);
-        fireEmitter2->blendModeIs(Emitter::BLEND_FIRE);
+        fireEmitter2->blendModeIs(Emitter::BLEND_SMOKE);
         fireEmitter2->rateIs(0.02f);
-        fireEmitter2->lifeTimeIs(40.f);
+        fireEmitter2->lifeTimeIs(1.f);
         fireEmitter2->massIs(1.f);
-        fireEmitter2->posRandWeightIs(0.03);
+        fireEmitter2->posRandWeightIs(0.f);
         fireEmitter2->velIs(Vector3(0.f, 0.f, 0.f));
-        fireEmitter2->velRandWeightIs(0.01);
-        fireEmitter2->accIs(Vector3(0.f, -0.002f, 0.0f));
-        fireEmitter2->pointSizeIs(70.f);
-        fireEmitter2->growthFactorIs(0.99f);
+        fireEmitter2->velRandWeightIs(1.f);
+        fireEmitter2->accIs(Vector3(0.f, -10.f, 0.0f));
+        fireEmitter2->pointSizeIs(5.f);
+        fireEmitter2->growthFactorIs(1.0f);
 
         Emitter * smokeEmitter = ps->newEmitter(5, smokeEmittersd_);
         smokeEmitter->posIs((*it)->midPoint());
@@ -851,28 +824,28 @@ void Engine::initParticleSystems() {
         smokeEmitter->typeIs(Emitter::EMITTER_BURST);
         smokeEmitter->blendModeIs(Emitter::BLEND_SMOKE);
         smokeEmitter->rateIs(0.02f);
-        smokeEmitter->lifeTimeIs(70.f);
+        smokeEmitter->lifeTimeIs(2.f);
         smokeEmitter->massIs(1.f);
         smokeEmitter->posRandWeightIs(0.2f);
         smokeEmitter->velIs(Vector3(0.f, 0.001f, 0.f));
         smokeEmitter->velRandWeightIs(0.001);
         smokeEmitter->accIs(Vector3(0.f, 0.0f, 0.0f));
-        smokeEmitter->pointSizeIs(100.f);
-        smokeEmitter->growthFactorIs(1.02f);
+        smokeEmitter->pointSizeIs(8.f);
+        smokeEmitter->growthFactorIs(1.0f);
 
-        Emitter * debrisEmitter = ps->newEmitter(100, debrisEmittersd_);
+        Emitter * debrisEmitter = ps->newEmitter(15, debrisEmittersd_);
         debrisEmitter->posIs((*it)->midPoint());
-        debrisEmitter->burstSizeIs(100);
+        debrisEmitter->burstSizeIs(15);
         debrisEmitter->typeIs(Emitter::EMITTER_BURST);
         debrisEmitter->blendModeIs(Emitter::BLEND_SMOKE);
         debrisEmitter->rateIs(0.02f);
-        debrisEmitter->lifeTimeIs(300.f);
+        debrisEmitter->lifeTimeIs(1.f);
         debrisEmitter->massIs(1.f);
-        debrisEmitter->posRandWeightIs(0.02);
-        debrisEmitter->velIs(Vector3(0.f, 0.1f, 0.f));
-        debrisEmitter->velRandWeightIs(0.02);
-        debrisEmitter->accIs(Vector3(0.f, -0.004, 0.0f));
-        debrisEmitter->pointSizeIs(10.f);
+        debrisEmitter->posRandWeightIs(0.02f);
+        debrisEmitter->velIs(Vector3(0.f, 2.f, 0.f));
+        debrisEmitter->velRandWeightIs(3.f);
+        debrisEmitter->accIs(Vector3(0.f, -20.f, 0.0f));
+        debrisEmitter->pointSizeIs(1.f);
         debrisEmitter->growthFactorIs(1.f);
 
     }

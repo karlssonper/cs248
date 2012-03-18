@@ -1,5 +1,7 @@
 #include "Target.h"
+#include "Engine.h"
 #include "Mesh.h"
+#include "Camera.h"
 #include "HitBox.h"
 #include "Node.h"
 #include "ParticleSystem.h"
@@ -76,6 +78,7 @@ void Target::explode() {
     std::cout << name_ << " EXPLODED" << std::endl;
 
     Sound::instance().play(Sound::IMPACT, midPoint_);
+    Engine::instance().camera()->shake(1.f, 2.f);
 
     for (unsigned int i=0; i<particleSystem_->numEmitters(); i++) {
         particleSystem_->emitter(i)->burst();

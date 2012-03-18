@@ -25,7 +25,7 @@ void MeshedWeapon::fire(Vector3 _direction) {
             projectiles_.at(i)->speedIs(normDir*speed_);
             projectiles_.at(i)->flightDistanceIs(0.f);
             Sound::instance().play(Sound::CANNON, Vector3(0,0,0));
-            Engine::instance().camera()->shake(2.f, 4.f);
+            Engine::instance().camera()->shake(2.f, 3.f);
         }
     }
 }
@@ -38,4 +38,14 @@ MeshedWeapon::~MeshedWeapon() {
     projectiles_.clear();
 
 }
+
+void MeshedWeapon::positionIs(Vector3 _position) {
+    position_ = _position;
+}
+   
+
+void MeshedWeapon::translate(Vector3 _t) {
+    position_ = position_ + _t;
+}
+
 
