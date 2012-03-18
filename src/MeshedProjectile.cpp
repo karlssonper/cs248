@@ -21,7 +21,6 @@ MeshedProjectile::MeshedProjectile(Vector3 _pos,
 void MeshedProjectile::update(float _dt) {
     if (!active_) return;
     Vector3 d = speed_*_dt;
-
     mesh_->node()->translate(d*-1);
     position_ = position_ + d;
     //Node * node = mesh_->node();
@@ -48,9 +47,9 @@ bool MeshedProjectile::checkCollision(HitBox* _hitBox) {
     }
 
     if (p0.y < p1.y) {
-        if (position_.y < p0.y || position_.y > p1.y) return false;
+        if (-position_.y < p0.y || -position_.y > p1.y) return false;
     } else {
-        if (position_.y < p1.y || position_.y > p0.y) return false;
+        if (-position_.y < p1.y || -position_.y > p0.y) return false;
     }
 
     if (p0.z < p1.z) {

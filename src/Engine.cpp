@@ -267,7 +267,7 @@ void Engine::renderFrame(float _currentTime)
     SpawnTargets();
     root_->update();
     UpdateTargets(frameTime);
-    
+
     rocketLauncher_->positionIs(Engine::instance().camera()->worldPos());
     updateProjectiles(frameTime);
 
@@ -276,7 +276,10 @@ void Engine::renderFrame(float _currentTime)
     RenderShadowMap();
     RenderFirstPass();
     RenderSecondPass();
+
+
 }
+
 
 void Engine::RenderShadowMap()
 {
@@ -566,13 +569,13 @@ void Engine::loadWeapons() {
 
     rocketLauncher_ = new MeshedWeapon( Engine::instance().camera()->worldPos(),
                                         100.f,
-                                        50.f);
+                                        100.f);
 
     MeshedProjectile * rocket = new MeshedProjectile( Vector3(0.f, 0.f, 0.f),
                                                       Vector3(0.f, 0.f, 0.f),
                                                       rocketLauncher_->power(),
                                                       mesh,
-                                                      200.f);
+                                                      170.f);
     rocketLauncher_->addProjectile(rocket);                                                
 }
 
@@ -598,6 +601,14 @@ void Engine::updateProjectiles(float _dt) {
                 */
                 if (targets_.at(j)->active()) {
                     if (projectiles.at(i)->checkCollision(targets_.at(j)->hitBox())) {
+
+                        Vector3 p0 = targets_.at(j)->hitBox()->p0;
+                        Vector3 p1 = targets_.at(j)->hitBox()->p1;
+
+                        p0.print();
+                        p1.print();
+                        projectiles.at(i)->position().print();
+
                         targets_.at(j)->explode();
                         projectiles.at(i)->activeIs(false);
                         // TODO: handle power/energy
