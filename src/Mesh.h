@@ -40,6 +40,7 @@ public:
                     const std::vector<unsigned int> & _idx);
     void nodeIs(Node * _node);
     void display() const;
+    void displayShadowPass(ShaderData * _shaderData) const;
 
     void showIs(bool _show);
 

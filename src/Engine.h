@@ -26,7 +26,10 @@ public:
     void start();
 
     void renderFrame(float _currentTime);
+    void renderTexture(float v);
+    void changeCamera();
     Camera * camera() const { return activeCam_;};
+    Camera * lightCamera() const { return lightCam_;};
 
     int mouseX() const { return mouseX_;};
     void mouseXIs(int x);
@@ -60,6 +63,7 @@ private:
     Node * root_;
 
     Camera * activeCam_;
+    bool updateCamView_;
     Camera * gameCam_;
     Camera * freeCam_;
     Camera * lightCam_;
@@ -73,7 +77,10 @@ private:
 
     std::vector<Target*> targets_;
 
-    float xMax_, xMin_, zMax_, zMin_;
+    float xMax_;
+    float xMin_;
+    float zMax_;
+    float zMin_;
     
     //Textures
     unsigned int phongTex_;
@@ -121,9 +128,13 @@ private:
     float targetSpawnRate_;
     float nextSpawn_;
 
-    void loadTargets();
-    void updateTargets(float _frameTime);
-    void spawnTargets();
+    void CreateFramebuffer();
+    void LoadCameras();
+    void LoadLight();
+    void LoadOcean();
+    void LoadTargets();
+    void UpdateTargets(float _frameTime);
+    void SpawnTargets();
 };
 
 

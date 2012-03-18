@@ -102,15 +102,29 @@ void Mesh::display() const
 
     const Matrix4 & view = Engine::instance().camera()->viewMtx();
     Matrix4 * modelView = shaderData_->stdMatrix4Data(MODELVIEW);
-    Matrix4 * projection = shaderData_->stdMatrix4Data(PROJECTION);
-
     *modelView = view * node_->globalModelMtx();
 
-    *projection = Engine::instance().camera()->projectionMtx();
+    Matrix4 * model = shaderData_->stdMatrix4Data(MODEL);
+    *model = node_->globalModelMtx();
 
     Matrix3 * normal = shaderData_->stdMatrix3Data(NORMAL);
     *normal = Matrix3(*modelView).inverse().transpose();
+
     Graphics::instance().drawIndices(VAO_, indexVBO_, n, shaderData_);
+}
+
+void Mesh::displayShadowPass(ShaderData * _shaderData) const
+{
+    if (!loadedInGPU_) return;
+
+    unsigned int n = indices_.size();
+
+    const Matrix4 & view = Engine::instance().lightCamera()->viewMtx();
+    Matrix4 * modelView = _shaderData->stdMatrix4Data(MODELVIEW);
+    *modelView = view * node_->globalModelMtx();
+
+
+    Graphics::instance().drawIndices(VAO_, indexVBO_, n, _shaderData);
 }
 
 void Mesh::generateVertexVector(std::vector<Vertex> & _v)

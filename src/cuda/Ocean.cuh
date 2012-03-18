@@ -8,6 +8,8 @@
 #ifndef OCEAN_CUH_
 #define OCEAN_CUH_
 
+class ShaderData;
+
 namespace CUDA {
 namespace Ocean {
 
@@ -18,6 +20,9 @@ void updateVBO(bool disp);
 void display();
 
 void init();
+
+std::vector<float> height(std::vector<std::pair<float,float> > _worldPos);
+ShaderData* oceanShaderData();
 
 } //end namespace Ocean
 } //end namespace CUDA
