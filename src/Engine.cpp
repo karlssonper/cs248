@@ -986,7 +986,7 @@ void Engine::initParticleSystems() {
         smokeEmitter->velRandWeightIs(0.001);
         smokeEmitter->accIs(Vector3(0.f, 0.0f, 0.0f));
         smokeEmitter->pointSizeIs(5.f);
-        smokeEmitter->growthFactorIs(1.06f);
+        smokeEmitter->growthFactorIs(1.03f);
 
         Emitter * fireEmitter1 = ps->newEmitter(10, fireEmitter1sd_);
         fireEmitter1->posIs((*it)->midPoint());

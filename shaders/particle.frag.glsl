@@ -40,7 +40,7 @@ void main() {
 	if (bgDepth < fragDepth) {
 		alpha = 0.0;
 	} else {
-		alpha = saturate(bgDepth, fragDepth, 0.0025);
+		alpha = saturate(bgDepth, fragDepth, 0.001);
 	}
 
 	//skriv farg till denna

@@ -412,7 +412,8 @@ void Graphics::drawArrays(GLuint _VAO,
     if (additiveBlending) {
        glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     } else {
-       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        //glBlendFunc(GL_ONE_MINUS_DST_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
 
     loadShaderData(_shaderData);
