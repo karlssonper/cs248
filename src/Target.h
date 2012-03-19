@@ -20,9 +20,6 @@ public:
     void updatePos(float _dt);
     void updateHitBox();
     float angle() const { return angle_; }
-    Vector3 frontAnchor() const { return frontAnchor_; }
-    Vector3 backAnchor() const { return backAnchor_; }
-    Vector3 middleAnchor() const { return middleAnchor_; }
     HitBox * hitBox() const { return hitBox_; }
     Mesh * mesh() const { return mesh_; }
     std::string name() const { return name_; }
@@ -31,6 +28,8 @@ public:
     void activeIs(bool _active);
     void speedIs(Vector3 _speed);
     Vector3 midPoint() const { return midPoint_; }
+    Vector3 frontLeft() const { return frontLeft_; }
+    Vector3 frontRight() const { return frontRight_; }
     void explode();
 
     ParticleSystem * particleSystem() const { return particleSystem_; }
@@ -47,9 +46,8 @@ private:
 
     float energy_;
     Vector3 midPoint_;
-    Vector3 frontAnchor_;
-    Vector3 backAnchor_;
-    Vector3 middleAnchor_;
+    Vector3 frontLeft_;
+    Vector3 frontRight_;
     Vector3 speed_;
     float angle_;
     HitBox * hitBoxLocal_;

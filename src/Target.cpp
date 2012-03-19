@@ -41,15 +41,24 @@ void Target::updateHitBox() {
     hitBox_->p0 = globalT*hitBoxLocal_->p0;
     hitBox_->p1 = globalT*hitBoxLocal_->p1;
 
-    //std::cout << std::endl;
-    //hitBox_->p0.print();
-    //hitBox_->p1.print();
-
     midPoint_ = Vector3( (hitBox_->p0.x+hitBox_->p1.x)/2.f,
                          (hitBox_->p0.y+hitBox_->p1.y)/2.f,
                          (hitBox_->p0.z+hitBox_->p1.z)/2.f );
 
-   // midPoint_.print();
+    // calculate the two points to put wakes at the front
+    // somewhere betweeen the midpoint and the two corner points
+    // (this is hardcoded for now)
+
+    // smallest Z is the head direction
+    float frontZ;
+    if (hitBox_->p0.z < hitBox_->p1.z) frontZ = hitBox_->p0.z;
+    else frontZ = hitBox_->p1.z;
+
+    // y and x
+
+
+
+
 
     for (unsigned int i=0; i<particleSystem_->numEmitters(); ++i) {
         particleSystem_->emitter(i)->posIs(midPoint_);
