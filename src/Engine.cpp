@@ -43,6 +43,10 @@ static void Reshape(int w, int h)
 }
 
 static void KeyPressed(unsigned char key, int x, int y) {
+
+    Vector3 direction;
+    float pitch, yaw;
+
     switch (key){
         case 27:
             // Important to clean up Engine first (delete any loaded meshes)
@@ -64,7 +68,16 @@ static void KeyPressed(unsigned char key, int x, int y) {
             Engine::instance().camera()->strafe(0.5);
             break;
         case 'b':
-            Engine::instance().rocketLauncher()->fire(Engine::instance().camera()->viewVector());
+            direction = Engine::instance().camera()->viewVector();
+            pitch = -Engine::instance().camera()->pitch();
+            yaw = -Engine::instance().camera()->yaw()+90.f;
+            Engine::instance().rocketLauncher()->fire(direction, pitch, yaw);
+
+            Engine::instance().camera()->position().print();
+            std::cout << "Camera pitch " << Engine::instance().camera()->pitch() << std::endl;
+            std::cout << "Camera yaw " << Engine::instance().camera()->yaw() << std::endl;
+            //Engine::instance().rocketLauncher()->projectiles().at(0)->rotationNode()->rotateX(-Engine::instance().camera()->pitch());
+            //Engine::instance().rocketLauncher()->projectiles().at(0)->rotationNode()->rotateY(-Engine::instance().camera()->yaw()+90.f);
             break;
         //ZIMMERMAN!!!
         case 'z':
@@ -517,8 +530,8 @@ void Engine::LoadCameras()
 {
     gameCam_ = new Camera();
     gameCam_->projectionIs(45.f, 1.f, 1.f, 10000.f);
-    gameCam_->positionIs(Vector3(11.1429, -5.2408, 10.2673));
-    gameCam_->rotationIs(492.8, 718.4);
+    gameCam_->positionIs(Vector3(25.f, -20.f, 5.f));
+    gameCam_->rotationIs(125.f, 15.f);
     /*gameCam_->maxYawIs(492.8+45.0);
     gameCam_->minYawIs(492.8-45.0);
     gameCam_->maxPitchIs(718.4+10.0);
@@ -585,15 +598,22 @@ void Engine::loadWeapons() {
     std::string texName("diffuseMap");
     shader->addTexture(texName, tex);
 
-    std::string nodeStr("rocketNode");
-    Node * node = new Node(nodeStr);
-    nodes_[nodeStr] = node;
-    node->parentIs(root_);
+    std::string nodeStr;
+
+    nodeStr = "rocketTransNode";
+    Node * translationNode = new Node(nodeStr);
+    nodes_[nodeStr] = translationNode;
+    translationNode->parentIs(root_);
+
+    nodeStr = "rocketRotNode";
+    Node * rotationNode = new Node(nodeStr);
+    nodes_[nodeStr] = rotationNode;
+    rotationNode->parentIs(translationNode);
 
     std::string meshStr("rocketMesh");
-    Mesh * mesh = new Mesh(meshStr, node);
+    Mesh * mesh = new Mesh(meshStr, rotationNode);
     meshes_[meshStr] = mesh;
-    mesh->node()->rotateY(180.f);
+    translationNode->rotateY(180.f);
 
     mesh->showIs(false);
 
@@ -608,7 +628,9 @@ void Engine::loadWeapons() {
                                                       Vector3(0.f, 0.f, 0.f),
                                                       rocketLauncher_->power(),
                                                       mesh,
-                                                      170.f);
+                                                      170.f,
+                                                      translationNode,
+                                                      rotationNode);
     rocketLauncher_->addProjectile(rocket);                                                
 }
 
@@ -624,23 +646,13 @@ void Engine::updateProjectiles(float _dt) {
 
             for (unsigned int j=0; j<targets_.size(); ++j) {
 
-                /*
-                std::cout << std::endl;
-                std::cout << "Checking projectile:";
-                projectiles.at(i)->position().print();
-                std::cout << "Against hit box:" << std::endl;
-                targets_.at(j)->hitBox()->p0.print();
-                targets_.at(j)->hitBox()->p1.print();
-                */
+                
+            
+                
                 if (targets_.at(j)->active()) {
                     if (projectiles.at(i)->checkCollision(targets_.at(j)->hitBox())) {
 
-                        Vector3 p0 = targets_.at(j)->hitBox()->p0;
-                        Vector3 p1 = targets_.at(j)->hitBox()->p1;
-
-                        p0.print();
-                        p1.print();
-                        projectiles.at(i)->position().print();
+                        projectiles.at(i)->resetRotation();
 
                         targets_.at(j)->explode();
                         projectiles.at(i)->activeIs(false);

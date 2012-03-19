@@ -8,31 +8,36 @@ MeshedProjectile::MeshedProjectile(Vector3 _pos,
                                    Vector3 _speed,
                                    float _power,
                                    Mesh * _mesh,
-                                   float _maxDistance)
+                                   float _maxDistance,
+                                   Node * _translationNode,
+                                   Node * _rotationNode)
                                    :
                                    position_(_pos),
                                    power_(_power),
                                    mesh_(_mesh),
                                    maxDistance_(_maxDistance),
                                    flightDistance_(0.f),
-                                   active_(false) 
+                                   active_(false),
+                                   translationNode_(_translationNode),
+                                   rotationNode_(_rotationNode)
                                    {}
 
 void MeshedProjectile::update(float _dt) {
     if (!active_) return;
     Vector3 d = speed_*_dt;
-    mesh_->node()->translate(d*-1);
+
+    //mesh_->node()->translate(d*-1);
+    translationNode_->translate(d*-1);
+    translationNode_->update();
+
     position_ = position_ + d;
-    //Node * node = mesh_->node();
-    //Matrix4 globalT = node->globalModelMtx();
-    //position_ = globalT*position_;
 
     flightDistance_ += d.mag();
-    //std::cout << "Flying ";
-    //position_.print();
-    //std::cout << "flightDist :" << flightDistance_ << std::endl;
 
-    if (flightDistance_ > maxDistance_) active_ = false;
+    if (flightDistance_ > maxDistance_) {
+        resetRotation();
+        active_ = false;
+    }
 }
 
 bool MeshedProjectile::checkCollision(HitBox* _hitBox) {
@@ -67,24 +72,12 @@ void MeshedProjectile::activeIs(bool _active) {
 
 void MeshedProjectile::positionIs(Vector3 _position) {
 
-   // std::cout << std::endl;
-    //std::cout << "Projectile position ";
-    //position_.print();
-
-    //std::cout << "New position";
-    //_position.print();
-
     Vector3 diff = position_ - _position;
-   // std::cout << "Diff ";
-    //diff.print();
-
-    mesh_->node()->translate(diff);
+    
+    translationNode_->translate(diff);
+    translationNode_->update();
 
     position_ = _position;
-
-    //Node * node = mesh_->node();
-    //Matrix4 globalT = node->globalModelMtx();
-    //position_ = globalT*position_;
 
 }
 
@@ -94,4 +87,17 @@ void MeshedProjectile::speedIs(Vector3 _speed) {
 
 void MeshedProjectile::flightDistanceIs(float _flightDistance) {
     flightDistance_ = _flightDistance;
+}
+
+void MeshedProjectile::pitchIs(float _pitch) {
+    pitch_ = _pitch;
+}
+
+void MeshedProjectile::yawIs(float _yaw) {
+        yaw_ = _yaw;
+}
+
+void MeshedProjectile::resetRotation() {
+    rotationNode_->rotateY(-yaw_);
+    rotationNode_->rotateX(-pitch_);
 }

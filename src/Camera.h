@@ -35,6 +35,7 @@ public:
     void minYawIs(float _minYaw);
     float yaw() const { return yawDegrees_; }
     float pitch() const { return pitchDegrees_; }
+    Vector3 position() const { return pos_; }
 
     const Matrix4 & viewMtx() const {return viewMtx_;};
     const Matrix4 & inverseViewMtx() const {return inverseViewMtx_;};
@@ -49,6 +50,7 @@ public:
 
     Vector3 viewVector() const;
     Vector3 worldPos() const { return worldPos_; }
+   
 
     void shake(float _duration, float _magnitude);
     void updateShake(float _dt);
