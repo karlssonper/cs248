@@ -10,6 +10,11 @@ uniform mat4 LightViewMatrix;
 uniform mat4 LightProjectionMatrix;
 uniform mat3 NormalMatrix;
 
+uniform float focalPlane;
+uniform float nearBlurPlane;
+uniform float farBlurPlane;
+uniform float maxBlur;
+
 varying vec3 eyePosition;
 varying vec3 normal;
 varying vec4 shadowcoord;
@@ -17,6 +22,23 @@ varying vec3 lightDir;
 varying vec2 texcoord;
 varying float foamTime;
 varying float foamAlpha;
+varying float coc;
+
+float calculateCoC(float depth)
+{
+    float f;
+    if (depth < focalPlane) {
+        f = (depth - focalPlane)/(focalPlane - nearBlurPlane);
+    }
+    else
+    {
+        f = (depth - focalPlane)/(farBlurPlane - focalPlane);
+    // clamp the far blur to a maximum blurriness
+        f = clamp (f, 0, maxBlur);
+    }
+    // scale and bias into [0, 1] range
+    return f * 0.5 + 0.5;
+}
 
 void main() {
     texcoord = positionIn.xz / 100.0;
@@ -31,6 +53,7 @@ void main() {
 	lightDir = (NormalMatrix * vec3(1.0, 0.5, 1.0)).xyz;
 
 	eyePosition = eyeTemp.xyz;
+	coc = calculateCoC(eyePosition.z);
 	gl_Position = ProjectionMatrix * eyeTemp;
 	foamTime = foamTimeIn;
 	foamAlpha = foamAlphaIn;

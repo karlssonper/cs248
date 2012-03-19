@@ -252,6 +252,11 @@ void Engine::loadResources(const char * _file)
     nrTargetsIs(5);
     targetSpawnRateIs(3.f);
 
+    focalPlane_ = 30.0f;
+    nearBlurPlane_ = 10.0f;
+    farBlurPlane_ = 80.0f;
+    maxBlur_ = 0.8;
+
     //Order here is important.
     LoadCameras();
     LoadLight();
@@ -325,7 +330,7 @@ void Engine::RenderFirstPass()
 {
     Graphics::instance().enableFramebuffer(
                                             firstPassFB_,
-                                            4,
+                                            3,
                                             width(),
                                             height());
 
@@ -359,7 +364,30 @@ void Engine::RenderFirstPass()
 
 void Engine::RenderSecondPass()
 {
+    Graphics::instance().enableFramebuffer(
+                                            secondPassDepthFB_,
+                                            secondPassFB_,
+                                            0,
+                                            2,
+                                            width(),
+                                            height()
+                                           );
     Graphics::instance().drawIndices(quadVAO_, quadIdxVBO_, 6, quadShader_);
+
+    Graphics::instance().enableFramebuffer(
+                                            horBlurDepthFB_,
+                                            horBlurFB_,
+                                            0,
+                                            2,
+                                            width(),
+                                            height()
+                                           );
+    Graphics::instance().drawIndices(quadVAO_, quadIdxVBO_, 6,
+                                     horDOFShader_);
+    Graphics::instance().disableFramebuffer();
+
+    Graphics::instance().drawIndices(quadVAO_, quadIdxVBO_, 6,
+                                     vertDOFShader_);
 }
 
 void Engine::BlurTextures()
@@ -368,7 +396,7 @@ void Engine::BlurTextures()
                                             horBlurDepthFB_,
                                             horBlurFB_,
                                             0,
-                                            1,
+                                            2,
                                             width(),
                                             height()
                                            );
@@ -408,7 +436,7 @@ void Engine::BuildQuad()
     colorTexNames.push_back("Phong");
     colorTexNames.push_back("Particles");
     colorTexNames.push_back("Bloom2");
-    colorTexNames.push_back("CoC");
+    colorTexNames.push_back("CoC2");
     colorTexNames.push_back("shadow");
     colorTexNames.push_back("../textures/hud.png");
     colorTexNames.push_back("depth");
@@ -497,11 +525,18 @@ void Engine::BuildSkybox()
     cubeMapTexs[5] = std::string("../textures/NEGATIVE_Z.png");
    // skyBoxShader_->addCubeTexture(cubeMapShaderStr, cubeMapStr, cubeMapTexs);
 
+    skyBoxShader_->addFloat("focalPlane", focalPlane_);
+    skyBoxShader_->addFloat("nearBlurPlane", nearBlurPlane_);
+    skyBoxShader_->addFloat("farBlurPlane", farBlurPlane_);
+    skyBoxShader_->addFloat("maxBlure", maxBlur_);
+
     const int stride = sizeof(SkyboxVertex);
     unsigned int sID = skyBoxShader_->shaderID();
     std::string posStr("positionIn");
     int posLoc = g.shaderAttribLoc(sID , posStr);
     g.bindGeometry(sID, skyboxVAO_, skyboxVBO_, 3, stride, posLoc, 0);
+
+
 }
 
 void Engine::mouseXIs(int x)
@@ -533,11 +568,10 @@ void Engine::xzBoundsIs(float _xMin, float _xMax, float _zMin, float _zMax) {
 
 void Engine::CreateFramebuffer()
 {
-    std::vector<unsigned int> colorTex(4);
+    std::vector<unsigned int> colorTex(3);
     std::vector<std::string> colorTexNames;
     colorTexNames.push_back("Phong");
     colorTexNames.push_back("Bloom");
-    colorTexNames.push_back("Motion");
     colorTexNames.push_back("CoC");
 
     Graphics::instance().createTextureToFBOTest(colorTexNames, colorTex,
@@ -545,8 +579,7 @@ void Engine::CreateFramebuffer()
 
     phongTex_ = colorTex[0];
     bloomTex_ = colorTex[1];
-    motionTex_ = colorTex[2];
-    cocTex_ = colorTex[3];
+    cocTex_ = colorTex[2];
 
     std::vector<unsigned int> particlesTex(1);
     std::vector<std::string> particleTexNames;
@@ -554,16 +587,36 @@ void Engine::CreateFramebuffer()
     Graphics::instance().createTextureToFBO(particleTexNames, particlesTex,
             softParticlesFB_, softParticlesDepthFB_, width(), height());
 
-    std::vector<unsigned int> horBlurTex(1);
+    std::vector<unsigned int> horBlurTex(2);
     std::vector<std::string> horBlurTexNames;
     horBlurTexNames.push_back("Bloom2");
+    horBlurTexNames.push_back("CoC2");
     Graphics::instance().createTextureToFBO(horBlurTexNames, horBlurTex,
             horBlurFB_, horBlurDepthFB_, width(), height());
     bloom2Tex_ = horBlurTex[0];
+    coc2Tex_ = horBlurTex[1];
 
     horizontalGaussianShader_ = new ShaderData("../shaders/horizontalGauss");
     horizontalGaussianShader_->addTexture("bloomTex", "Bloom");
+    horizontalGaussianShader_->addTexture("cocTex", "CoC");
     horizontalGaussianShader_->addFloat("texDx", 1.0f / width());
+
+    std::vector<unsigned int> secondPassTex(2);
+    std::vector<std::string> secondPassTexNames;
+    secondPassTexNames.push_back("Phong2");
+    secondPassTexNames.push_back("CoC3");
+    Graphics::instance().createTextureToFBO(secondPassTexNames, secondPassTex,
+            secondPassFB_, secondPassDepthFB_, width(), height());
+
+    horDOFShader_ = new ShaderData("../shaders/horDOF");
+    horDOFShader_->addTexture("phongTex", "Phong2");
+    horDOFShader_->addTexture("cocTex", "CoC3");
+    horDOFShader_->addFloat("texDx", 1.0f / width());
+
+    vertDOFShader_ = new ShaderData("../shaders/vertDOF");
+    vertDOFShader_->addTexture("phongTex", "Bloom2");
+    vertDOFShader_->addTexture("cocTex", "CoC3");
+    vertDOFShader_->addFloat("texDx", 1.0f / width());
 }
 
 void Engine::LoadCameras()
@@ -618,7 +671,10 @@ void Engine::LoadOcean()
     CUDA::Ocean::oceanShaderData()->addTexture("foamTex",
                                                    "../textures/foam.jpg");
     CUDA::Ocean::oceanShaderData()->addFloat("shadowMapDx", 1.0f / shadowSize_);
-
+    CUDA::Ocean::oceanShaderData()->addFloat("focalPlane", focalPlane_);
+    CUDA::Ocean::oceanShaderData()->addFloat("nearBlurPlane", nearBlurPlane_);
+    CUDA::Ocean::oceanShaderData()->addFloat("farBlurPlane", farBlurPlane_);
+    CUDA::Ocean::oceanShaderData()->addFloat("maxBlure", maxBlur_);
 
 }
 
@@ -720,6 +776,10 @@ void Engine::LoadTargets() {
     std::string tex("../textures/Galleon2.jpg");
     std::string texName("diffuseMap");
     shader->addTexture(texName, tex);
+    shader->addFloat("focalPlane", focalPlane_);
+    shader->addFloat("nearBlurPlane", nearBlurPlane_);
+    shader->addFloat("farBlurPlane", farBlurPlane_);
+    shader->addFloat("maxBlure", maxBlur_);
 
     for (unsigned int i = 0; i < nrTargets_; i++) {
         std::ostringstream oss;
@@ -915,15 +975,15 @@ void Engine::initParticleSystems() {
     waterFoamEmitter1sd_->addTexture(t8, p8);
     waterFoamEmitter2sd_->addTexture(t9, p9);
 
-    fireEmitter1sd_->addTexture("depthTex","depth");
-    fireEmitter2sd_->addTexture("depthTex","depth");
-    debrisEmitter1sd_->addTexture("depthTex","depth");
-    smokeEmittersd_->addTexture("depthTex","depth");
-    missileSmokeEmittersd_->addTexture("depthTex","depth");
-    missileFireEmittersd_->addTexture("depthTex","depth");
-    debrisEmitter2sd_->addTexture("depthTex","depth");
-    waterFoamEmitter1sd_->addTexture("depthTex","depth");
-    waterFoamEmitter2sd_->addTexture("depthTex","depth");
+    fireEmitter1sd_->addTexture("cocTex","CoC");
+    fireEmitter2sd_->addTexture("cocTex","CoC");
+    debrisEmitter1sd_->addTexture("cocTex","CoC");
+    smokeEmittersd_->addTexture("cocTex","CoC");
+    missileSmokeEmittersd_->addTexture("cocTex","CoC");
+    missileFireEmittersd_->addTexture("cocTex","CoC");
+    debrisEmitter2sd_->addTexture("cocTex","CoC");
+    waterFoamEmitter1sd_->addTexture("cocTex","CoC");
+    waterFoamEmitter2sd_->addTexture("cocTex","CoC");
 
     ParticleSystem * ps;
     ParticleSystem * ps2;

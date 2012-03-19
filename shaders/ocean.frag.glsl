@@ -13,6 +13,7 @@ varying vec3 lightDir;
 varying vec2 texcoord;
 varying float foamTime;
 varying float foamAlpha;
+varying float coc;
 
 float rgb2lum(vec3 color)
 {
@@ -145,6 +146,7 @@ void main() {
     //gl_FragData[0] = vec4(1,1,1,1);
 
     //Phong Tex
+    float alphaPhong = clamp(-eyePosition.z/200,0,1);
     gl_FragData[0] = vec4((1.0-alpha)*phong + alpha*foam, 1.0);
 
     //Bloom Tex
@@ -152,10 +154,6 @@ void main() {
 
     //Motion Tex
 
-    gl_FragData[2] = vec4(foam,1);
+    gl_FragData[2] = vec4(coc,alphaPhong,0,1);
     //gl_FragData[3] = vec4(ss,ss,ss,1);
-
-    //CoC Tex
-    gl_FragData[3] = vec4(0.5*normalize(N) + vec3(0.5),1.0);
-
 }

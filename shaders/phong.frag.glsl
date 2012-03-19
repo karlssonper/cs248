@@ -11,7 +11,7 @@ varying vec3 normal;
 
 varying vec4 shadowcoord;
 varying vec3 L;
-
+varying float coc;
 /*
 vec3 getNormal()
 {
@@ -63,8 +63,8 @@ void main() {
 	vec3 totDiffuse = diffuse(light, N, vec3(0.7, 0.7, 0.7));
     vec3 totSpecular = specular(light, N, V, vec3(0.3, 0.3, 0.3));
 	vec3 totAmbient = vec3(0.1);
-	
-	vec4 phong = vec4(totDiffuse+totSpecular+totAmbient, 1) * vec4(diffuseTexture,1 );
+	float alpha = clamp(-eyePosition.z/200,0,1);
+	vec4 phong = vec4(totDiffuse+totSpecular+totAmbient, 1) * vec4(diffuseTexture, 1.0 );
 	//gl_FragColor = vec4(texcoord.x, 0,0,1);
 
 
@@ -80,9 +80,6 @@ void main() {
 	//Bloom Tex
 	gl_FragData[1] = vec4(bloom(phong.rgb,0.7),1);
 
-	//Motion Tex
-	gl_FragData[2] = vec4(0.5*normalize(N) + vec3(0.5),1);
-
 	//CoC Tex
-	gl_FragData[3] = vec4(0.5*normalize(N) + vec3(0.5),1);
+	gl_FragData[2] = vec4(coc, alpha,0,1);
 }

@@ -87,6 +87,12 @@ private:
     float zMax_;
     float zMin_;
     
+    //Depth of field
+    float focalPlane_;
+    float nearBlurPlane_;
+    float farBlurPlane_;
+    float maxBlur_;
+
     //Textures
     unsigned int depthTex_;
     unsigned int phongTex_;
@@ -94,16 +100,20 @@ private:
     unsigned int bloom2Tex_;
     unsigned int motionTex_;
     unsigned int cocTex_;
+    unsigned int coc2Tex_;
 
     //Framebuffers
     unsigned int firstPassFB_;
     unsigned int firstPassDepthFB_;
     unsigned int secondPassFB_;
+    unsigned int secondPassDepthFB_;
     unsigned int horBlurFB_;
     unsigned int horBlurDepthFB_;
     unsigned int softParticlesFB_;
     unsigned int softParticlesDepthFB_;
     ShaderData * horizontalGaussianShader_;
+    ShaderData * horDOFShader_;
+    ShaderData * vertDOFShader_;
 
     //Shadow mapping
     unsigned int shadowFB_;

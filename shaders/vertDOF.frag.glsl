@@ -1,4 +1,4 @@
-uniform sampler2D bloomTex;
+uniform sampler2D phongTex;
 uniform sampler2D cocTex;
 
 uniform float texDx;
@@ -28,9 +28,6 @@ vec3 gaussianBlur(sampler2D tex, int n)
 
 void main() {
 	//First color buffer
-	gl_FragData[0] = vec4(gaussianBlur(bloomTex,10),1);
-
-	//gl_FragData[1] = vec4(gaussianBlur(cocTex,10),1);
-	gl_FragData[1] = texture2D(cocTex, texcoord);
-	//gl_FragData[1] = vec4(1,0,0,1);
+	gl_FragColor = vec4(gaussianBlur(phongTex,1),1);
+    //gl_FragColor = vec4(1,0,0,1);
 }

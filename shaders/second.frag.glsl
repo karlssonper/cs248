@@ -21,7 +21,7 @@ float distance(vec2 tcoords, vec2 uv)
     return sqrt(dx*dx + dy*dy);
 }
 
-vec3 gaussianBlur(int n)
+vec3 gaussianBlur(sampler2D tex, int n)
 {
     vec3 sum = vec3(0.0);
     float v = texcoord.y - float(n)/2.0 * texDx;
@@ -29,7 +29,7 @@ vec3 gaussianBlur(int n)
     for (int i = 0; i < n; ++i, v += texDx){
         float d = distance(texcoord, vec2(texcoord.x,v ));
         float weight = exp(-d*d);
-        sum += weight*texture2D(bloomTex, vec2(texcoord.x,v)).rgb;
+        sum += weight*texture2D(tex, vec2(texcoord.x,v)).rgb;
         totWeight += weight;
     }
     return sum / totWeight;
@@ -87,15 +87,17 @@ void main() {
 	    vec4 hud = texture2D(hudTex, texcoord);
 	    color = (1.0-hud.a)*motionBlur(3.5) + hud.a*(hud.rgb);
 	} else if (debug == 2.0) {
-	    color = gaussianBlur(10);
+	    color = gaussianBlur(bloomTex,10);
     } else if (debug == 3.0) {
         color = vec3(texture2D(particlesTex, texcoord).a);
         //color = texture2D(phongTex, texcoord) + gaussianBlur(10);
     } else if (debug == 4.0) {
-        color = vec3(texture2D(depthTex, texcoord).r/2.0);
+        color = vec3(texture2D(cocTex, texcoord).g);
     } else if (debug == 5.0) {
         color = vec3(texture2D(shadowTex, texcoord).z);
     }
 
-	gl_FragColor = vec4(color,1);
+	//gl_FragColor = vec4(color,1);
+	gl_FragData[0] = vec4(color,1);
+	gl_FragData[1] = vec4(gaussianBlur(cocTex,10),1);
 }
