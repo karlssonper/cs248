@@ -21,7 +21,7 @@ void main() {
     vec3 dir = normalize(pos);
 
 	vec3 color = textureCube(skyboxTex, dir).rgb;
-	float alpha = clamp(eyeDepth/200,0,1);
+	float alpha = clamp(-eyeDepth/200,0,1);
 	gl_FragData[0] = vec4(color,1.0);
 
 	gl_FragData[1] = vec4(bloom(color,0.7),1);
@@ -29,5 +29,4 @@ void main() {
 	//gl_FragData[2] = vec4(coc,eyeDepth,0.0,1.0);
 	gl_FragData[2] = vec4(coc, alpha, 1.0, 1.0);
 
-	gl_FragData[3] = vec4(1.0, 1.0, 1.0, 1.0);
 }

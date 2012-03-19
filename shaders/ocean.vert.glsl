@@ -53,7 +53,7 @@ void main() {
 	lightDir = (NormalMatrix * vec3(1.0, 0.5, 1.0)).xyz;
 
 	eyePosition = eyeTemp.xyz;
-	coc = calculateCoC(eyePosition.z);
+	coc = calculateCoC(-eyePosition.z);
 	gl_Position = ProjectionMatrix * eyeTemp;
 	foamTime = foamTimeIn;
 	foamAlpha = foamAlphaIn;

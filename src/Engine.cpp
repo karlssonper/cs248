@@ -252,9 +252,9 @@ void Engine::loadResources(const char * _file)
     nrTargetsIs(5);
     targetSpawnRateIs(3.f);
 
-    focalPlane_ = 30.0f;
+    focalPlane_ = 20.0f;
     nearBlurPlane_ = 10.0f;
-    farBlurPlane_ = 80.0f;
+    farBlurPlane_ = 40.0f;
     maxBlur_ = 0.8;
 
     //Order here is important.
