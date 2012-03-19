@@ -45,7 +45,7 @@ float calculateCoC(float depth)
 void main() {
 	vec4 eyeTemp =  ModelViewMatrix * vec4(positionIn, 1);
 	eyePosition = eyeTemp.xyz;
-	coc = calculateCoC(eyePosition.z);
+	coc = calculateCoC(-eyePosition.z);
 
 	vec4 worldPos = ModelMatrix * vec4(positionIn, 1);
 	shadowcoord = 0.5 *(LightProjectionMatrix * LightViewMatrix * worldPos) +

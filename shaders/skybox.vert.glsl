@@ -31,7 +31,7 @@ float calculateCoC(float depth)
 void main() {
     pos = positionIn;
     vec4 eyePos = ModelViewMatrix * vec4(positionIn,1);
-    coc = calculateCoC(eyePos.z);
+    coc = calculateCoC(-eyePos.z);
     eyeDepth = eyePos.z;
 	gl_Position = ProjectionMatrix * eyePos;
 }
