@@ -9,7 +9,7 @@
 #include <fstream>
 #include <iostream>
 #include "wrappers/FreeImage2Tex.h"
-#include <CUDA.h>
+#include "CUDA.h"
 
 Graphics::Graphics()
 {

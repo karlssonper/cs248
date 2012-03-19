@@ -40,7 +40,7 @@ struct OceanVertex
     float pos[3];
     float partialU[3];
     float partialV[3];
-    float fold;
+    //float fold;
     float foamTime;
     float foamAlpha;
 };
@@ -180,16 +180,16 @@ void updateFoam(int numBoats, float2 * xz, float scale,float * out)
             //if(z<xz[k].y && len < size) break;
 
             hit = true;
-            out[idxPos(i,j)*12+10] = FOAM_ACTIVATED;
+            out[idxPos(i,j)*11+9] = FOAM_ACTIVATED;
 
-            out[idxPos(i,j)*12+11] = -abs(dx)/BOAT_SIZE;
+            out[idxPos(i,j)*11+10] = -abs(dx)/BOAT_SIZE;
             break;
         }
     }
-    if (!hit && out[idxPos(i,j)*12+10] > FOAM_TIME) {
-        out[idxPos(i,j)*12+10] = FOAM_TIME;
+    if (!hit && out[idxPos(i,j)*11+10] > FOAM_TIME) {
+        out[idxPos(i,j)*11+9] = FOAM_TIME;
         float lol = out[idxPos(i,j)*12+11];
-        out[idxPos(i,j)*12+11] = 1+lol;
+        out[idxPos(i,j)*11+10] = 1+lol;
     }
 }
 
@@ -246,39 +246,39 @@ void updatePositions(const float scale,
         float2 dy = make_float2((xIn[idxTop] - xIn[idxBot])* CHOPPYNESS * N/WORLD_SIZE,
                 (zIn[idxTop] - zIn[idxBot]) * CHOPPYNESS * N/WORLD_SIZE);
 
-        float J = (1.0f + dx.x) * (1.0f + dy.y) - dx.y * dy.x;
+        //float J = (1.0f + dx.x) * (1.0f + dy.y) - dx.y * dy.x;
 
-        out[idxPos(i,j)*12] = x + scaleXZ * xIn[idx];
-        out[idxPos(i,j)*12+1] = scaleY * yIn[idx];
-        out[idxPos(i,j)*12+2] = z + scaleXZ * zIn[idx];
+        out[idxPos(i,j)*11] = x + scaleXZ * xIn[idx];
+        out[idxPos(i,j)*11+1] = scaleY * yIn[idx];
+        out[idxPos(i,j)*11+2] = z + scaleXZ * zIn[idx];
 
-        out[idxPos(i,j)*12+3] = dxdu;
-        out[idxPos(i,j)*12+4] = dydu;
-        out[idxPos(i,j)*12+5] = dzdu;
+        out[idxPos(i,j)*11+3] = dxdu;
+        out[idxPos(i,j)*11+4] = dydu;
+        out[idxPos(i,j)*11+5] = dzdu;
 
-        out[idxPos(i,j)*12+6] = dxdv;
-        out[idxPos(i,j)*12+7] = dydv;
-        out[idxPos(i,j)*12+8] = dzdv;
+        out[idxPos(i,j)*11+6] = dxdv;
+        out[idxPos(i,j)*11+7] = dydv;
+        out[idxPos(i,j)*11+8] = dzdv;
 
-        out[idxPos(i,j)*12+9] = max(1.0f - J, 0.f);
+        //out[idxPos(i,j)*11+9] = max(1.0f - J, 0.f);
 
-        out[idxPos(i,j)*12+10] -= dt;
+        out[idxPos(i,j)*11+9] -= dt;
     }
     else {
-        out[idxPos(i,j)*12] = x;
-        out[idxPos(i,j)*12+1] = scaleY * yIn[idx];
-        out[idxPos(i,j)*12+2] = z;
+        out[idxPos(i,j)*11] = x;
+        out[idxPos(i,j)*11+1] = scaleY * yIn[idx];
+        out[idxPos(i,j)*11+2] = z;
 
-        out[idxPos(i,j)*12+3] = dxdu;
-        out[idxPos(i,j)*12+4] = dydu;
-        out[idxPos(i,j)*12+5] = dzdu;
+        out[idxPos(i,j)*11+3] = dxdu;
+        out[idxPos(i,j)*11+4] = dydu;
+        out[idxPos(i,j)*11+5] = dzdu;
 
-        out[idxPos(i,j)*12+6] = dxdv;
-        out[idxPos(i,j)*12+7] = dydv;
-        out[idxPos(i,j)*12+8] = dzdv;
+        out[idxPos(i,j)*11+6] = dxdv;
+        out[idxPos(i,j)*11+7] = dydv;
+        out[idxPos(i,j)*11+8] = dzdv;
 
-        out[idxPos(i,j)*12+9] = 1.0f;
-        out[idxPos(i,j)*12+10] -= dt;
+       // out[idxPos(i,j)*11+9] = 1.0f;
+        out[idxPos(i,j)*11+99] -= dt;
 
     }
 };
@@ -293,8 +293,8 @@ void smooth(float * pos)
     const int i = threadIdx.x + blockIdx.x * blockDim.x;
     const int j = threadIdx.y + blockIdx.y * blockDim.y;
     const int idx = idxPos(i,j);
-    alpha[tid] = pos[idx*12+10];
-    time[tid] = pos[idx*12+11];
+    alpha[tid] = pos[idx*11+10];
+    time[tid] = pos[idx*11+11];
 
     if (threadIdx.x < size) {
 
@@ -480,6 +480,7 @@ void display()
 
 void init()
 {
+    std::cerr << "INIT OCEAN" << std::endl;
     static std::string name("OceanCUDA");
     Graphics::instance().buffersNew(name, VAO, VBO_GL, VBO_IDX);
 
@@ -511,6 +512,7 @@ void init()
                      specPositive * gaussImg,
                      specNegative * gaussReal,
                     -specNegative * gaussImg);
+            //std::cerr << h_a[idx].x << " " << h_a[idx].y << " " << h_a[idx].z << " " << h_a[idx].w << std::endl;
 
         }
     }
@@ -610,7 +612,7 @@ void init()
     int locPos = Graphics::instance().shaderAttribLoc(id,"positionIn");
     int locPU = Graphics::instance().shaderAttribLoc(id,"partialUIn");
     int locPV = Graphics::instance().shaderAttribLoc(id,"partialVIn");
-    int locFold = Graphics::instance().shaderAttribLoc(id,"foldIn");
+    //int locFold = Graphics::instance().shaderAttribLoc(id,"foldIn");
     int locFoamTime = Graphics::instance().shaderAttribLoc(id,"foamTimeIn");
     int locFoamAlpha = Graphics::instance().shaderAttribLoc(id,"foamAlphaIn");
 
@@ -619,13 +621,14 @@ void init()
     Graphics::instance().bindGeometry(id, VAO, VBO_GL, 3, bytes,locPU,12);
     Graphics::instance().bindGeometry(id, VAO, VBO_GL, 3, bytes,locPV,24);
     //Graphics::instance().bindGeometry(id, VAO, VBO_GL, 1, bytes,locFold,36);
-    Graphics::instance().bindGeometry(id, VAO, VBO_GL, 1, bytes,locFoamTime,40);
-    Graphics::instance().bindGeometry(id, VAO, VBO_GL, 1, bytes,locFoamAlpha,44);
+    Graphics::instance().bindGeometry(id, VAO, VBO_GL, 1, bytes,locFoamTime,36);
+    Graphics::instance().bindGeometry(id, VAO, VBO_GL, 1, bytes,locFoamAlpha,40);
 
     cudaGraphicsGLRegisterBuffer(&VBO_CUDA, VBO_GL,
             cudaGraphicsMapFlagsWriteDiscard);
 
-    cudaMalloc((void**)&d_boatsXZ, sizeof(float2) * 5);
+    //cudaMalloc((void**)&d_boatsXZ, sizeof(float2) * 5);
+    std::cerr << "Max height: " << maxHeight() << std::endl;
     verticalScale = WAVE_HEIGHT / maxHeight();
     checkErrors();
 }
@@ -634,7 +637,7 @@ std::vector<float> height(std::vector<std::pair<float,float> > _worldPos)
 {
     if (_worldPos.size() > 5) std::cerr << "Too many boats at the same time!";
     std::vector<float> h(_worldPos.size());
-    cudaGraphicsMapResources(1, &VBO_CUDA, 0);
+    /*cudaGraphicsMapResources(1, &VBO_CUDA, 0);
     float* positions;
     size_t num_bytes;
     cudaGraphicsResourceGetMappedPointer((void**)&positions,
@@ -669,7 +672,7 @@ std::vector<float> height(std::vector<std::pair<float,float> > _worldPos)
 
     cudaGraphicsUnmapResources(1, &VBO_CUDA, 0);
 
-    checkErrors();
+    checkErrors();*/
     return h;
 }
 

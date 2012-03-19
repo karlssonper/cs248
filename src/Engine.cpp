@@ -245,13 +245,14 @@ void Engine::loadResources(const char * _file)
     //Order here is important.
     LoadCameras();
     LoadLight();
+    LoadOcean();
     CreateFramebuffer();
     BuildQuad();
     BuildSkybox();
     LoadTargets();
     loadWeapons();
     initParticleSystems();
-    LoadOcean();
+
 }
 
 void Engine::cleanUp() {
@@ -645,7 +646,6 @@ void Engine::updateProjectiles(float _dt) {
 
             for (unsigned int j=0; j<targets_.size(); ++j) {
 
-
                 if (targets_.at(j)->active()) {
                     if (projectiles.at(i)->checkCollision(targets_.at(j)->hitBox())) {
 
@@ -922,6 +922,7 @@ void Engine::initParticleSystems() {
     for (it=targets_.begin(); it!=targets_.end(); it++) {
 
         ps = new ParticleSystem(5);
+
         (*it)->explosionPsIs(ps);
 
         Emitter * fireEmitter1 = ps->newEmitter(10, fireEmitter1sd_);
@@ -1014,7 +1015,8 @@ void Engine::initParticleSystems() {
         waterFoamLeft->velRandWeightIs(0.2f);
         waterFoamLeft->accIs(Vector3(-13.f, 0.f, 0.0f));
         waterFoamLeft->pointSizeIs(1.0f);
-        waterFoamLeft->growthFactorIs(0.97f);
+
+        waterFoamLeft->growthFactorIs(0.97f); 
 
         Emitter * waterFoamRight = ps2->newEmitter(30, waterFoamEmitter2sd_);
         waterFoamRight->posIs((*it)->frontRight());
@@ -1029,6 +1031,7 @@ void Engine::initParticleSystems() {
         waterFoamRight->accIs(Vector3(10.f, 0.f, 0.0f));
         waterFoamRight->pointSizeIs(1.0f);
         waterFoamRight->growthFactorIs(0.97f);
+
 
     }
 }

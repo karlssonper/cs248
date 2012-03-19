@@ -32,8 +32,11 @@ public:
     Vector3 frontRight() const { return frontRight_; }
     void explode();
 
-    ParticleSystem * particleSystem() const { return particleSystem_; }
-    void particleSystemIs(ParticleSystem * _particleSystem);
+    ParticleSystem * explosionPs() const { return explosionPs_; }
+    void explosionPsIs(ParticleSystem * _explosionPs);
+
+    ParticleSystem * foamPs() const { return foamPs_; }
+    void foamPsIs(ParticleSystem * _foamPs);
     
 
     float heightDiff() const { return heightDiff_; }
@@ -56,7 +59,8 @@ private:
     std::string name_;
     bool active_;
 
-    ParticleSystem * particleSystem_;
+    ParticleSystem * explosionPs_;
+    ParticleSystem * foamPs_;
 
     float heightDiff_;
     float yOffset_;

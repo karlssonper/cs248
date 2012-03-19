@@ -10,6 +10,7 @@
     #include <windows.h>
 #endif
 
+#include <iostream>
 #include <cuda_gl_interop.h>
 
 static bool initialized = false;
@@ -18,6 +19,7 @@ namespace CUDA {
 
 void init()
 {
+    std::cerr << "INIT CUDA.cpp!!!!" << std::endl;
     if (initialized) return;
     cudaGLSetGLDevice(0);
     initialized = true;

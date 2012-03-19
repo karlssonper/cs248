@@ -23,8 +23,6 @@
 #include <string>
 #include <vector>
 #include <map>
-#include <stdio.h>
-#include <assert.h>
 #include "ShaderData.h"
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
