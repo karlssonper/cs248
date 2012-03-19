@@ -1033,13 +1033,28 @@ void Engine::initParticleSystems() {
 
         (*it)->explosionPsIs(ps);
 
+        Emitter * smokeEmitter = ps->newEmitter(15, smokeEmittersd_);
+        smokeEmitter->posIs((*it)->midPoint());
+        smokeEmitter->burstSizeIs(15);
+        smokeEmitter->typeIs(Emitter::EMITTER_BURST);
+        smokeEmitter->blendModeIs(Emitter::BLEND_SMOKE);
+        smokeEmitter->rateIs(0.02f);
+        smokeEmitter->lifeTimeIs(4.f);
+        smokeEmitter->massIs(1.f);
+        smokeEmitter->posRandWeightIs(0.2f);
+        smokeEmitter->velIs(Vector3(0.f, 0.001f, 0.f));
+        smokeEmitter->velRandWeightIs(0.001);
+        smokeEmitter->accIs(Vector3(0.f, 0.0f, 0.0f));
+        smokeEmitter->pointSizeIs(5.f);
+        smokeEmitter->growthFactorIs(1.03f);
+
         Emitter * fireEmitter1 = ps->newEmitter(10, fireEmitter1sd_);
         fireEmitter1->posIs((*it)->midPoint());
         fireEmitter1->burstSizeIs(10);
         fireEmitter1->typeIs(Emitter::EMITTER_BURST);
         fireEmitter1->blendModeIs(Emitter::BLEND_FIRE);
         fireEmitter1->rateIs(0.02f);
-        fireEmitter1->lifeTimeIs(1.5f);
+        fireEmitter1->lifeTimeIs(1.6f);
         fireEmitter1->massIs(1.f);
         fireEmitter1->posRandWeightIs(0.f);
         fireEmitter1->velIs(Vector3(0.f, 0.f, 0.f));
@@ -1058,25 +1073,11 @@ void Engine::initParticleSystems() {
         fireEmitter2->massIs(1.f);
         fireEmitter2->posRandWeightIs(0.f);
         fireEmitter2->velIs(Vector3(0.f, 0.f, 0.f));
-        fireEmitter2->velRandWeightIs(1.5f);
+        fireEmitter2->velRandWeightIs(1.6f);
         fireEmitter2->accIs(Vector3(0.f, -10.f, 0.0f));
-        fireEmitter2->pointSizeIs(6.f);
+        fireEmitter2->pointSizeIs(7.f);
         fireEmitter2->growthFactorIs(1.0f);
 
-        Emitter * smokeEmitter = ps->newEmitter(15, smokeEmittersd_);
-        smokeEmitter->posIs((*it)->midPoint());
-        smokeEmitter->burstSizeIs(15);
-        smokeEmitter->typeIs(Emitter::EMITTER_BURST);
-        smokeEmitter->blendModeIs(Emitter::BLEND_SMOKE);
-        smokeEmitter->rateIs(0.02f);
-        smokeEmitter->lifeTimeIs(2.f);
-        smokeEmitter->massIs(1.f);
-        smokeEmitter->posRandWeightIs(0.2f);
-        smokeEmitter->velIs(Vector3(0.f, 0.001f, 0.f));
-        smokeEmitter->velRandWeightIs(0.001);
-        smokeEmitter->accIs(Vector3(0.f, 0.0f, 0.0f));
-        smokeEmitter->pointSizeIs(7.f);
-        smokeEmitter->growthFactorIs(1.02f);
 
         Emitter * debrisEmitter1 = ps->newEmitter(10, debrisEmitter1sd_);
         debrisEmitter1->posIs((*it)->midPoint());
