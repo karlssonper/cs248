@@ -975,6 +975,16 @@ void Engine::initParticleSystems() {
     waterFoamEmitter1sd_->addTexture(t8, p8);
     waterFoamEmitter2sd_->addTexture(t9, p9);
 
+    fireEmitter1sd_->addFloat("softDist", 0.15);
+    fireEmitter2sd_->addFloat("softDist", 0.15);
+    debrisEmitter1sd_->addFloat("softDist", 0.15);
+    smokeEmittersd_->addFloat("softDist", 0.2);
+    missileSmokeEmittersd_->addFloat("softDist", 0.2);
+    missileFireEmittersd_->addFloat("softDist", 0.2);
+    debrisEmitter2sd_->addFloat("softDist", 0.2);
+    waterFoamEmitter1sd_->addFloat("softDist", 0.001);
+    waterFoamEmitter2sd_->addFloat("softDist", 0.001);
+
     fireEmitter1sd_->addTexture("cocTex","CoC");
     fireEmitter2sd_->addTexture("cocTex","CoC");
     debrisEmitter1sd_->addTexture("cocTex","CoC");
@@ -1048,34 +1058,34 @@ void Engine::initParticleSystems() {
         smokeEmitter->pointSizeIs(10.f);
         smokeEmitter->growthFactorIs(1.00f);
 
-        Emitter * fireEmitter1 = ps->newEmitter(30, fireEmitter1sd_);
+        Emitter * fireEmitter1 = ps->newEmitter(70, fireEmitter1sd_);
         fireEmitter1->posIs((*it)->midPoint());
-        fireEmitter1->burstSizeIs(30);
+        fireEmitter1->burstSizeIs(70);
         fireEmitter1->typeIs(Emitter::EMITTER_BURST);
         fireEmitter1->blendModeIs(Emitter::BLEND_FIRE);
         fireEmitter1->rateIs(0.02f);
         fireEmitter1->lifeTimeIs(1.6f);
         fireEmitter1->massIs(1.f);
-        fireEmitter1->posRandWeightIs(0.f);
-        fireEmitter1->velIs(Vector3(0.f, 0.f, 0.f));
-        fireEmitter1->velRandWeightIs(1.5f);
-        fireEmitter1->accIs(Vector3(0.f, -10.f, 0.0f));
-        fireEmitter1->pointSizeIs(4.f);
+        fireEmitter1->posRandWeightIs(1.2f);
+        fireEmitter1->velIs(Vector3(-3.f, 0.f, 0.f));
+        fireEmitter1->velRandWeightIs(2.f);
+        fireEmitter1->accIs(Vector3(0.f, -5.f, 0.0f));
+        fireEmitter1->pointSizeIs(2.f);
         fireEmitter1->growthFactorIs(1.0f);
         
-        Emitter * fireEmitter2 = ps->newEmitter(20, fireEmitter2sd_);
+        Emitter * fireEmitter2 = ps->newEmitter(70, fireEmitter2sd_);
         fireEmitter2->posIs((*it)->midPoint());
-        fireEmitter2->burstSizeIs(20);
+        fireEmitter2->burstSizeIs(70);
         fireEmitter2->typeIs(Emitter::EMITTER_BURST);
         fireEmitter2->blendModeIs(Emitter::BLEND_FIRE);
         fireEmitter2->rateIs(0.005f);
         fireEmitter2->lifeTimeIs(1.5f);
         fireEmitter2->massIs(1.f);
-        fireEmitter2->posRandWeightIs(0.f);
-        fireEmitter2->velIs(Vector3(0.f, 0.f, 0.f));
-        fireEmitter2->velRandWeightIs(1.6f);
-        fireEmitter2->accIs(Vector3(0.f, -10.f, 0.0f));
-        fireEmitter2->pointSizeIs(6.f);
+        fireEmitter2->posRandWeightIs(1.2f);
+        fireEmitter2->velIs(Vector3(-3.f, 0.f, 0.f));
+        fireEmitter2->velRandWeightIs(2.f);
+        fireEmitter2->accIs(Vector3(0.f, -5.f, 0.0f));
+        fireEmitter2->pointSizeIs(3.f);
         fireEmitter2->growthFactorIs(1.0f);
 
 
