@@ -403,8 +403,9 @@ void Engine::BuildQuad()
     colorTexNames.push_back("Bloom2");
     colorTexNames.push_back("CoC");
     colorTexNames.push_back("shadow");
-    colorTexNames.push_back("depth");
     colorTexNames.push_back("../textures/hud.png");
+    colorTexNames.push_back("depth");
+
 
     std::vector<std::string> shaderTexNames;
     shaderTexNames.push_back("phongTex");
@@ -412,8 +413,9 @@ void Engine::BuildQuad()
     shaderTexNames.push_back("bloomTex");
     shaderTexNames.push_back("cocTex");
     shaderTexNames.push_back("shadowTex");
-    shaderTexNames.push_back("depthTex");
     shaderTexNames.push_back("hudTex");
+    shaderTexNames.push_back("depthTex");
+
 
     quadShader_->addTexture(shaderTexNames[0], colorTexNames[0]);
     quadShader_->addTexture(shaderTexNames[1], colorTexNames[1]);
@@ -421,6 +423,7 @@ void Engine::BuildQuad()
     quadShader_->addTexture(shaderTexNames[3], colorTexNames[3]);
     quadShader_->addTexture(shaderTexNames[4], colorTexNames[4]);
     quadShader_->addTexture(shaderTexNames[5], colorTexNames[5]);
+    quadShader_->addTexture(shaderTexNames[6], colorTexNames[6]);
 
     quadShader_->addFloat("debug",1.0f);
     quadShader_->addFloat("texDx", 1.0f / height());

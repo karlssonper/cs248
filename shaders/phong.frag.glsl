@@ -53,16 +53,16 @@ vec3 specular(vec3 L, vec3 N, vec3 V, vec3 specularRGB)
 
 void main() {
 
-	L = normalize(L);
+	vec3 light = normalize(L);
 	
 	vec3 diffuseTexture = texture2D(diffuseMap, texcoord).rgb;
 	vec3 N = normalize(normal);
 	vec3 V = normalize(-eyePosition);
 	//vec3 L1 = normalize(gl_LightSource[0].position.xyz);
 	//vec3 L2 = normalize(gl_LightSource[1].position.xyz - eyePosition);
-	vec3 totDiffuse = diffuse(L, N, vec3(0.7, 0.7, 0.7));
-    vec3 totSpecular = specular(L, N, V, vec3(0.3, 0.3, 0.3));
-	vec3 totAmbient = 0.1;
+	vec3 totDiffuse = diffuse(light, N, vec3(0.7, 0.7, 0.7));
+    vec3 totSpecular = specular(light, N, V, vec3(0.3, 0.3, 0.3));
+	vec3 totAmbient = vec3(0.1);
 	
 	vec4 phong = vec4(totDiffuse+totSpecular+totAmbient, 1) * vec4(diffuseTexture,1 );
 	//gl_FragColor = vec4(texcoord.x, 0,0,1);

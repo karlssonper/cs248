@@ -36,15 +36,15 @@ float shadow(vec2 tcoords, float depth)
 float boxShadow(vec2 tcoords, float depth, int n)
 {
     float sum;
-    float u = tcoords.x - n/2.0 * shadowMapDx;
-    float v = tcoords.y - n/2.0 * shadowMapDx;
+    float u = tcoords.x - float(n)/2.0 * shadowMapDx;
+    float v = tcoords.y - float(n)/2.0 * shadowMapDx;
     for (int i = 0; i < n; ++i, u += shadowMapDx){
         for (int j = 0; j < n; ++j, v += shadowMapDx){
             sum += shadow(vec2(u,v), depth);
 
         }
     }
-    return sum / (n*n);
+    return sum / float(n*n);
 }
 
 float distance(vec2 tcoords, vec2 uv)
@@ -57,8 +57,8 @@ float distance(vec2 tcoords, vec2 uv)
 float gaussianShadow(vec2 tcoords, float depth, int n)
 {
     float sum = 0.0;
-    float u = tcoords.x - n/2.0 * shadowMapDx;
-    float v = tcoords.y - n/2.0 * shadowMapDx;
+    float u = tcoords.x - float(n)/2.0 * shadowMapDx;
+    float v = tcoords.y - float(n)/2.0 * shadowMapDx;
     float totWeight = 0.0;
     for (int i = 0; i < n; ++i, u += shadowMapDx){
         for (int j = 0; j < n; ++j, v += shadowMapDx){
@@ -95,7 +95,7 @@ vec3 reflectEnv(vec3 N, vec3 V)
 vec3 sunReflect(vec3 L, vec3 N, vec3 V)
 {
     vec3 R = reflect(-L, N);
-    float Rs = pow(max(0.0, dot(V, R)), 20);
+    float Rs = pow(max(0.0, dot(V, R)), 20.0);
     return Rs * texture2D(sunReflection,texcoord).xyz;
 }
 
@@ -114,7 +114,7 @@ void main() {
 
     vec3 diffuseColor = diffuse(L, N,vec3(0.1, 0.15, 0.2));
     vec3 reflectColor = reflectEnv(N, V);
-    vec3 ambientColor = (0.05, 0.05, 0.15);
+    vec3 ambientColor = vec3(0.15, 0.15, 0.16);
     vec3 specularColor = sunReflect(L,N,V);
     float ss = shadowScale(3);
     vec3 phong = ss*(ambientColor + diffuseColor+reflectColor+ specularColor);
@@ -122,9 +122,9 @@ void main() {
     if (foamTime <= 3.5)
         alpha = max(0.0, foamTime)/3.5;
     else
-        alpha = 0.0f;
-    vec3 foam = 3*texture2D(foamTex,texcoord + vec2(foamAlpha*0.01)).rgb;
-    alpha*=max(0,foamAlpha);
+        alpha = 0.0;
+    vec3 foam = 3.0*texture2D(foamTex,texcoord + vec2(foamAlpha*0.01)).rgb;
+    alpha*=max(0.0,foamAlpha);
 
     //Normal
     //gl_FragColor = vec4(0.5*N + vec3(0.5f,0.5f,0.5f),1);
@@ -145,10 +145,10 @@ void main() {
     //gl_FragData[0] = vec4(1,1,1,1);
 
     //Phong Tex
-    gl_FragData[0] = vec4((1-alpha)*phong + alpha*foam, 1);
+    gl_FragData[0] = vec4((1.0-alpha)*phong + alpha*foam, 1.0);
 
     //Bloom Tex
-    gl_FragData[1] = vec4(bloom(phong,0.7), 1);
+    gl_FragData[1] = vec4(bloom(phong,0.7), 1.0);
 
     //Motion Tex
 
@@ -156,6 +156,6 @@ void main() {
     //gl_FragData[3] = vec4(ss,ss,ss,1);
 
     //CoC Tex
-    gl_FragData[3] = vec4(0.5*normalize(N) + vec3(0.5),1);
+    gl_FragData[3] = vec4(0.5*normalize(N) + vec3(0.5),1.0);
 
 }

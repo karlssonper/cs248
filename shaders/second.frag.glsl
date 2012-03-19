@@ -19,13 +19,13 @@ float distance(vec2 tcoords, vec2 uv)
 
 vec3 gaussianBlur(int n)
 {
-    vec3 sum = 0.0;
-    float v = texcoord.y - n/2.0 * texDx;
+    vec3 sum = vec3(0.0);
+    float v = texcoord.y - float(n)/2.0 * texDx;
     float totWeight = 0.0;
     for (int i = 0; i < n; ++i, v += texDx){
         float d = distance(texcoord, vec2(texcoord.x,v ));
         float weight = exp(-d*d);
-        sum += weight*texture2D(bloomTex, vec2(texcoord.x,v));
+        sum += weight*texture2D(bloomTex, vec2(texcoord.x,v)).rgb;
         totWeight += weight;
     }
     return sum / totWeight;
@@ -33,20 +33,20 @@ vec3 gaussianBlur(int n)
 
 void main() {
 	vec3 color;
-	if (debug == 1.0f) {
+	if (debug == 1.0) {
 	    vec4 hud = texture2D(hudTex, texcoord);
 	    vec4 part = texture2D(particlesTex, texcoord);
 	    vec3 phong = texture2D(phongTex, texcoord).rgb;
-	    vec3 temp = (1-part.a) * phong + part.a*part.rgb;
-	    color = (1-hud.a)*temp + hud.a*(hud.rgb);
-	} else if (debug == 2.0f) {
+	    vec3 temp = (1.0-part.a) * phong + part.a*part.rgb;
+	    color = (1.0-hud.a)*phong + hud.a*(hud.rgb);
+	} else if (debug == 2.0) {
 	    color = gaussianBlur(10);
-    } else if (debug == 3.0f) {
+    } else if (debug == 3.0) {
         color = vec3(texture2D(hudTex, texcoord).a);
         //color = texture2D(phongTex, texcoord) + gaussianBlur(10);
-    } else if (debug == 4.0f) {
-        color = vec3(texture2D(depthTex, texcoord).r/2);
-    } else if (debug == 5.0f) {
+    } else if (debug == 4.0) {
+        color = vec3(texture2D(depthTex, texcoord).r/2.0);
+    } else if (debug == 5.0) {
         color = vec3(texture2D(shadowTex, texcoord).z);
     }
 

@@ -13,13 +13,13 @@ float distance(vec2 tcoords, vec2 uv)
 
 vec3 gaussianBlur(int n)
 {
-    vec3 sum = 0.0;
-    float u = texcoord.x - n/2.0 * texDx;
+    vec3 sum = vec3(0.0);
+    float u = texcoord.x - float(n)/2.0 * texDx;
     float totWeight = 0.0;
     for (int i = 0; i < n; ++i, u += texDx){
         float d = distance(texcoord, vec2(u,texcoord.y ));
         float weight = exp(-d*d);
-        sum += weight*texture2D(bloomTex, vec2(u,texcoord.y ));
+        sum += weight*texture2D(bloomTex, vec2(u,texcoord.y )).rgb;
         totWeight += weight;
     }
     return sum / totWeight;
