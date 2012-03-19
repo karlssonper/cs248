@@ -125,12 +125,13 @@ static void KeyReleased(unsigned char key, int x, int y) {
 
 static void MouseFunc(int x,int y)
 {
-    int dx = x - Engine::instance().mouseX();
-    int dy = y - Engine::instance().mouseY();
-    Engine::instance().mouseXIs(x);
-    Engine::instance().mouseYIs(y);
-    Engine::instance().camera()->yaw(0.3*dx);
-    Engine::instance().camera()->pitch(0.3*dy);
+
+    Vector3 direction;
+    float pitch, yaw;
+    direction = Engine::instance().camera()->viewVector();
+    pitch = -Engine::instance().camera()->pitch();
+    yaw = -Engine::instance().camera()->yaw()+90.f;
+    Engine::instance().rocketLauncher()->fire(direction, pitch, yaw);
 }
 
 static void MouseMoveFunc(int x,int y)
