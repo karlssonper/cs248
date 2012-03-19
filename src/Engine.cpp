@@ -1013,7 +1013,7 @@ void Engine::initParticleSystems() {
         waterFoamLeft->velIs(Vector3(10.f, 0.f, 0.f));
         waterFoamLeft->velRandWeightIs(0.2f);
         waterFoamLeft->accIs(Vector3(-13.f, 0.f, 0.0f));
-        waterFoamLeft->pointSizeIs(0.8f);
+        waterFoamLeft->pointSizeIs(1.0f);
         waterFoamLeft->growthFactorIs(0.97f); 
         
         Emitter * waterFoamRight = ps2->newEmitter(30, waterFoamEmitter2sd_);
@@ -1027,7 +1027,7 @@ void Engine::initParticleSystems() {
         waterFoamRight->velIs(Vector3(-13.f, 0.f, 0.f));
         waterFoamRight->velRandWeightIs(0.2f);
         waterFoamRight->accIs(Vector3(10.f, 0.f, 0.0f));
-        waterFoamRight->pointSizeIs(0.8f);
+        waterFoamRight->pointSizeIs(1.0f);
         waterFoamRight->growthFactorIs(0.97f); 
 
     }
