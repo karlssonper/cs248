@@ -18,7 +18,7 @@
 #define DIR_X 0
 #define DIR_Y 1
 #define DIR_Z 2
-#define N 256 //REQUENCY RESOLUTION
+#define N 128 //REQUENCY RESOLUTION
 #define WORLD_SIZE 100.0f // WORLD SIZE
 #define OCEAN_DEPTH 200.0f
 #define WIND_X 1.0f
@@ -627,7 +627,7 @@ void init()
     cudaGraphicsGLRegisterBuffer(&VBO_CUDA, VBO_GL,
             cudaGraphicsMapFlagsWriteDiscard);
 
-    //cudaMalloc((void**)&d_boatsXZ, sizeof(float2) * 5);
+    cudaMalloc((void**)&d_boatsXZ, sizeof(float2) * 5);
     std::cerr << "Max height: " << maxHeight() << std::endl;
     verticalScale = WAVE_HEIGHT / maxHeight();
     checkErrors();
@@ -637,7 +637,7 @@ std::vector<float> height(std::vector<std::pair<float,float> > _worldPos)
 {
     if (_worldPos.size() > 5) std::cerr << "Too many boats at the same time!";
     std::vector<float> h(_worldPos.size());
-    /*cudaGraphicsMapResources(1, &VBO_CUDA, 0);
+    cudaGraphicsMapResources(1, &VBO_CUDA, 0);
     float* positions;
     size_t num_bytes;
     cudaGraphicsResourceGetMappedPointer((void**)&positions,
@@ -672,7 +672,7 @@ std::vector<float> height(std::vector<std::pair<float,float> > _worldPos)
 
     cudaGraphicsUnmapResources(1, &VBO_CUDA, 0);
 
-    checkErrors();*/
+    checkErrors();
     return h;
 }
 
