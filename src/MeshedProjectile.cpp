@@ -28,16 +28,16 @@ void MeshedProjectile::update(float _dt) {
     if (!active_) return;
     Vector3 d = speed_*_dt;
 
-    //mesh_->node()->translate(d*-1);
     translationNode_->translate(d*-1);
     translationNode_->update();
 
     position_ = position_ + d;
+    tailPos_ = position_ - (speed_.normalize()) * 3.f;
 
     for (unsigned int i=0; i<particleSystem_->numEmitters(); ++i) {
-        particleSystem_->emitter(i)->posIs(Vector3(position_.x,
-                                                   -position_.y,
-                                                   position_.z));
+        particleSystem_->emitter(i)->posIs(Vector3(tailPos_.x,
+                                                   -tailPos_.y,
+                                                   tailPos_.z));
     }
 
     flightDistance_ += d.mag();
