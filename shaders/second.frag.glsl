@@ -36,7 +36,8 @@ void main() {
 	} else if (debug == 2.0f) {
 	    color = gaussianBlur(10);
     } else if (debug == 3.0f) {
-        color = texture2D(phongTex, texcoord) + gaussianBlur(10);
+        color = texture2D(motionTex, texcoord);
+        //color = texture2D(phongTex, texcoord) + gaussianBlur(10);
     } else if (debug == 4.0f) {
         color = texture2D(cocTex, texcoord);
     } else if (debug == 5.0f) {

@@ -1,4 +1,6 @@
 uniform samplerCube skyboxTex;
+uniform sampler2D sunReflection;
+uniform sampler2D foamTex;
 uniform sampler2D shadowMap;
 
 uniform float shadowMapDx;
@@ -8,6 +10,9 @@ varying vec3 eyePosition;
 varying vec3 normal;
 varying vec4 shadowcoord;
 varying vec3 lightDir;
+varying vec2 texcoord;
+varying float foamTime;
+varying float foamAlpha;
 
 float rgb2lum(vec3 color)
 {
@@ -74,7 +79,7 @@ vec3 diffuse(vec3 L, vec3 N,vec3 diffuseRGB)
     return Rd * diffuseRGB;
 }
 
-vec3 specular(vec3 N, vec3 V)
+vec3 reflectEnv(vec3 N, vec3 V)
 {
     // Calculate the specular coefficient
     vec3 Rnew = reflect(V, N);
@@ -85,6 +90,13 @@ vec3 specular(vec3 N, vec3 V)
 
     float fresnel = pow(1.0 - NdotV, 5.0); // Fresnel approximation
     return fresnel * Td;
+}
+
+vec3 sunReflect(vec3 L, vec3 N, vec3 V)
+{
+    vec3 R = reflect(-L, N);
+    float Rs = pow(max(0.0, dot(V, R)), 20);
+    return Rs * texture2D(sunReflection,texcoord).xyz;
 }
 
 float shadowScale(int n)
@@ -101,10 +113,19 @@ void main() {
     vec3 V = normalize(-eyePosition);
 
     vec3 diffuseColor = diffuse(L, N,vec3(0.1, 0.15, 0.2));
-    vec3 specularColor = specular(N, V);
+    vec3 reflectColor = reflectEnv(N, V);
     vec3 ambientColor = (0.05, 0.05, 0.15);
+    vec3 specularColor = sunReflect(L,N,V);
     float ss = shadowScale(3);
-    vec3 phong = ss*(ambientColor + diffuseColor  + specularColor);
+    vec3 phong = ss*(ambientColor + diffuseColor+reflectColor+ specularColor);
+    float alpha;
+    if (foamTime <= 3.5)
+        alpha = max(0.0, foamTime)/3.5;
+    else
+        alpha = 0.0f;
+    vec3 foam = 3*texture2D(foamTex,texcoord + vec2(foamAlpha*0.01)).rgb;
+    alpha*=max(0,foamAlpha);
+
     //Normal
     //gl_FragColor = vec4(0.5*N + vec3(0.5f,0.5f,0.5f),1);
 
@@ -124,13 +145,15 @@ void main() {
     gl_FragData[0] = vec4(1,1,1,1);
 
     //Phong Tex
-    gl_FragData[1] = vec4(phong, 1);
+    gl_FragData[1] = vec4((1-alpha)*phong + alpha*foam, 1);
 
     //Bloom Tex
     gl_FragData[2] = vec4(bloom(phong,0.7), 1);
 
     //Motion Tex
-    gl_FragData[3] = vec4(ss,ss,ss,1);
+
+    gl_FragData[3] = vec4(foam,1);
+    //gl_FragData[3] = vec4(ss,ss,ss,1);
 
     //CoC Tex
     gl_FragData[4] = vec4(0.5*normalize(N) + vec3(0.5),1);

@@ -96,8 +96,7 @@ void Mesh::geometryIs(const std::vector<Vector3> &_position,
 void Mesh::display() const
 {
 
-    if (!show_) return;
-    if (!loadedInGPU_) return;
+    if (!show_ || !loadedInGPU_) return;
     unsigned int n = indices_.size();
 
     const Matrix4 & view = Engine::instance().camera()->viewMtx();
@@ -115,7 +114,7 @@ void Mesh::display() const
 
 void Mesh::displayShadowPass(ShaderData * _shaderData) const
 {
-    if (!loadedInGPU_) return;
+    if (!show_ || !loadedInGPU_) return;
 
     unsigned int n = indices_.size();
 

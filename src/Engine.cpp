@@ -560,7 +560,13 @@ void Engine::LoadOcean()
     std::string oceanShaderStr("ocean");
     shaders_[oceanShaderStr] = CUDA::Ocean::oceanShaderData();
     CUDA::Ocean::oceanShaderData()->addTexture("shadowMap", "shadow");
+    CUDA::Ocean::oceanShaderData()->addTexture("sunReflection",
+                                               "../textures/sunReflection.png");
+    CUDA::Ocean::oceanShaderData()->addTexture("foamTex",
+                                                   "../textures/foam.jpg");
     CUDA::Ocean::oceanShaderData()->addFloat("shadowMapDx", 1.0f / shadowSize_);
+
+
 }
 
 void Engine::loadWeapons() {
