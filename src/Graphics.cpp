@@ -1,9 +1,9 @@
 /*
- * Graphics.cpp
- *
- *  Created on: Mar 2, 2012
- *      Author: per
- */
+* Graphics.cpp
+*
+* Created on: Mar 2, 2012
+* Author: per
+*/
 
 #include "Graphics.h"
 #include <fstream>
@@ -138,7 +138,7 @@ void Graphics::deleteBuffers(GLuint _VAO)
             return;
         }
     }
-    std::cerr << "Can't remove buffers  VAO#" << _VAO << std::endl;
+    std::cerr << "Can't remove buffers VAO#" << _VAO << std::endl;
     checkError();
 }
 
@@ -324,7 +324,7 @@ void Graphics::drawArrays(GLuint _VAO,
 
     if (additiveBlending) {
         glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-    } else  {
+    } else {
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
 
@@ -469,7 +469,7 @@ GLuint Graphics::texture(const std::string & _name,
             glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face, 0, GL_RGBA,
                     FI2T.w, FI2T.h, 0 , GL_RGBA, GL_UNSIGNED_BYTE, FI2T.data);
             //glCopyTexSubImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + face,
-            //        0, 0, 0, 0, 0, FI2T.w, FI2T.h);
+            // 0, 0, 0, 0, 0, FI2T.w, FI2T.h);
         }
         glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
         texture_[_name] = texID;

@@ -88,6 +88,7 @@ private:
     float zMin_;
     
     //Textures
+    unsigned int depthTex_;
     unsigned int phongTex_;
     unsigned int bloomTex_;
     unsigned int bloom2Tex_;

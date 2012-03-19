@@ -14,14 +14,16 @@
 
 
 enum STD_Matrix {
-    MODELVIEW = 0,
-    PROJECTION = 1,
-    MODEL = 2,
-    LIGHTVIEW = 3,
-    LIGHTPROJECTION = 4,
-    INVERSEVIEW = 5,
-    NORMAL = 6,
-    NUM_STD_MATRICES = 7
+    MODELVIEW             = 0,
+    PROJECTION            = 1,
+    MODEL                 = 2,
+    LIGHTVIEW             = 3,
+    LIGHTPROJECTION       = 4,
+    INVERSEVIEW           = 5,
+    INVERSEVIEWPROJECTION = 6,
+    PREVVIEWPROJETION     = 7,
+    NORMAL                = 8,
+    NUM_STD_MATRICES      = 9
 };
 
 template <class T>

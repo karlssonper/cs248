@@ -3,6 +3,7 @@ uniform sampler2D bloomTex;
 uniform sampler2D motionTex;
 uniform sampler2D cocTex;
 uniform sampler2D shadowTex;
+uniform sampler2D hudTex;
 uniform float debug;
 varying vec2 texcoord;
 
