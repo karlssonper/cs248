@@ -35,14 +35,13 @@ void main() {
 	float worldV = gl_FragCoord.y / 600.0;
 
 	float bgDepth = texture2D(cocTex, vec2(worldU, worldV)).y;
-	//float fragDepth = gl_FragCoord.z;
-
 	float fragDepth = clamp(-eyeDepth/200,0,1);
+
 	float alpha;
 	if (bgDepth < fragDepth) {
 		alpha = 0.0;
 	} else {
-		alpha = saturate(bgDepth, fragDepth, 0.001);
+		alpha = saturate(bgDepth, fragDepth, 0.1);
 	}
 
 	//skriv farg till denna
