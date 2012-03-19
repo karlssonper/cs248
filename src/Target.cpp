@@ -38,12 +38,16 @@ Target::~Target() {
 void Target::updateHitBox() {
     Node * node = mesh_->node();
     Matrix4 globalT = node->globalModelMtx();
+
     hitBox_->p0 = globalT*hitBoxLocal_->p0;
     hitBox_->p1 = globalT*hitBoxLocal_->p1;
 
-    midPoint_ = Vector3( (hitBox_->p0.x+hitBox_->p1.x)/2.f,
-                         (hitBox_->p0.y+hitBox_->p1.y)/2.f,
-                         (hitBox_->p0.z+hitBox_->p1.z)/2.f );
+    Vector3 p0 = hitBox_->p0;
+    Vector3 p1 = hitBox_->p1;
+
+    midPoint_ = Vector3( (p0.x+p1.x)/2.f,
+                         (p0.y+p1.y)/2.f,
+                         (p0.z+p1.z)/2.f );
 
     // calculate the two points to put wakes at the front
     // somewhere betweeen the midpoint and the two corner points
@@ -51,19 +55,29 @@ void Target::updateHitBox() {
 
     // smallest Z is the head direction
     float frontZ;
-    if (hitBox_->p0.z < hitBox_->p1.z) frontZ = hitBox_->p0.z;
-    else frontZ = hitBox_->p1.z;
+    if (p0.z < p1.z) frontZ = p0.z;
+    else frontZ = p1.z;
+    frontLeft_.z = frontRight_.z = (2.f*frontZ + 3.f*midPoint_.z) / 5.f;
 
-    // y and x
+    // smallest X is 'left'
+    float leftX, rightX;
+    if (p0.x < p1.x) { leftX = p0.x; rightX = p1.x; }
+    else { leftX = p1.x; rightX = p0.x; }
+    frontLeft_.x = (2.f*leftX + 3.f*midPoint_.x) / 5.f;
+    frontRight_.x = (2.f*rightX + 3.f*midPoint_.x) / 5.f;
 
+    // smallest Y is lowest
+    float frontY;
+    if (p0.y < p1.y) frontY = p0.y;
+    else frontY = p1.y;
+    frontLeft_.y = frontRight_.y = frontY + 2.f;
 
-
-
-
-    for (unsigned int i=0; i<particleSystem_->numEmitters(); ++i) {
-        particleSystem_->emitter(i)->posIs(midPoint_);
+    for (unsigned int i=0; i<explosionPs_->numEmitters(); ++i) {
+        explosionPs_->emitter(i)->posIs(midPoint_);
     }
 
+    foamPs_->emitter(0)->posIs(frontLeft_);
+    foamPs_->emitter(1)->posIs(frontRight_);
 }
 
 void Target::updatePos(float _dt) {
@@ -88,18 +102,21 @@ void Target::heightDiffIs(float _heightDiff) {
     heightDiff_ = _heightDiff;
 }
 
-void Target::particleSystemIs(ParticleSystem * _particleSystem) {
-    particleSystem_ = _particleSystem;
+void Target::explosionPsIs(ParticleSystem * _explosionPs) {
+    explosionPs_ = _explosionPs;
+}
+
+void Target::foamPsIs(ParticleSystem * _foamPs) {
+    foamPs_ = _foamPs;
 }
 
 void Target::explode() {
-    std::cout << name_ << " EXPLODED" << std::endl;
 
     Sound::instance().play(Sound::IMPACT, midPoint_);
     Engine::instance().camera()->shake(1.f, 2.f);
 
-    for (unsigned int i=0; i<particleSystem_->numEmitters(); i++) {
-        particleSystem_->emitter(i)->burst();
+    for (unsigned int i=0; i<explosionPs_->numEmitters(); i++) {
+        explosionPs_->emitter(i)->burst();
     }
 
     active_ = false;

@@ -160,6 +160,8 @@ private:
     ShaderData * debrisEmitter2sd_;
     ShaderData * missileSmokeEmittersd_;
     ShaderData * missileFireEmittersd_;
+    ShaderData * waterFoamEmitter1sd_;
+    ShaderData * waterFoamEmitter2sd_;
 
     MeshedWeapon * rocketLauncher_;
 };
