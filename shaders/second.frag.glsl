@@ -38,11 +38,11 @@ void main() {
 	    vec4 part = texture2D(particlesTex, texcoord);
 	    vec3 phong = texture2D(phongTex, texcoord).rgb;
 	    vec3 temp = (1.0-part.a) * phong + part.a*part.rgb;
-	    color = (1.0-hud.a)*phong + hud.a*(hud.rgb);
+	    color = (1.0-hud.a)*temp + hud.a*(hud.rgb);
 	} else if (debug == 2.0) {
 	    color = gaussianBlur(10);
     } else if (debug == 3.0) {
-        color = vec3(texture2D(hudTex, texcoord).a);
+        color = vec3(texture2D(particlesTex, texcoord).a);
         //color = texture2D(phongTex, texcoord) + gaussianBlur(10);
     } else if (debug == 4.0) {
         color = vec3(texture2D(depthTex, texcoord).r/2.0);
