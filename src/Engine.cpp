@@ -125,12 +125,13 @@ static void KeyReleased(unsigned char key, int x, int y) {
 
 static void MouseFunc(int x,int y)
 {
-    int dx = x - Engine::instance().mouseX();
-    int dy = y - Engine::instance().mouseY();
-    Engine::instance().mouseXIs(x);
-    Engine::instance().mouseYIs(y);
-    Engine::instance().camera()->yaw(0.3*dx);
-    Engine::instance().camera()->pitch(0.3*dy);
+
+    Vector3 direction;
+    float pitch, yaw;
+    direction = Engine::instance().camera()->viewVector();
+    pitch = -Engine::instance().camera()->pitch();
+    yaw = -Engine::instance().camera()->yaw()+90.f;
+    Engine::instance().rocketLauncher()->fire(direction, pitch, yaw);
 }
 
 static void MouseMoveFunc(int x,int y)
@@ -558,8 +559,8 @@ void Engine::LoadCameras()
     gameCam_->projectionIs(45.f, 1.f, 1.f, 10000.f);
     gameCam_->positionIs(Vector3(25.f, -20.f, 5.f));
     gameCam_->rotationIs(125.f, 15.f);
-    gameCam_->maxYawIs(125.f+35.0);
-    gameCam_->minYawIs(125.f-35.0);
+    gameCam_->maxYawIs(125.f+50.0);
+    gameCam_->minYawIs(125.f-50.0);
     gameCam_->maxPitchIs(15.f+15.0);
     gameCam_->minPitchIs(15.f-15.0);
     activeCam_ = gameCam_;
