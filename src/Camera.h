@@ -49,7 +49,7 @@ public:
 
 
     Vector3 viewVector() const;
-    Vector3 worldPos() const { return worldPos_; }
+    Vector3 worldPos(float _offset) const;
    
 
     void shake(float _duration, float _magnitude);

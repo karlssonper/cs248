@@ -6,6 +6,7 @@
 class Mesh;
 class Node;
 class HitBox;
+class ParticleSystem;
 class MeshedProjectile {
 public:
     MeshedProjectile(Vector3 _pos,
@@ -26,10 +27,13 @@ public:
     void positionIs(Vector3 _position);
     void speedIs(Vector3 _speed);
     void flightDistanceIs(float _flightDistance);
+    float flightDistance() const { return flightDistance_; }
     Node * rotationNode() const { return rotationNode_; }
     void resetRotation();
     void pitchIs(float _pitch);
     void yawIs(float _yaw);
+    ParticleSystem * particleSystem() const { return particleSystem_; }
+    void particleSystemIs(ParticleSystem * _particleSystem);
 
 private:
     bool active_;
@@ -41,6 +45,8 @@ private:
     Node * translationNode_;
     Node * rotationNode_;
     Mesh * mesh_;
+
+    ParticleSystem * particleSystem_;
 
     float pitch_;
     float yaw_;

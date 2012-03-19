@@ -131,6 +131,7 @@ void Camera::pitch(float _degrees)
     pitchDegrees_ += _degrees;
     if (pitchDegrees_ >= maxPitch_) pitchDegrees_ -= _degrees;
     else if (pitchDegrees_ <= minPitch_) pitchDegrees_ -= _degrees;
+    std::cout << "Camera pitch: " << pitchDegrees_ << std::endl;
     pitchRadians_ = Degree2Radians(pitchDegrees_);
 }
 
@@ -150,6 +151,14 @@ void Camera::strafe(float _dx)
     pos_.z -= _dx*sin(yawRadians_);
     worldPos_.x += _dx*cos(yawRadians_);
     worldPos_.z += _dx*sin(yawRadians_);
+}
+
+Vector3 Camera::worldPos(float _offset) const {
+    Vector3 w = worldPos_;
+    w.x += _offset*cos(yawRadians_);
+    w.z += _offset*sin(yawRadians_);
+    return w;
+
 }
 
 void Camera::BuildProjectionMatrix()
@@ -271,12 +280,14 @@ void Camera::BuildOrthoProjection(Vector3 _min, Vector3 _max)
 }
 
 Vector3 Camera::viewVector() const { 
-    float dx = 1.f;
+    float dx = 10.f;
     Vector3 lookAhead = worldPos_;
     lookAhead.x += dx*sin(yawRadians_);
     lookAhead.y += dx*sin(pitchRadians_);
     lookAhead.z -= dx*cos(yawRadians_);
     Vector3 dir = lookAhead - worldPos_;
+    std::cout << "View vector: ";
+    dir.print();
     return dir.normalize();
 
 }

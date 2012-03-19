@@ -73,9 +73,9 @@ static void KeyPressed(unsigned char key, int x, int y) {
             yaw = -Engine::instance().camera()->yaw()+90.f;
             Engine::instance().rocketLauncher()->fire(direction, pitch, yaw);
 
-            Engine::instance().camera()->position().print();
-            std::cout << "Camera pitch " << Engine::instance().camera()->pitch() << std::endl;
-            std::cout << "Camera yaw " << Engine::instance().camera()->yaw() << std::endl;
+            //Engine::instance().camera()->position().print();
+            //std::cout << "Camera pitch " << Engine::instance().camera()->pitch() << std::endl;
+            //std::cout << "Camera yaw " << Engine::instance().camera()->yaw() << std::endl;
             //Engine::instance().rocketLauncher()->projectiles().at(0)->rotationNode()->rotateX(-Engine::instance().camera()->pitch());
             //Engine::instance().rocketLauncher()->projectiles().at(0)->rotationNode()->rotateY(-Engine::instance().camera()->yaw()+90.f);
             break;
@@ -251,6 +251,7 @@ void Engine::loadResources(const char * _file)
     BuildSkybox();
     LoadTargets();
     loadWeapons();
+    initParticleSystems();
     LoadOcean();
 }
 
@@ -281,7 +282,7 @@ void Engine::renderFrame(float _currentTime)
     root_->update();
     UpdateTargets(frameTime);
 
-    rocketLauncher_->positionIs(Engine::instance().camera()->worldPos());
+    rocketLauncher_->positionIs(Engine::instance().camera()->worldPos(2.f));
     updateProjectiles(frameTime);
 
     updateParticles(frameTime);
@@ -505,10 +506,10 @@ void Engine::LoadCameras()
     gameCam_->projectionIs(45.f, 1.f, 1.f, 10000.f);
     gameCam_->positionIs(Vector3(25.f, -20.f, 5.f));
     gameCam_->rotationIs(125.f, 15.f);
-    /*gameCam_->maxYawIs(492.8+45.0);
-    gameCam_->minYawIs(492.8-45.0);
-    gameCam_->maxPitchIs(718.4+10.0);
-    gameCam_->minPitchIs(718.4-10.0);*/
+    gameCam_->maxYawIs(125.f+90.0);
+    gameCam_->minYawIs(125.f-90.0);
+    gameCam_->maxPitchIs(15.f+90.0);
+    gameCam_->minPitchIs(15.f-90.0);
     activeCam_ = gameCam_;
     updateCamView_ = true;
 
@@ -585,17 +586,17 @@ void Engine::loadWeapons() {
     mesh->showIs(false);
 
     mesh->shaderDataIs(shader);
-    ASSIMP2MESH::read("../models/missile.3ds", "rocket", mesh, 0.3f);
+    ASSIMP2MESH::read("../models/missile.3ds", "rocket", mesh, 0.4f);
 
-    rocketLauncher_ = new MeshedWeapon( Engine::instance().camera()->worldPos(),
+    rocketLauncher_ = new MeshedWeapon( Engine::instance().camera()->worldPos(5),
                                         100.f,
-                                        100.f);
+                                        50.f);
 
     MeshedProjectile * rocket = new MeshedProjectile( Vector3(0.f, 0.f, 0.f),
                                                       Vector3(0.f, 0.f, 0.f),
                                                       rocketLauncher_->power(),
                                                       mesh,
-                                                      170.f,
+                                                      150.f,
                                                       translationNode,
                                                       rotationNode);
     rocketLauncher_->addProjectile(rocket);                                                
@@ -679,8 +680,6 @@ void Engine::LoadTargets() {
         target->yOffsetIs(6.0f);
         targets_.push_back(target);
     }
-
-    initParticleSystems();
 }
 
 void Engine::nrTargetsIs(unsigned int _nrTargets) {
@@ -764,86 +763,153 @@ void Engine::initParticleSystems() {
     std::string s2("../shaders/particle");
     std::string s3("../shaders/particle");
     std::string s4("../shaders/particle");
+    std::string s5("../shaders/particle");
+    std::string s6("../shaders/particle");
+    std::string s7("../shaders/particle");
 
     fireEmitter1sd_ = new ShaderData(s1,true);
     fireEmitter2sd_ = new ShaderData(s2,true);
-    debrisEmittersd_ = new ShaderData(s3,true);
+    debrisEmitter1sd_ = new ShaderData(s3,true);
     smokeEmittersd_ = new ShaderData(s4,true);
+    missileSmokeEmittersd_ = new ShaderData(s5, true);
+    missileFireEmittersd_ = new ShaderData(s6, true);
+    debrisEmitter2sd_ = new ShaderData(s7, true);
 
     std::string t1("sprite");
     std::string t2("sprite");
     std::string t3("sprite");
     std::string t4("sprite");
+    std::string t5("sprite");
+    std::string t6("sprite");
+    std::string t7("sprite");
 
     std::string p1("../textures/fire1.png");
     std::string p2("../textures/fire2.png");
-    std::string p3("../textures/debris.png");
+    std::string p3("../textures/debris1.png");
     std::string p4("../textures/smoke.png");
+    std::string p5("../textures/missileSmoke.png");
+    std::string p6("../textures/missileFire.png");
+    std::string p7("../textures/debris2.png");
 
     fireEmitter1sd_->enableMatrix(MODELVIEW);
     fireEmitter2sd_->enableMatrix(MODELVIEW);
-    debrisEmittersd_->enableMatrix(MODELVIEW);
+    debrisEmitter1sd_->enableMatrix(MODELVIEW);
+    debrisEmitter2sd_->enableMatrix(MODELVIEW);
     smokeEmittersd_->enableMatrix(MODELVIEW);
+    missileSmokeEmittersd_->enableMatrix(MODELVIEW);
+    missileFireEmittersd_->enableMatrix(MODELVIEW);
 
     fireEmitter1sd_->enableMatrix(PROJECTION);
     fireEmitter2sd_->enableMatrix(PROJECTION);
-    debrisEmittersd_->enableMatrix(PROJECTION);
+    debrisEmitter1sd_->enableMatrix(PROJECTION);
+    debrisEmitter2sd_->enableMatrix(PROJECTION);
     smokeEmittersd_->enableMatrix(PROJECTION);
+    missileSmokeEmittersd_->enableMatrix(PROJECTION);
+    missileFireEmittersd_->enableMatrix(PROJECTION);
 
     Matrix4 * proj1 = fireEmitter1sd_->stdMatrix4Data(PROJECTION);
     Matrix4 * proj2 = fireEmitter2sd_->stdMatrix4Data(PROJECTION);
-    Matrix4 * proj3 = debrisEmittersd_->stdMatrix4Data(PROJECTION);
+    Matrix4 * proj3 = debrisEmitter1sd_->stdMatrix4Data(PROJECTION);
     Matrix4 * proj4 = smokeEmittersd_->stdMatrix4Data(PROJECTION);
+    Matrix4 * proj5 = missileSmokeEmittersd_->stdMatrix4Data(PROJECTION);
+    Matrix4 * proj6 = missileFireEmittersd_->stdMatrix4Data(PROJECTION);
+    Matrix4 * proj7 = debrisEmitter2sd_->stdMatrix4Data(PROJECTION);
 
     *proj1 = camera()->projectionMtx();
     *proj2 = camera()->projectionMtx();
     *proj3 = camera()->projectionMtx();
     *proj4 = camera()->projectionMtx();
+    *proj5 = camera()->projectionMtx();
+    *proj6 = camera()->projectionMtx();
+    *proj7 = camera()->projectionMtx();
 
     fireEmitter1sd_->addTexture(t1,p1);
     fireEmitter2sd_->addTexture(t2,p2);
-    debrisEmittersd_->addTexture(t3,p3);
+    debrisEmitter1sd_->addTexture(t3,p3);
     smokeEmittersd_->addTexture(t4,p4);
+    missileSmokeEmittersd_->addTexture(t5,p5);
+    missileFireEmittersd_->addTexture(t6,p6);
+    debrisEmitter2sd_->addTexture(t7,p7);
 
+    ParticleSystem * ps;
+
+    // missile
+    std::vector<MeshedProjectile*> missiles = rocketLauncher_->projectiles();
+    std::vector<MeshedProjectile*>::iterator pit;
+    for (pit=missiles.begin(); pit!=missiles.end(); pit++) {
+
+        ps = new ParticleSystem(2);
+        (*pit)->particleSystemIs(ps);
+
+        Emitter* missileSmokeEmitter= ps->newEmitter(6,missileSmokeEmittersd_);
+        missileSmokeEmitter->posIs((*pit)->position());
+        missileSmokeEmitter->typeIs(Emitter::EMITTER_STREAM);
+        missileSmokeEmitter->blendModeIs(Emitter::BLEND_SMOKE);
+        missileSmokeEmitter->rateIs(0.08f);
+        missileSmokeEmitter->lifeTimeIs(5.f);
+        missileSmokeEmitter->massIs(1.f);
+        missileSmokeEmitter->posRandWeightIs(0.f);
+        missileSmokeEmitter->velIs(Vector3(0.f, 0.f, 0.f));
+        missileSmokeEmitter->velRandWeightIs(1.f);
+        missileSmokeEmitter->accIs(Vector3(0.f, 0.f, 0.0f));
+        missileSmokeEmitter->pointSizeIs(1.f);
+        missileSmokeEmitter->growthFactorIs(1.0f); 
+
+        Emitter* missileFireEmitter= ps->newEmitter(6,missileFireEmittersd_);
+        missileFireEmitter->posIs((*pit)->position());
+        missileFireEmitter->typeIs(Emitter::EMITTER_STREAM);
+        missileFireEmitter->blendModeIs(Emitter::BLEND_FIRE);
+        missileFireEmitter->rateIs(0.02f);
+        missileFireEmitter->lifeTimeIs(4.f);
+        missileFireEmitter->massIs(1.f);
+        missileFireEmitter->posRandWeightIs(0.f);
+        missileFireEmitter->velIs(Vector3(0.f, 0.f, 0.f));
+        missileFireEmitter->velRandWeightIs(0.2f);
+        missileFireEmitter->accIs(Vector3(0.f, 0.f, 0.0f));
+        missileFireEmitter->pointSizeIs(0.5f);
+        missileFireEmitter->growthFactorIs(1.0f); 
+    }
+
+    // targets
     std::vector<Target*>::iterator it;
     for (it=targets_.begin(); it!=targets_.end(); it++) {
 
-        ParticleSystem * ps = new ParticleSystem(4);   
+        ps = new ParticleSystem(5);   
         (*it)->particleSystemIs(ps);
 
-        Emitter * fireEmitter1 = ps->newEmitter(15, fireEmitter1sd_);
+        Emitter * fireEmitter1 = ps->newEmitter(10, fireEmitter1sd_);
         fireEmitter1->posIs((*it)->midPoint());
-        fireEmitter1->burstSizeIs(15);
+        fireEmitter1->burstSizeIs(10);
         fireEmitter1->typeIs(Emitter::EMITTER_BURST);
         fireEmitter1->blendModeIs(Emitter::BLEND_FIRE);
         fireEmitter1->rateIs(0.02f);
-        fireEmitter1->lifeTimeIs(1.f);
+        fireEmitter1->lifeTimeIs(1.5f);
         fireEmitter1->massIs(1.f);
         fireEmitter1->posRandWeightIs(0.f);
         fireEmitter1->velIs(Vector3(0.f, 0.f, 0.f));
-        fireEmitter1->velRandWeightIs(1.f);
+        fireEmitter1->velRandWeightIs(1.5f);
         fireEmitter1->accIs(Vector3(0.f, -10.f, 0.0f));
-        fireEmitter1->pointSizeIs(5.f);
+        fireEmitter1->pointSizeIs(6.f);
         fireEmitter1->growthFactorIs(1.0f);
         
-        Emitter * fireEmitter2 = ps->newEmitter(15, fireEmitter2sd_);
+        Emitter * fireEmitter2 = ps->newEmitter(10, fireEmitter2sd_);
         fireEmitter2->posIs((*it)->midPoint());
-        fireEmitter2->burstSizeIs(15);
+        fireEmitter2->burstSizeIs(10);
         fireEmitter2->typeIs(Emitter::EMITTER_BURST);
-        fireEmitter2->blendModeIs(Emitter::BLEND_SMOKE);
-        fireEmitter2->rateIs(0.02f);
-        fireEmitter2->lifeTimeIs(1.f);
+        fireEmitter2->blendModeIs(Emitter::BLEND_FIRE);
+        fireEmitter2->rateIs(0.005f);
+        fireEmitter2->lifeTimeIs(1.5f);
         fireEmitter2->massIs(1.f);
         fireEmitter2->posRandWeightIs(0.f);
         fireEmitter2->velIs(Vector3(0.f, 0.f, 0.f));
-        fireEmitter2->velRandWeightIs(1.f);
+        fireEmitter2->velRandWeightIs(1.5f);
         fireEmitter2->accIs(Vector3(0.f, -10.f, 0.0f));
-        fireEmitter2->pointSizeIs(5.f);
+        fireEmitter2->pointSizeIs(6.f);
         fireEmitter2->growthFactorIs(1.0f);
 
-        Emitter * smokeEmitter = ps->newEmitter(5, smokeEmittersd_);
+        Emitter * smokeEmitter = ps->newEmitter(15, smokeEmittersd_);
         smokeEmitter->posIs((*it)->midPoint());
-        smokeEmitter->burstSizeIs(5);
+        smokeEmitter->burstSizeIs(15);
         smokeEmitter->typeIs(Emitter::EMITTER_BURST);
         smokeEmitter->blendModeIs(Emitter::BLEND_SMOKE);
         smokeEmitter->rateIs(0.02f);
@@ -853,28 +919,53 @@ void Engine::initParticleSystems() {
         smokeEmitter->velIs(Vector3(0.f, 0.001f, 0.f));
         smokeEmitter->velRandWeightIs(0.001);
         smokeEmitter->accIs(Vector3(0.f, 0.0f, 0.0f));
-        smokeEmitter->pointSizeIs(8.f);
-        smokeEmitter->growthFactorIs(1.0f);
+        smokeEmitter->pointSizeIs(7.f);
+        smokeEmitter->growthFactorIs(1.02f);
 
-        Emitter * debrisEmitter = ps->newEmitter(15, debrisEmittersd_);
-        debrisEmitter->posIs((*it)->midPoint());
-        debrisEmitter->burstSizeIs(15);
-        debrisEmitter->typeIs(Emitter::EMITTER_BURST);
-        debrisEmitter->blendModeIs(Emitter::BLEND_SMOKE);
-        debrisEmitter->rateIs(0.02f);
-        debrisEmitter->lifeTimeIs(1.f);
-        debrisEmitter->massIs(1.f);
-        debrisEmitter->posRandWeightIs(0.02f);
-        debrisEmitter->velIs(Vector3(0.f, 2.f, 0.f));
-        debrisEmitter->velRandWeightIs(3.f);
-        debrisEmitter->accIs(Vector3(0.f, -20.f, 0.0f));
-        debrisEmitter->pointSizeIs(1.f);
-        debrisEmitter->growthFactorIs(1.f);
+        Emitter * debrisEmitter1 = ps->newEmitter(10, debrisEmitter1sd_);
+        debrisEmitter1->posIs((*it)->midPoint());
+        debrisEmitter1->burstSizeIs(10);
+        debrisEmitter1->typeIs(Emitter::EMITTER_BURST);
+        debrisEmitter1->blendModeIs(Emitter::BLEND_SMOKE);
+        debrisEmitter1->rateIs(0.02f);
+        debrisEmitter1->lifeTimeIs(1.f);
+        debrisEmitter1->massIs(1.f);
+        debrisEmitter1->posRandWeightIs(0.1f);
+        debrisEmitter1->velIs(Vector3(0.f, 2.f, 0.f));
+        debrisEmitter1->velRandWeightIs(3.f);
+        debrisEmitter1->accIs(Vector3(0.f, -20.f, 0.0f));
+        debrisEmitter1->pointSizeIs(0.3f);
+        debrisEmitter1->growthFactorIs(1.f);
+
+        Emitter * debrisEmitter2 = ps->newEmitter(10, debrisEmitter2sd_);
+        debrisEmitter2->posIs((*it)->midPoint());
+        debrisEmitter2->burstSizeIs(10);
+        debrisEmitter2->typeIs(Emitter::EMITTER_BURST);
+        debrisEmitter2->blendModeIs(Emitter::BLEND_SMOKE);
+        debrisEmitter2->rateIs(0.02f);
+        debrisEmitter2->lifeTimeIs(1.f);
+        debrisEmitter2->massIs(1.f);
+        debrisEmitter2->posRandWeightIs(0.2f);
+        debrisEmitter2->velIs(Vector3(0.f, 2.f, 0.f));
+        debrisEmitter2->velRandWeightIs(4.f);
+        debrisEmitter2->accIs(Vector3(0.f, -20.f, 0.0f));
+        debrisEmitter2->pointSizeIs(0.4f);
+        debrisEmitter2->growthFactorIs(1.f);
 
     }
 }
 
 void Engine::displayParticles() {
+
+    std::vector<MeshedProjectile*> missiles = rocketLauncher_->projectiles();
+    std::vector<MeshedProjectile*>::iterator pit;
+    for (pit=missiles.begin(); pit!=missiles.end(); pit++) {
+        if ((*pit)->active() && (*pit)->flightDistance() > 15.f) {
+
+            (*pit)->particleSystem()->display();
+        }
+    }
+
     std::vector<Target*>::iterator it;
     for (it=targets_.begin(); it!=targets_.end(); it++) {
         (*it)->particleSystem()->display();
@@ -882,7 +973,14 @@ void Engine::displayParticles() {
 }
 
 void Engine::updateParticles(float _dt) {
-     std::vector<Target*>::iterator it;
+
+    std::vector<MeshedProjectile*> missiles = rocketLauncher_->projectiles();
+    std::vector<MeshedProjectile*>::iterator pit;
+    for (pit=missiles.begin(); pit!=missiles.end(); pit++) {
+        (*pit)->particleSystem()->update(_dt);
+    }
+ 
+    std::vector<Target*>::iterator it;
     for (it=targets_.begin(); it!=targets_.end(); it++) {
         (*it)->particleSystem()->update(_dt);
     }

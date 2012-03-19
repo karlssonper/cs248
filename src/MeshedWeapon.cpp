@@ -24,6 +24,7 @@ void MeshedWeapon::fire(Vector3 _direction, float _pitch, float _yaw) {
 
             projectiles_.at(i)->rotationNode()->rotateX(_pitch);
             projectiles_.at(i)->rotationNode()->rotateY(_yaw);
+            
             projectiles_.at(i)->pitchIs(_pitch);
             projectiles_.at(i)->yawIs(_yaw);
 

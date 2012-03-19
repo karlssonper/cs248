@@ -3,6 +3,8 @@
 #include "HitBox.h"
 #include "Node.h"
 #include "Engine.h"
+#include "ParticleSystem.h"
+#include "cuda/Emitter.cuh"
 
 MeshedProjectile::MeshedProjectile(Vector3 _pos,
                                    Vector3 _speed,
@@ -31,6 +33,12 @@ void MeshedProjectile::update(float _dt) {
     translationNode_->update();
 
     position_ = position_ + d;
+
+    for (unsigned int i=0; i<particleSystem_->numEmitters(); ++i) {
+        particleSystem_->emitter(i)->posIs(Vector3(position_.x,
+                                                   -position_.y,
+                                                   position_.z));
+    }
 
     flightDistance_ += d.mag();
 
@@ -100,4 +108,9 @@ void MeshedProjectile::yawIs(float _yaw) {
 void MeshedProjectile::resetRotation() {
     rotationNode_->rotateY(-yaw_);
     rotationNode_->rotateX(-pitch_);
+}
+
+void MeshedProjectile::particleSystemIs(ParticleSystem * _particleSystem)
+{
+    particleSystem_ = _particleSystem;
 }

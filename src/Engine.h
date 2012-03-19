@@ -151,7 +151,10 @@ private:
     ShaderData * fireEmitter1sd_;
     ShaderData * fireEmitter2sd_;
     ShaderData * smokeEmittersd_;
-    ShaderData * debrisEmittersd_;
+    ShaderData * debrisEmitter1sd_;
+    ShaderData * debrisEmitter2sd_;
+    ShaderData * missileSmokeEmittersd_;
+    ShaderData * missileFireEmittersd_;
 
     MeshedWeapon * rocketLauncher_;
 };
