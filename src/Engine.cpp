@@ -294,7 +294,6 @@ void Engine::renderFrame(float _currentTime)
 
 }
 
-
 void Engine::RenderShadowMap()
 {
     Graphics::instance().enableFramebuffer(shadowFB_, shadowSize_, shadowSize_);

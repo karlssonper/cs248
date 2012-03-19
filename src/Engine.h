@@ -90,6 +90,7 @@ private:
     //Textures
     unsigned int phongTex_;
     unsigned int bloomTex_;
+    unsigned int bloom2Tex_;
     unsigned int motionTex_;
     unsigned int cocTex_;
 
@@ -97,6 +98,9 @@ private:
     unsigned int firstPassFB_;
     unsigned int firstPassDepthFB_;
     unsigned int secondPassFB_;
+    unsigned int horBlurFB_;
+    unsigned int horBlurDepthFB_;
+    ShaderData * horizontalGaussianShader_;
 
     //Shadow mapping
     unsigned int shadowFB_;
@@ -121,6 +125,7 @@ private:
     void BuildQuad();
     void BuildSkybox();
 
+    void BlurTextures();
     void RenderShadowMap();
     void RenderFirstPass();
     void RenderSecondPass();
