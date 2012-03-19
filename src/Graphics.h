@@ -1,9 +1,9 @@
 /*
- * Graphics.h
- *
- *  Created on: Mar 2, 2012
- *      Author: per
- */
+* Graphics.h
+*
+* Created on: Mar 2, 2012
+* Author: per
+*/
 
 #ifndef GRAPHICS_H_
 #define GRAPHICS_H_
@@ -23,8 +23,6 @@
 #include <string>
 #include <vector>
 #include <map>
-#include <stdio.h>
-#include <assert.h>
 #include "ShaderData.h"
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
@@ -49,11 +47,11 @@ public:
     void deleteBuffers(GLuint _VAO);
 
     template<class Vertex>
-    void geometryIs(GLuint                      _geometryVBO,
-                    GLuint                      _indexVBO,
+    void geometryIs(GLuint _geometryVBO,
+                    GLuint _indexVBO,
                     const std::vector<Vertex> & _geometryData,
                     const std::vector<GLuint> & _indexData,
-                    VBOtype                     _type);
+                    VBOtype _type);
 
     void geometryIs(GLuint _posVBO,
                     GLuint _sizeVBO,
@@ -146,10 +144,10 @@ private:
     ShaderMap shader_;
 
     template<class T>
-    void VBODataIs(GLenum                 _target,
-                   GLuint                 _VBO,
+    void VBODataIs(GLenum _target,
+                   GLuint _VBO,
                    const std::vector<T> & _data,
-                   GLenum                 _usage);
+                   GLenum _usage);
 
     void loadShaderData(const ShaderData * _shaderData) const;
     void unloadShaderData() const;
@@ -162,11 +160,11 @@ private:
 };
 
 template<class Vertex>
-void Graphics::geometryIs(GLuint                      _geometryVBO,
-                GLuint                      _indexVBO,
+void Graphics::geometryIs(GLuint _geometryVBO,
+                GLuint _indexVBO,
                 const std::vector<Vertex> & _geometryData,
                 const std::vector<GLuint> & _indexData,
-                VBOtype                      _type)
+                VBOtype _type)
 {
     GLenum type;
     switch(_type){
@@ -184,10 +182,10 @@ void Graphics::geometryIs(GLuint                      _geometryVBO,
 }
 
 template<class T>
-void Graphics::VBODataIs(GLenum                 _target,
-                         GLuint                 _VBO,
+void Graphics::VBODataIs(GLenum _target,
+                         GLuint _VBO,
                          const std::vector<T> & _data,
-                         GLenum                 _usage)
+                         GLenum _usage)
 {
     glBindBuffer(_target, _VBO);
     glBufferData(_target, _data.size() * sizeof(T), &_data[0], _usage);

@@ -1,9 +1,9 @@
 /*
- * Engine.cpp
- *
- *  Created on: Mar 2, 2012
- *      Author: per
- */
+* Engine.cpp
+*
+* Created on: Mar 2, 2012
+* Author: per
+*/
 #include <sstream>
 #include <time.h>
 
@@ -253,6 +253,7 @@ void Engine::loadResources(const char * _file)
     //Order here is important.
     LoadCameras();
     LoadLight();
+    LoadOcean();
     CreateFramebuffer();
     LoadOcean();
     BuildQuad();
@@ -260,7 +261,6 @@ void Engine::loadResources(const char * _file)
     LoadTargets();
     loadWeapons();
     initParticleSystems();
-    
 }
 
 void Engine::cleanUp() {
@@ -428,19 +428,19 @@ void Engine::BuildSkybox()
     std::vector<SkyboxVertex> v(8);
     const float scale = 100;
     v[0].pos[0] = -scale; v[0].pos[1] = -scale; v[0].pos[2] = -scale;
-    v[1].pos[0] = scale;  v[1].pos[1] = -scale; v[1].pos[2] = -scale;
+    v[1].pos[0] = scale; v[1].pos[1] = -scale; v[1].pos[2] = -scale;
     v[2].pos[0] = -scale; v[2].pos[1] = -scale; v[2].pos[2] = scale;
-    v[3].pos[0] = scale;  v[3].pos[1] = -scale; v[3].pos[2] = scale;
-    v[4].pos[0] = -scale; v[4].pos[1] = scale;  v[4].pos[2] = -scale;
-    v[5].pos[0] = scale;  v[5].pos[1] = scale;  v[5].pos[2] = -scale;
-    v[6].pos[0] = -scale; v[6].pos[1] = scale;  v[6].pos[2] = scale;
-    v[7].pos[0] = scale;  v[7].pos[1] = scale;  v[7].pos[2] = scale;
+    v[3].pos[0] = scale; v[3].pos[1] = -scale; v[3].pos[2] = scale;
+    v[4].pos[0] = -scale; v[4].pos[1] = scale; v[4].pos[2] = -scale;
+    v[5].pos[0] = scale; v[5].pos[1] = scale; v[5].pos[2] = -scale;
+    v[6].pos[0] = -scale; v[6].pos[1] = scale; v[6].pos[2] = scale;
+    v[7].pos[0] = scale; v[7].pos[1] = scale; v[7].pos[2] = scale;
 
     std::vector<unsigned int> i(3*6*2);
-    i[0]  = 0; i[1]  = 1; i[2]  = 2;
-    i[3]  = 1; i[4]  = 2; i[5]  = 3;
-    i[6]  = 4; i[7]  = 5; i[8]  = 6;
-    i[9]  = 5; i[10] = 6; i[11] = 7;
+    i[0] = 0; i[1] = 1; i[2] = 2;
+    i[3] = 1; i[4] = 2; i[5] = 3;
+    i[6] = 4; i[7] = 5; i[8] = 6;
+    i[9] = 5; i[10] = 6; i[11] = 7;
     i[12] = 1; i[13] = 3; i[14] = 7;
     i[15] = 1; i[16] = 5; i[17] = 7;
     i[18] = 0; i[19] = 2; i[20] = 6;
@@ -641,7 +641,7 @@ void Engine::loadWeapons() {
                                                       150.f,
                                                       translationNode,
                                                       rotationNode);
-    rocketLauncher_->addProjectile(rocket);                                                
+    rocketLauncher_->addProjectile(rocket);
 }
 
 void Engine::updateProjectiles(float _dt) {
@@ -654,7 +654,6 @@ void Engine::updateProjectiles(float _dt) {
 
             for (unsigned int j=0; j<targets_.size(); ++j) {
 
-       
                 if (targets_.at(j)->active()) {
                     if (projectiles.at(i)->checkCollision(targets_.at(j)->hitBox())) {
 
@@ -776,7 +775,7 @@ void Engine::SpawnTargets() {
 
                 float startX = Random::randomFloat(xMin_, xMax_);
                 Vector3 startPos(startX, 0.f, zMax_);
-                Vector3 currentPos = (Vector3((*it)->midPoint().x, 
+                Vector3 currentPos = (Vector3((*it)->midPoint().x,
                                               0.f,
                                               (*it)->midPoint().z));
                 (*it)->mesh()->node()->translate(currentPos-startPos);
@@ -909,7 +908,7 @@ void Engine::initParticleSystems() {
         missileSmokeEmitter->velRandWeightIs(1.f);
         missileSmokeEmitter->accIs(Vector3(0.f, 0.f, 0.0f));
         missileSmokeEmitter->pointSizeIs(1.f);
-        missileSmokeEmitter->growthFactorIs(1.0f); 
+        missileSmokeEmitter->growthFactorIs(1.0f);
 
         Emitter* missileFireEmitter= ps->newEmitter(6,missileFireEmittersd_);
         missileFireEmitter->posIs((*pit)->position());
@@ -923,14 +922,15 @@ void Engine::initParticleSystems() {
         missileFireEmitter->velRandWeightIs(0.2f);
         missileFireEmitter->accIs(Vector3(0.f, 0.f, 0.0f));
         missileFireEmitter->pointSizeIs(0.5f);
-        missileFireEmitter->growthFactorIs(1.0f); 
+        missileFireEmitter->growthFactorIs(1.0f);
     }
 
     // targets
     std::vector<Target*>::iterator it;
     for (it=targets_.begin(); it!=targets_.end(); it++) {
 
-        ps = new ParticleSystem(5);   
+        ps = new ParticleSystem(5);
+
         (*it)->explosionPsIs(ps);
 
         Emitter * fireEmitter1 = ps->newEmitter(10, fireEmitter1sd_);
@@ -1023,8 +1023,9 @@ void Engine::initParticleSystems() {
         waterFoamLeft->velRandWeightIs(0.2f);
         waterFoamLeft->accIs(Vector3(-13.f, 0.f, 0.0f));
         waterFoamLeft->pointSizeIs(1.0f);
+
         waterFoamLeft->growthFactorIs(0.97f); 
-        
+
         Emitter * waterFoamRight = ps2->newEmitter(30, waterFoamEmitter2sd_);
         waterFoamRight->posIs((*it)->frontRight());
         waterFoamRight->typeIs(Emitter::EMITTER_STREAM);
@@ -1037,7 +1038,8 @@ void Engine::initParticleSystems() {
         waterFoamRight->velRandWeightIs(0.2f);
         waterFoamRight->accIs(Vector3(10.f, 0.f, 0.0f));
         waterFoamRight->pointSizeIs(1.0f);
-        waterFoamRight->growthFactorIs(0.97f); 
+        waterFoamRight->growthFactorIs(0.97f);
+
 
     }
 }
