@@ -404,16 +404,16 @@ void Graphics::drawArrays(GLuint _VAO,
     //glEnable(GL_POINT_SIZE);
     // draw
     //glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
+
+    glDisable(GL_DEPTH_TEST);
+    glDepthMask(GL_FALSE);
     glEnable(GL_BLEND);
 
     if (additiveBlending) {
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+       glBlendFunc(GL_SRC_ALPHA, GL_ONE);
     } else {
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+       glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
-
-    glEnable(GL_DEPTH_TEST);
-    glDepthMask(GL_FALSE);
 
     loadShaderData(_shaderData);
     glBindVertexArray(_VAO);
@@ -421,6 +421,8 @@ void Graphics::drawArrays(GLuint _VAO,
     glDepthMask(GL_TRUE);
     glBindVertexArray(0);
     unloadShaderData();
+
+    glDisable(GL_BLEND);
 
     checkError();//todo remove
 }

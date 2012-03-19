@@ -17,6 +17,15 @@ vec3 bloom(vec3 color, float lumTresh)
            clamp(rgb2lum(color) - lumTresh, 0.0, 1.0);
 }
 
+float saturate(float bgDepth, float fragDepth, float scale) {
+	float diff = bgDepth - fragDepth;
+	if (diff > scale) {
+		return 1.0f;
+	} else {
+		return diff/scale;
+	}
+}
+
 
 void main() {	
 	if (timeCopy < 0.0) discard;
@@ -31,7 +40,7 @@ void main() {
 	if (bgDepth < fragDepth) {
 		alpha = 0.0;
 	} else {
-		alpha = 1.0;
+		alpha = saturate(bgDepth, fragDepth, 0.0025);
 	}
 
 	//skriv farg till denna
