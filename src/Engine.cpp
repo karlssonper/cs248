@@ -334,6 +334,14 @@ void Engine::RenderFirstPass()
         it->second->display();
     }
     CUDA::Ocean::display();
+
+    Graphics::instance().enableFramebuffer(
+                                            softParticlesDepthFB_,
+                                            softParticlesFB_,
+                                            0,
+                                            1,
+                                            width(),
+                                            height());
     displayParticles();
 
     Graphics::instance().disableFramebuffer();
@@ -390,8 +398,8 @@ void Engine::BuildQuad()
 
     std::vector<std::string> colorTexNames;
     colorTexNames.push_back("Phong");
+    colorTexNames.push_back("Particles");
     colorTexNames.push_back("Bloom2");
-    colorTexNames.push_back("Motion");
     colorTexNames.push_back("CoC");
     colorTexNames.push_back("shadow");
     colorTexNames.push_back("depth");
@@ -399,8 +407,8 @@ void Engine::BuildQuad()
 
     std::vector<std::string> shaderTexNames;
     shaderTexNames.push_back("phongTex");
+    shaderTexNames.push_back("particlesTex");
     shaderTexNames.push_back("bloomTex");
-    shaderTexNames.push_back("motionTex");
     shaderTexNames.push_back("cocTex");
     shaderTexNames.push_back("shadowTex");
     shaderTexNames.push_back("depthTex");
@@ -412,7 +420,6 @@ void Engine::BuildQuad()
     quadShader_->addTexture(shaderTexNames[3], colorTexNames[3]);
     quadShader_->addTexture(shaderTexNames[4], colorTexNames[4]);
     quadShader_->addTexture(shaderTexNames[5], colorTexNames[5]);
-    quadShader_->addTexture(shaderTexNames[6], colorTexNames[6]);
 
     quadShader_->addFloat("debug",1.0f);
     quadShader_->addFloat("texDx", 1.0f / height());
@@ -527,6 +534,12 @@ void Engine::CreateFramebuffer()
     motionTex_ = colorTex[2];
     cocTex_ = colorTex[3];
 
+    std::vector<unsigned int> particlesTex(1);
+    std::vector<std::string> particleTexNames;
+    particleTexNames.push_back("Particles");
+    Graphics::instance().createTextureToFBO(particleTexNames, particlesTex,
+            softParticlesFB_, softParticlesDepthFB_, width(), height());
+
     std::vector<unsigned int> horBlurTex(1);
     std::vector<std::string> horBlurTexNames;
     horBlurTexNames.push_back("Bloom2");
@@ -537,7 +550,6 @@ void Engine::CreateFramebuffer()
     horizontalGaussianShader_ = new ShaderData("../shaders/horizontalGauss");
     horizontalGaussianShader_->addTexture("bloomTex", "Bloom");
     horizontalGaussianShader_->addFloat("texDx", 1.0f / width());
-
 }
 
 void Engine::LoadCameras()
@@ -888,6 +900,16 @@ void Engine::initParticleSystems() {
     debrisEmitter2sd_->addTexture(t7,p7);
     waterFoamEmitter1sd_->addTexture(t8, p8);
     waterFoamEmitter2sd_->addTexture(t9, p9);
+
+    fireEmitter1sd_->addTexture("depthTex","depth");
+    fireEmitter2sd_->addTexture("depthTex","depth");
+    debrisEmitter1sd_->addTexture("depthTex","depth");
+    smokeEmittersd_->addTexture("depthTex","depth");
+    missileSmokeEmittersd_->addTexture("depthTex","depth");
+    missileFireEmittersd_->addTexture("depthTex","depth");
+    debrisEmitter2sd_->addTexture("depthTex","depth");
+    waterFoamEmitter1sd_->addTexture("depthTex","depth");
+    waterFoamEmitter2sd_->addTexture("depthTex","depth");
 
     ParticleSystem * ps;
     ParticleSystem * ps2;

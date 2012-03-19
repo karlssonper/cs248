@@ -1,4 +1,5 @@
 uniform sampler2D sprite;
+uniform sampler2D depthTex;
 
 varying float timeCopy;
 varying vec2 texCoord;
@@ -19,9 +20,10 @@ vec3 bloom(vec3 color, float lumTresh)
 void main() {	
 	if (timeCopy < 0.0) discard;
 	vec4 color = texture2D(sprite, texCoord);
-	gl_FragData[1] = color * vec4(1.0, 1.0, 1.0, timeCopy);
+	//skriv farg till denna
+	gl_FragData[0] = color * vec4(1.0, 1.0, 1.0, timeCopy);
 
-	gl_FragData[2] = vec4(bloom(color.rgb,0.7),1);
+	//gl_FragData[1] = vec4(bloom(color.rgb,0.7),1);
 	//gl_FragColor = vec4(1.0, 1.0, 1.0, time);
 	//gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
 }

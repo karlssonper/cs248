@@ -69,20 +69,20 @@ void main() {
 
 
 	//Depth
-	gl_FragData[0] = vec4(gl_FragCoord.z, gl_FragCoord.z, gl_FragCoord.z, 1);
+	//gl_FragData[0] = vec4(gl_FragCoord.z, gl_FragCoord.z, gl_FragCoord.z, 1);
 
 	//Phong Tex
 	//gl_FragData[1] = vec4(1,0,0,1);
 	//gl_FragData[1] = vec4(diffusTexture,1);
 	//gl_FragData[1] = vec4(0.5*N + vec3(0.5, 0.5, 0.5) ,1);
-	gl_FragData[1] = phong;
+	gl_FragData[0] = phong;
 
 	//Bloom Tex
-	gl_FragData[2] = vec4(bloom(phong.rgb,0.7),1);
+	gl_FragData[1] = vec4(bloom(phong.rgb,0.7),1);
 
 	//Motion Tex
-	gl_FragData[3] = vec4(0.5*normalize(N) + vec3(0.5),1);
+	gl_FragData[2] = vec4(0.5*normalize(N) + vec3(0.5),1);
 
 	//CoC Tex
-	gl_FragData[4] = vec4(0.5*normalize(N) + vec3(0.5),1);
+	gl_FragData[3] = vec4(0.5*normalize(N) + vec3(0.5),1);
 }

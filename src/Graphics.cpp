@@ -185,6 +185,7 @@ void Graphics::createTextureToFBO(const std::vector<std::string> &_names,
                                   GLuint _width,
                                   GLuint _height)
 {
+    std::cerr << "WHY!!!!" << std::endl;
     glGenFramebuffers(1, &_colorFBO);
     glGenRenderbuffers(1, &_depthFBO);
 
@@ -202,10 +203,13 @@ void Graphics::createTextureToFBO(const std::vector<std::string> &_names,
             glGenTextures(1, &_colorTex[i]);
             texture_[_names[i]] = _colorTex[i];
             glBindTexture(GL_TEXTURE_2D, _colorTex[i]);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, _width, _height, 0,
-                    GL_RGB, GL_UNSIGNED_BYTE, NULL);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _width, _height, 0,
+                    GL_RGBA, GL_UNSIGNED_BYTE, NULL);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        }
+        else {
+            _colorTex[i] = texture_[_names[i]];
         }
     }
 
@@ -247,9 +251,9 @@ void Graphics::createTextureToFBOTest(const std::vector<std::string> &_names,
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32,
             _width, _height,0,GL_DEPTH_COMPONENT,
-            GL_UNSIGNED_BYTE,0);
+            GL_FLOAT,0);
 
     FBO_[_names[0]] = _colorFBO;
 
@@ -263,6 +267,8 @@ void Graphics::createTextureToFBOTest(const std::vector<std::string> &_names,
                     GL_RGB, GL_UNSIGNED_BYTE, NULL);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        } else {
+            _colorTex[i] = texture_[_names[i]];
         }
     }
 
@@ -286,9 +292,9 @@ void Graphics::enableFramebuffer(GLuint _colorFBO,
     glViewport(0, 0, _width, _height);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+    glEnable(GL_DEPTH_TEST);
     std::vector<GLenum> enums;
-    enums.push_back(GL_NONE);
+    //enums.push_back(GL_NONE);
     for (unsigned int i = 0; i < _nColor; ++i) {
         enums.push_back(GL_COLOR_ATTACHMENT0 + i);
     }
@@ -312,7 +318,7 @@ void Graphics::enableFramebuffer(GLuint _depthFBO,
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     std::vector<GLenum> enums;
-    enums.push_back(GL_NONE);
+    //enums.push_back(GL_NONE);
     for (unsigned int i = 0; i < _nColor; ++i) {
         enums.push_back(GL_COLOR_ATTACHMENT0 + i);
     }

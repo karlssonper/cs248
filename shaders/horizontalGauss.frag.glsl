@@ -27,5 +27,5 @@ vec3 gaussianBlur(int n)
 
 void main() {
 	//First color buffer
-	gl_FragData[1] = vec4(gaussianBlur(10),1);
+	gl_FragData[0] = vec4(gaussianBlur(10),1);
 }

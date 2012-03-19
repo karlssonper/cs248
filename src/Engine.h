@@ -101,6 +101,8 @@ private:
     unsigned int secondPassFB_;
     unsigned int horBlurFB_;
     unsigned int horBlurDepthFB_;
+    unsigned int softParticlesFB_;
+    unsigned int softParticlesDepthFB_;
     ShaderData * horizontalGaussianShader_;
 
     //Shadow mapping
