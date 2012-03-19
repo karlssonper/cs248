@@ -3,7 +3,8 @@ uniform sampler2D bloomTex;
 uniform sampler2D motionTex;
 uniform sampler2D cocTex;
 uniform sampler2D shadowTex;
-//uniform sampler2D hudTex;
+uniform sampler2D depthTex;
+uniform sampler2D hudTex;
 uniform float debug;
 varying vec2 texcoord;
 
@@ -33,14 +34,16 @@ vec3 gaussianBlur(int n)
 void main() {
 	vec3 color;
 	if (debug == 1.0f) {
-	    color = texture2D(phongTex, texcoord);
+	    vec4 hud = texture2D(hudTex, texcoord);
+	    float alpha = hud.a;
+	    color = (1-alpha)*texture2D(phongTex, texcoord) + alpha*(hud.rgb);
 	} else if (debug == 2.0f) {
 	    color = gaussianBlur(10);
     } else if (debug == 3.0f) {
         color = texture2D(motionTex, texcoord);
         //color = texture2D(phongTex, texcoord) + gaussianBlur(10);
     } else if (debug == 4.0f) {
-        color = texture2D(cocTex, texcoord);
+        color = vec3(texture2D(depthTex, texcoord).r/10);
     } else if (debug == 5.0f) {
         color = vec3(texture2D(shadowTex, texcoord).z);
     }

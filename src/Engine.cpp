@@ -207,6 +207,7 @@ void Engine::init(int argc, char **argv,
     glutPassiveMotionFunc(MouseMoveFunc);
     glutDisplayFunc(GameLoop);
     glutIdleFunc(GameLoop);
+    glutSetCursor(GLUT_CURSOR_NONE);
     currentTime_ = 0;
     nextSpawn_ = 0.f;
     state_ = RUNNING;
@@ -315,9 +316,7 @@ void Engine::RenderShadowMap()
 void Engine::RenderFirstPass()
 {
     Graphics::instance().enableFramebuffer(
-                                            firstPassDepthFB_,
                                             firstPassFB_,
-                                            0,
                                             4,
                                             width(),
                                             height());
@@ -395,6 +394,8 @@ void Engine::BuildQuad()
     colorTexNames.push_back("Motion");
     colorTexNames.push_back("CoC");
     colorTexNames.push_back("shadow");
+    colorTexNames.push_back("depth");
+    colorTexNames.push_back("../textures/hud.png");
 
     std::vector<std::string> shaderTexNames;
     shaderTexNames.push_back("phongTex");
@@ -402,12 +403,16 @@ void Engine::BuildQuad()
     shaderTexNames.push_back("motionTex");
     shaderTexNames.push_back("cocTex");
     shaderTexNames.push_back("shadowTex");
+    shaderTexNames.push_back("depthTex");
+    shaderTexNames.push_back("hudTex");
 
     quadShader_->addTexture(shaderTexNames[0], colorTexNames[0]);
     quadShader_->addTexture(shaderTexNames[1], colorTexNames[1]);
     quadShader_->addTexture(shaderTexNames[2], colorTexNames[2]);
     quadShader_->addTexture(shaderTexNames[3], colorTexNames[3]);
     quadShader_->addTexture(shaderTexNames[4], colorTexNames[4]);
+    quadShader_->addTexture(shaderTexNames[5], colorTexNames[5]);
+    quadShader_->addTexture(shaderTexNames[6], colorTexNames[6]);
 
     quadShader_->addFloat("debug",1.0f);
     quadShader_->addFloat("texDx", 1.0f / height());
@@ -514,8 +519,8 @@ void Engine::CreateFramebuffer()
     colorTexNames.push_back("Motion");
     colorTexNames.push_back("CoC");
 
-    Graphics::instance().createTextureToFBO(colorTexNames, colorTex,
-            firstPassFB_, firstPassDepthFB_, width(), height());
+    Graphics::instance().createTextureToFBOTest(colorTexNames, colorTex,
+            depthTex_, firstPassFB_, width(), height());
 
     phongTex_ = colorTex[0];
     bloomTex_ = colorTex[1];

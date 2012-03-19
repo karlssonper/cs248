@@ -69,7 +69,7 @@ void main() {
 
 
 	//Depth
-	gl_FragData[0] = vec4(1,1,1,1);
+	gl_FragData[0] = vec4(gl_FragCoord.z, gl_FragCoord.z, gl_FragCoord.z, 1);
 
 	//Phong Tex
 	//gl_FragData[1] = vec4(1,0,0,1);
