@@ -215,9 +215,84 @@ void Graphics::createTextureToFBO(const std::vector<std::string> &_names,
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i,
         GL_TEXTURE_2D, _colorTex[i], 0);
     }
+    if (GL_FRAMEBUFFER_COMPLETE != glCheckFramebufferStatus(GL_FRAMEBUFFER)) {
+            std::cerr << "FBO ERROR!!" << std::endl;
+        }
+
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
+
+    checkError();
+}
+
+void Graphics::createTextureToFBOTest(const std::vector<std::string> &_names,
+                                  std::vector<GLuint> &_colorTex,
+                                  GLuint &_depthTex,
+                                  GLuint &_colorFBO,
+                                  GLuint _width,
+                                  GLuint _height)
+{
+    glGenFramebuffers(1, &_colorFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, _colorFBO);
+
+    GLuint depthTex;
+    glActiveTexture(GL_TEXTURE0);
+    glGenTextures(1, &depthTex);
+    _depthTex = depthTex;
+    std::string dStr("depth");
+    texture_[dStr] = _depthTex;
+    glBindTexture(GL_TEXTURE_2D, _depthTex);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
+            _width, _height,0,GL_DEPTH_COMPONENT,
+            GL_UNSIGNED_BYTE,0);
+
+    FBO_[_names[0]] = _colorFBO;
+
+    for (unsigned int i = 0; i < _names.size(); ++i) {
+        if (texture_.find(_names[i]) == texture_.end()) {
+            glActiveTexture(GL_TEXTURE1 + i);
+            glGenTextures(1, &_colorTex[i]);
+            texture_[_names[i]] = _colorTex[i];
+            glBindTexture(GL_TEXTURE_2D, _colorTex[i]);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, _width, _height, 0,
+                    GL_RGB, GL_UNSIGNED_BYTE, NULL);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        }
+    }
+
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+            GL_TEXTURE_2D, _depthTex, 0);
+    for (unsigned int i = 0; i < _names.size(); ++i) {
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i,
+        GL_TEXTURE_2D, _colorTex[i], 0);
+    }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+    checkError();
+}
+
+void Graphics::enableFramebuffer(GLuint _colorFBO,
+                                 GLuint _nColor,
+                                 GLuint _width,
+                                 GLuint _height)
+{
+    glBindFramebuffer(GL_FRAMEBUFFER, _colorFBO);
+    glViewport(0, 0, _width, _height);
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    std::vector<GLenum> enums;
+    enums.push_back(GL_NONE);
+    for (unsigned int i = 0; i < _nColor; ++i) {
+        enums.push_back(GL_COLOR_ATTACHMENT0 + i);
+    }
+    glDrawBuffers(enums.size(), &enums[0]);
     checkError();
 }
 
@@ -237,8 +312,7 @@ void Graphics::enableFramebuffer(GLuint _depthFBO,
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     std::vector<GLenum> enums;
-    _nDepth > 0 ? enums.push_back(GL_DEPTH_ATTACHMENT):enums.push_back(GL_NONE);
-
+    enums.push_back(GL_NONE);
     for (unsigned int i = 0; i < _nColor; ++i) {
         enums.push_back(GL_COLOR_ATTACHMENT0 + i);
     }
@@ -424,6 +498,7 @@ void Graphics::unloadShaderData() const
 GLuint Graphics::texture(const std::string & _img)
 {
     if (texture_.find(_img) != texture_.end()) {
+        std::cerr << "Found " <<_img << " "<< texture_[_img] << std::endl;
         return texture_[_img];
     } else {
         FreeImage2Texture FI2T(_img);

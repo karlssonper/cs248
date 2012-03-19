@@ -80,9 +80,21 @@ public:
                             GLuint width,
                             GLuint height);
 
+    void createTextureToFBOTest(const std::vector<std::string> &_names,
+                            std::vector<GLuint> &_colorTex,
+                            GLuint &_depthTex,
+                            GLuint &_colorFBO,
+                            GLuint _width,
+                            GLuint _height);
+
     void enableFramebuffer(GLuint _depthFBO,
                            GLuint _colorFBO,
                            GLuint _nDepth,
+                           GLuint _nColor,
+                           GLuint _width,
+                           GLuint _height);
+
+    void enableFramebuffer(GLuint _colorFBO,
                            GLuint _nColor,
                            GLuint _width,
                            GLuint _height);
