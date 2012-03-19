@@ -167,7 +167,7 @@ void updateFoam(int numBoats, float2 * xz, float scale,float * out)
     const float z = j * scale;
 
     bool hit = false;
-    float h = out[idxPos(i,j)*12+1];
+    float h = out[idxPos(i,j)*11+1];
     float size = BOAT_SIZE ;
     for (int k = 0; k < numBoats; ++k) {
         if ((x > xz[k].x-size) &&
@@ -186,9 +186,9 @@ void updateFoam(int numBoats, float2 * xz, float scale,float * out)
             break;
         }
     }
-    if (!hit && out[idxPos(i,j)*11+10] > FOAM_TIME) {
+    if (!hit && out[idxPos(i,j)*11+9] > FOAM_TIME) {
         out[idxPos(i,j)*11+9] = FOAM_TIME;
-        float lol = out[idxPos(i,j)*12+11];
+        float lol = out[idxPos(i,j)*11+10];
         out[idxPos(i,j)*11+10] = 1+lol;
     }
 }
@@ -278,7 +278,7 @@ void updatePositions(const float scale,
         out[idxPos(i,j)*11+8] = dzdv;
 
        // out[idxPos(i,j)*11+9] = 1.0f;
-        out[idxPos(i,j)*11+99] -= dt;
+        out[idxPos(i,j)*11+9] -= dt;
 
     }
 };
@@ -481,9 +481,6 @@ void display()
 void init()
 {
     std::cerr << "INIT OCEAN" << std::endl;
-    static std::string name("OceanCUDA");
-    Graphics::instance().buffersNew(name, VAO, VBO_GL, VBO_IDX);
-
     std::vector<float> kx(N);
     std::vector<float> kz(N/2+1);
     for (int i = 0 ; i <= N/2 ; ++i) {
@@ -561,6 +558,10 @@ void init()
     bLine = N/2;
     padding = N/2 + 1;
 
+    cudaMalloc((void**)&d_boatsXZ, sizeof(float2) * 5);
+    std::cerr << "Max height: " << maxHeight() << std::endl;
+    verticalScale = WAVE_HEIGHT / maxHeight();
+
     std::vector<float> vertexData(sizeof(OceanVertex)*N*N);
     std::vector<unsigned int> indices(6*(N-1)*(N-1));
     unsigned int triIdx = 0;
@@ -607,6 +608,8 @@ void init()
     cubeMapTexs[5] = std::string("../textures/NEGATIVE_Z.png");
     shaderData->addCubeTexture(cubeMapShaderStr, cubeMapStr, cubeMapTexs);
 
+    static std::string name("OceanCUDA");
+    Graphics::instance().buffersNew(name, VAO, VBO_GL, VBO_IDX);
     Graphics::instance().geometryIs(VBO_GL, VBO_IDX, vertexData, indices, VBO_DYNAMIC);
     int id = shaderData->shaderID();
     int locPos = Graphics::instance().shaderAttribLoc(id,"positionIn");
@@ -624,12 +627,9 @@ void init()
     Graphics::instance().bindGeometry(id, VAO, VBO_GL, 1, bytes,locFoamTime,36);
     Graphics::instance().bindGeometry(id, VAO, VBO_GL, 1, bytes,locFoamAlpha,40);
 
+
     cudaGraphicsGLRegisterBuffer(&VBO_CUDA, VBO_GL,
             cudaGraphicsMapFlagsWriteDiscard);
-
-    //cudaMalloc((void**)&d_boatsXZ, sizeof(float2) * 5);
-    std::cerr << "Max height: " << maxHeight() << std::endl;
-    verticalScale = WAVE_HEIGHT / maxHeight();
     checkErrors();
 }
 
@@ -637,7 +637,7 @@ std::vector<float> height(std::vector<std::pair<float,float> > _worldPos)
 {
     if (_worldPos.size() > 5) std::cerr << "Too many boats at the same time!";
     std::vector<float> h(_worldPos.size());
-    /*cudaGraphicsMapResources(1, &VBO_CUDA, 0);
+    cudaGraphicsMapResources(1, &VBO_CUDA, 0);
     float* positions;
     size_t num_bytes;
     cudaGraphicsResourceGetMappedPointer((void**)&positions,
@@ -651,7 +651,7 @@ std::vector<float> height(std::vector<std::pair<float,float> > _worldPos)
 
         //the last +1 is to get Y value from VBO
         //*10 because each vertex has 10 floats
-        int idx = (i + j * N) * 12 + 1;
+        int idx = (i + j * N) * 11 + 1;
         
         float temp;
         cudaMemcpy(&temp, positions+idx, sizeof(float),
@@ -672,7 +672,7 @@ std::vector<float> height(std::vector<std::pair<float,float> > _worldPos)
 
     cudaGraphicsUnmapResources(1, &VBO_CUDA, 0);
 
-    checkErrors();*/
+    checkErrors();
     return h;
 }
 

@@ -1,7 +1,6 @@
 attribute vec3 positionIn;
 attribute vec3 partialUIn;
 attribute vec3 partialVIn;
-attribute float foldIn;
 attribute float foamTimeIn;
 attribute float foamAlphaIn;
 
