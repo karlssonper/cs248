@@ -973,24 +973,24 @@ void Engine::initParticleSystems() {
 
         (*it)->explosionPsIs(ps);
 
-        Emitter * smokeEmitter = ps->newEmitter(15, smokeEmittersd_);
+        Emitter * smokeEmitter = ps->newEmitter(10, smokeEmittersd_);
         smokeEmitter->posIs((*it)->midPoint());
-        smokeEmitter->burstSizeIs(15);
+        smokeEmitter->burstSizeIs(10);
         smokeEmitter->typeIs(Emitter::EMITTER_BURST);
         smokeEmitter->blendModeIs(Emitter::BLEND_SMOKE);
         smokeEmitter->rateIs(0.02f);
-        smokeEmitter->lifeTimeIs(4.f);
+        smokeEmitter->lifeTimeIs(2.f);
         smokeEmitter->massIs(1.f);
         smokeEmitter->posRandWeightIs(0.2f);
         smokeEmitter->velIs(Vector3(0.f, 0.001f, 0.f));
         smokeEmitter->velRandWeightIs(0.001);
         smokeEmitter->accIs(Vector3(0.f, 0.0f, 0.0f));
-        smokeEmitter->pointSizeIs(5.f);
-        smokeEmitter->growthFactorIs(1.03f);
+        smokeEmitter->pointSizeIs(10.f);
+        smokeEmitter->growthFactorIs(1.00f);
 
-        Emitter * fireEmitter1 = ps->newEmitter(10, fireEmitter1sd_);
+        Emitter * fireEmitter1 = ps->newEmitter(30, fireEmitter1sd_);
         fireEmitter1->posIs((*it)->midPoint());
-        fireEmitter1->burstSizeIs(10);
+        fireEmitter1->burstSizeIs(30);
         fireEmitter1->typeIs(Emitter::EMITTER_BURST);
         fireEmitter1->blendModeIs(Emitter::BLEND_FIRE);
         fireEmitter1->rateIs(0.02f);
@@ -1000,12 +1000,12 @@ void Engine::initParticleSystems() {
         fireEmitter1->velIs(Vector3(0.f, 0.f, 0.f));
         fireEmitter1->velRandWeightIs(1.5f);
         fireEmitter1->accIs(Vector3(0.f, -10.f, 0.0f));
-        fireEmitter1->pointSizeIs(6.f);
+        fireEmitter1->pointSizeIs(4.f);
         fireEmitter1->growthFactorIs(1.0f);
         
-        Emitter * fireEmitter2 = ps->newEmitter(10, fireEmitter2sd_);
+        Emitter * fireEmitter2 = ps->newEmitter(20, fireEmitter2sd_);
         fireEmitter2->posIs((*it)->midPoint());
-        fireEmitter2->burstSizeIs(10);
+        fireEmitter2->burstSizeIs(20);
         fireEmitter2->typeIs(Emitter::EMITTER_BURST);
         fireEmitter2->blendModeIs(Emitter::BLEND_FIRE);
         fireEmitter2->rateIs(0.005f);
@@ -1015,13 +1015,13 @@ void Engine::initParticleSystems() {
         fireEmitter2->velIs(Vector3(0.f, 0.f, 0.f));
         fireEmitter2->velRandWeightIs(1.6f);
         fireEmitter2->accIs(Vector3(0.f, -10.f, 0.0f));
-        fireEmitter2->pointSizeIs(7.f);
+        fireEmitter2->pointSizeIs(6.f);
         fireEmitter2->growthFactorIs(1.0f);
 
 
-        Emitter * debrisEmitter1 = ps->newEmitter(10, debrisEmitter1sd_);
+        Emitter * debrisEmitter1 = ps->newEmitter(20, debrisEmitter1sd_);
         debrisEmitter1->posIs((*it)->midPoint());
-        debrisEmitter1->burstSizeIs(10);
+        debrisEmitter1->burstSizeIs(20);
         debrisEmitter1->typeIs(Emitter::EMITTER_BURST);
         debrisEmitter1->blendModeIs(Emitter::BLEND_SMOKE);
         debrisEmitter1->rateIs(0.02f);
@@ -1034,9 +1034,9 @@ void Engine::initParticleSystems() {
         debrisEmitter1->pointSizeIs(0.3f);
         debrisEmitter1->growthFactorIs(1.f);
 
-        Emitter * debrisEmitter2 = ps->newEmitter(10, debrisEmitter2sd_);
+        Emitter * debrisEmitter2 = ps->newEmitter(20, debrisEmitter2sd_);
         debrisEmitter2->posIs((*it)->midPoint());
-        debrisEmitter2->burstSizeIs(10);
+        debrisEmitter2->burstSizeIs(20);
         debrisEmitter2->typeIs(Emitter::EMITTER_BURST);
         debrisEmitter2->blendModeIs(Emitter::BLEND_SMOKE);
         debrisEmitter2->rateIs(0.02f);
@@ -1060,9 +1060,9 @@ void Engine::initParticleSystems() {
         waterFoamLeft->lifeTimeIs(5.f);
         waterFoamLeft->massIs(1.f);
         waterFoamLeft->posRandWeightIs(0.2f);
-        waterFoamLeft->velIs(Vector3(10.f, 0.f, 0.f));
+        waterFoamLeft->velIs(Vector3(13.f, 0.f, 0.f));
         waterFoamLeft->velRandWeightIs(0.2f);
-        waterFoamLeft->accIs(Vector3(-13.f, 0.f, 0.0f));
+        waterFoamLeft->accIs(Vector3(-10.f, 0.f, 0.0f));
         waterFoamLeft->pointSizeIs(1.0f);
 
         waterFoamLeft->growthFactorIs(0.97f); 
