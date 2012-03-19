@@ -5,7 +5,6 @@
  *      Author: per
  */
 
-
 #include "linux_helper.h"
 #include "../Graphics.h"
 #include "../Engine.h"
@@ -13,6 +12,8 @@
 #include <cuda_gl_interop.h>
 #include <cufft.h>
 #include <vector>
+#include "errors.h"
+
 
 #define DIR_X 0
 #define DIR_Y 1
@@ -351,6 +352,8 @@ void performIFFT(float time, bool disp)
     cufftExecC2R(plans[DIR_Y], Y, odata[DIR_Y]);
     prevTime = curTime;
     curTime = time;
+
+    checkErrors(); //todo remove
 }
 
 void updateVBO(bool disp)
@@ -381,6 +384,7 @@ void updateVBO(bool disp)
     }
 
     cudaGraphicsUnmapResources(1, &VBO_CUDA, 0);
+    checkErrors();//todo remove
 }
 
 // Function from NVIDIA.
@@ -455,6 +459,8 @@ float maxHeight()
     }
     cudaFree(d_maxArr);
     free(maxArr);
+
+    checkErrors();
     return max;
 };
 
@@ -468,6 +474,8 @@ void display()
     *normal = Matrix3(*modelView).inverse().transpose();
     *invView = Engine::instance().camera()->viewMtx().inverse();
     Graphics::instance().drawIndices(VAO, VBO_IDX, idxSize, shaderData);
+
+    checkErrors();
 }
 
 void init()
@@ -619,7 +627,7 @@ void init()
 
     cudaMalloc((void**)&d_boatsXZ, sizeof(float2) * 5);
     verticalScale = WAVE_HEIGHT / maxHeight();
-
+    checkErrors();
 }
 
 std::vector<float> height(std::vector<std::pair<float,float> > _worldPos)
@@ -660,6 +668,8 @@ std::vector<float> height(std::vector<std::pair<float,float> > _worldPos)
                                                     positions);
 
     cudaGraphicsUnmapResources(1, &VBO_CUDA, 0);
+
+    checkErrors();
     return h;
 }
 
