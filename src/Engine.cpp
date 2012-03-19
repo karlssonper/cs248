@@ -279,9 +279,18 @@ void Engine::renderFrame(float _currentTime)
     currentTime_ = _currentTime;
     float frameTime = currentTime_ - lastTime;
 
+
+    Matrix4 * prevViewProj = quadShader_->stdMatrix4Data(PREVVIEWPROJECTION);
+    *prevViewProj = activeCam_->projectionMtx() * activeCam_->viewMtx();
+
     if (updateCamView_) {
         activeCam_->BuildViewMatrix();
     }
+
+    Matrix4 * invViewProj = quadShader_->stdMatrix4Data(INVERSEVIEWPROJECTION);
+    *invViewProj =
+            (activeCam_->projectionMtx() * activeCam_->viewMtx()).inverse();
+
     activeCam_->updateShake(frameTime);
 
     CUDA::Ocean::performIFFT(currentTime_, false);
@@ -300,8 +309,6 @@ void Engine::renderFrame(float _currentTime)
     RenderFirstPass();
     BlurTextures();
     RenderSecondPass();
-
-
 }
 
 void Engine::RenderShadowMap()
@@ -424,6 +431,9 @@ void Engine::BuildQuad()
     quadShader_->addTexture(shaderTexNames[4], colorTexNames[4]);
     quadShader_->addTexture(shaderTexNames[5], colorTexNames[5]);
     quadShader_->addTexture(shaderTexNames[6], colorTexNames[6]);
+
+    quadShader_->enableMatrix(INVERSEVIEWPROJECTION);
+    quadShader_->enableMatrix(PREVVIEWPROJECTION);
 
     quadShader_->addFloat("debug",1.0f);
     quadShader_->addFloat("texDx", 1.0f / height());

@@ -205,8 +205,10 @@ void Graphics::createTextureToFBO(const std::vector<std::string> &_names,
             glBindTexture(GL_TEXTURE_2D, _colorTex[i]);
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, _width, _height, 0,
                     GL_RGBA, GL_UNSIGNED_BYTE, NULL);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         }
         else {
             _colorTex[i] = texture_[_names[i]];
@@ -247,8 +249,8 @@ void Graphics::createTextureToFBOTest(const std::vector<std::string> &_names,
     std::string dStr("depth");
     texture_[dStr] = _depthTex;
     glBindTexture(GL_TEXTURE_2D, _depthTex);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32,
@@ -267,6 +269,8 @@ void Graphics::createTextureToFBOTest(const std::vector<std::string> &_names,
                     GL_RGB, GL_UNSIGNED_BYTE, NULL);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         } else {
             _colorTex[i] = texture_[_names[i]];
         }
@@ -642,7 +646,8 @@ GLuint Graphics::LoadShader(const std::string _shader, bool geoShader)
     // Error checking
     glGetProgramiv(programID, GL_LINK_STATUS, &loaded);
     //glGetShaderiv(vertexShaderID, GL_COMPILE_STATUS, (GLint*)&loaded_);
-    if (loaded == 0) {
+    if (loaded == 0)
+    {
         GLchar tempErrorLog[ERROR_BUFSIZE];
         GLsizei length;
         glGetShaderInfoLog(fragmentShaderID,ERROR_BUFSIZE,&length,tempErrorLog);

@@ -5,6 +5,10 @@ uniform sampler2D cocTex;
 uniform sampler2D shadowTex;
 uniform sampler2D depthTex;
 uniform sampler2D hudTex;
+
+uniform mat4 InverseViewProjection;
+uniform mat4 PrevViewProjection;
+
 uniform float debug;
 varying vec2 texcoord;
 
@@ -31,14 +35,57 @@ vec3 gaussianBlur(int n)
     return sum / totWeight;
 }
 
+vec3 sceneColor(vec2 coords)
+{
+    vec4 part = texture2D(particlesTex, coords);
+    vec3 phong = texture2D(phongTex, coords).rgb;
+    return (1.0-part.a) * phong + part.a*part.rgb;
+}
+
+vec3 motionBlur(float numSamples)
+{
+    float zOverW = texture2D(depthTex, texcoord).z;
+
+    // H is the viewport position at this pixel in the range -1 to 1.
+    vec4 H = vec4(
+                   texcoord.x * 2.0 - 1.0,
+                   (1.0 - texcoord.y) * 2.0 - 1.0,
+                   zOverW,
+                   1.0
+                 );
+    vec4 D = InverseViewProjection * H;
+    vec4 worldPos = D / D.w;
+
+    vec4 currentPos = H;
+    vec4 previousPos = PrevViewProjection * worldPos;
+    // Convert to nonhomogeneous points [-1,1] by dividing by w.
+    previousPos /= previousPos.w;
+
+    // Use this frame's position and last frame's to compute the pixel
+    // velocity.
+    vec2 velocity = (currentPos.xy - previousPos.xy)/2.0;
+
+    // Get the initial color at this pixel.
+    vec3 color = sceneColor(texcoord);
+    texcoord += velocity;
+    for(int i = 1; i < numSamples; ++i, texcoord += velocity)
+    {
+        // Sample the color buffer along the velocity vector.
+        vec3 currentColor = sceneColor(texcoord);
+        // Add the current color to our color sum.
+        color += currentColor;
+    }
+
+    // Average all of the samples to get the final blur color.
+    vec3 finalColor = color / numSamples;
+    return finalColor;
+}
+
 void main() {
 	vec3 color;
 	if (debug == 1.0) {
 	    vec4 hud = texture2D(hudTex, texcoord);
-	    vec4 part = texture2D(particlesTex, texcoord);
-	    vec3 phong = texture2D(phongTex, texcoord).rgb;
-	    vec3 temp = (1.0-part.a) * phong + part.a*part.rgb;
-	    color = (1.0-hud.a)*temp + hud.a*(hud.rgb);
+	    color = (1.0-hud.a)*motionBlur(3.5) + hud.a*(hud.rgb);
 	} else if (debug == 2.0) {
 	    color = gaussianBlur(10);
     } else if (debug == 3.0) {

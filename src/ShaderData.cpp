@@ -15,7 +15,9 @@ static std::string STDMatricesStr[NUM_STD_MATRICES] = {
         "LightViewMatrix",
         "LightProjectionMatrix",
         "InverseViewMatrix",
-        "NormalMatrix",
+        "InverseViewProjection",
+        "PrevViewProjection",
+        "NormalMatrix"
 };
 
 ShaderData::ShaderData(const std::string & _shader, bool geomShader)
