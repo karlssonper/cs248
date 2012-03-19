@@ -5,7 +5,6 @@
  *      Author: per
  */
 
-
 #include "linux_helper.h"
 #include "../Graphics.h"
 #include "../Engine.h"
@@ -13,11 +12,13 @@
 #include <cuda_gl_interop.h>
 #include <cufft.h>
 #include <vector>
+#include "errors.h"
+
 
 #define DIR_X 0
 #define DIR_Y 1
 #define DIR_Z 2
-#define N 128 //REQUENCY RESOLUTION
+#define N 256 //REQUENCY RESOLUTION
 #define WORLD_SIZE 100.0f // WORLD SIZE
 #define OCEAN_DEPTH 200.0f
 #define WIND_X 1.0f
@@ -30,6 +31,9 @@
 #define WAVE_HEIGHT 2.5f
 #define WIND_ALIGN 2
 #define CHOPPYNESS 0.5f
+#define BOAT_SIZE 2.7f
+#define FOAM_TIME 3.5f
+#define FOAM_ACTIVATED 5.0f
 
 struct OceanVertex
 {
@@ -37,6 +41,8 @@ struct OceanVertex
     float partialU[3];
     float partialV[3];
     float fold;
+    float foamTime;
+    float foamAlpha;
 };
 
 unsigned int VBO_GL;
@@ -68,6 +74,9 @@ dim3 b2D, t2D;//Regular 2D grid (DIMX * DIMZ)
 int bLine;
 int padding;
 float verticalScale;
+float curTime = 0.f;
+float prevTime = 0.f;
+float2 * d_boatsXZ;
 
 __device__
 float _kx(const int i, const int dimX, const float wx)
@@ -145,12 +154,52 @@ void build(  cufftComplex * idata,
     }
 }
 
+__global__
+void updateFoam(int numBoats, float2 * xz, float scale,float * out)
+{
+    const int i = threadIdx.x + blockIdx.x * blockDim.x;
+    const int j = threadIdx.y + blockIdx.y * blockDim.y;
+
+
+    const int idx = idxPos(i,j);
+
+    const float x = i * scale;
+    const float z = j * scale;
+
+    bool hit = false;
+    float h = out[idxPos(i,j)*12+1];
+    float size = BOAT_SIZE ;
+    for (int k = 0; k < numBoats; ++k) {
+        if ((x > xz[k].x-size) &&
+            (x < xz[k].x+size) &&
+            (z > xz[k].y-size) &&
+            (z < xz[k].y+size)) {
+            float dx = x-xz[k].x;
+            //float dz = z-xz[k].y;
+            //float len = sqrt(dx*dx + dz*dz);
+            //if(z<xz[k].y && len < size) break;
+
+            hit = true;
+            out[idxPos(i,j)*12+10] = FOAM_ACTIVATED;
+
+            out[idxPos(i,j)*12+11] = -abs(dx)/BOAT_SIZE;
+            break;
+        }
+    }
+    if (!hit && out[idxPos(i,j)*12+10] > FOAM_TIME) {
+        out[idxPos(i,j)*12+10] = FOAM_TIME;
+        float lol = out[idxPos(i,j)*12+11];
+        out[idxPos(i,j)*12+11] = 1+lol;
+    }
+}
+
 template<bool disp>
 __global__
 void updatePositions(const float scale,
                      const float scaleY,
                      const float scaleXZ,
                      float * out,
+                     float dt,
                      const float * yIn,
                      const float * xIn = NULL,
                      const float * zIn = NULL)
@@ -199,38 +248,63 @@ void updatePositions(const float scale,
 
         float J = (1.0f + dx.x) * (1.0f + dy.y) - dx.y * dy.x;
 
-        out[idxPos(i,j)*10] = x + scaleXZ * xIn[idx];
-        out[idxPos(i,j)*10+1] = scaleY * yIn[idx];
-        out[idxPos(i,j)*10+2] = z + scaleXZ * zIn[idx];
+        out[idxPos(i,j)*12] = x + scaleXZ * xIn[idx];
+        out[idxPos(i,j)*12+1] = scaleY * yIn[idx];
+        out[idxPos(i,j)*12+2] = z + scaleXZ * zIn[idx];
 
-        out[idxPos(i,j)*10+3] = dxdu;
-        out[idxPos(i,j)*10+4] = dydu;
-        out[idxPos(i,j)*10+5] = dzdu;
+        out[idxPos(i,j)*12+3] = dxdu;
+        out[idxPos(i,j)*12+4] = dydu;
+        out[idxPos(i,j)*12+5] = dzdu;
 
-        out[idxPos(i,j)*10+6] = dxdv;
-        out[idxPos(i,j)*10+7] = dydv;
-        out[idxPos(i,j)*10+8] = dzdv;
+        out[idxPos(i,j)*12+6] = dxdv;
+        out[idxPos(i,j)*12+7] = dydv;
+        out[idxPos(i,j)*12+8] = dzdv;
 
-        out[idxPos(i,j)*10+9] = max(1.0f - J, 0.f);
+        out[idxPos(i,j)*12+9] = max(1.0f - J, 0.f);
+
+        out[idxPos(i,j)*12+10] -= dt;
     }
     else {
-        out[idxPos(i,j)*10] = x;
-        out[idxPos(i,j)*10+1] = scaleY * yIn[idx];
-        out[idxPos(i,j)*10+2] = z;
+        out[idxPos(i,j)*12] = x;
+        out[idxPos(i,j)*12+1] = scaleY * yIn[idx];
+        out[idxPos(i,j)*12+2] = z;
 
-        out[idxPos(i,j)*10+3] = dxdu;
-        out[idxPos(i,j)*10+4] = dydu;
-        out[idxPos(i,j)*10+5] = dzdu;
+        out[idxPos(i,j)*12+3] = dxdu;
+        out[idxPos(i,j)*12+4] = dydu;
+        out[idxPos(i,j)*12+5] = dzdu;
 
-        out[idxPos(i,j)*10+6] = dxdv;
-        out[idxPos(i,j)*10+7] = dydv;
-        out[idxPos(i,j)*10+8] = dzdv;
+        out[idxPos(i,j)*12+6] = dxdv;
+        out[idxPos(i,j)*12+7] = dydv;
+        out[idxPos(i,j)*12+8] = dzdv;
 
-        out[idxPos(i,j)*10+9] = 1.0f;
+        out[idxPos(i,j)*12+9] = 1.0f;
+        out[idxPos(i,j)*12+10] -= dt;
 
     }
 };
 
+template <int size>
+__global__
+void smooth(float * pos)
+{
+    __shared__ float alpha[256+size*32];
+    __shared__ float time[256+size*32];
+    const int tid = threadIdx.x + blockDim.x * threadIdx.y;
+    const int i = threadIdx.x + blockIdx.x * blockDim.x;
+    const int j = threadIdx.y + blockIdx.y * blockDim.y;
+    const int idx = idxPos(i,j);
+    alpha[tid] = pos[idx*12+10];
+    time[tid] = pos[idx*12+11];
+
+    if (threadIdx.x < size) {
+
+    }
+
+    __syncthreads();
+
+
+
+}
 
 template<int tpb>
 __global__
@@ -276,6 +350,10 @@ void performIFFT(float time, bool disp)
         cufftExecC2R(plans[DIR_Z], idata, odata[DIR_Z]);
     }
     cufftExecC2R(plans[DIR_Y], Y, odata[DIR_Y]);
+    prevTime = curTime;
+    curTime = time;
+
+    checkErrors(); //todo remove
 }
 
 void updateVBO(bool disp)
@@ -292,6 +370,7 @@ void updateVBO(bool disp)
                                                        verticalScale,
                                                        CHOPPYNESS,
                                                        positions,
+                                                       curTime - prevTime,
                                                        odata[DIR_Y],
                                                        odata[DIR_X],
                                                        odata[DIR_Z] );
@@ -300,10 +379,12 @@ void updateVBO(bool disp)
                                                         verticalScale,
                                                         0,
                                                         positions,
+                                                        curTime - prevTime,
                                                         odata[DIR_Y]);
     }
 
     cudaGraphicsUnmapResources(1, &VBO_CUDA, 0);
+    checkErrors();//todo remove
 }
 
 // Function from NVIDIA.
@@ -378,6 +459,8 @@ float maxHeight()
     }
     cudaFree(d_maxArr);
     free(maxArr);
+
+    checkErrors();
     return max;
 };
 
@@ -391,6 +474,8 @@ void display()
     *normal = Matrix3(*modelView).inverse().transpose();
     *invView = Engine::instance().camera()->viewMtx().inverse();
     Graphics::instance().drawIndices(VAO, VBO_IDX, idxSize, shaderData);
+
+    checkErrors();
 }
 
 void init()
@@ -526,20 +611,28 @@ void init()
     int locPU = Graphics::instance().shaderAttribLoc(id,"partialUIn");
     int locPV = Graphics::instance().shaderAttribLoc(id,"partialVIn");
     int locFold = Graphics::instance().shaderAttribLoc(id,"foldIn");
+    int locFoamTime = Graphics::instance().shaderAttribLoc(id,"foamTimeIn");
+    int locFoamAlpha = Graphics::instance().shaderAttribLoc(id,"foamAlphaIn");
 
     int bytes = sizeof(OceanVertex);
     Graphics::instance().bindGeometry(id, VAO, VBO_GL, 3, bytes,locPos,0);
     Graphics::instance().bindGeometry(id, VAO, VBO_GL, 3, bytes,locPU,12);
     Graphics::instance().bindGeometry(id, VAO, VBO_GL, 3, bytes,locPV,24);
     Graphics::instance().bindGeometry(id, VAO, VBO_GL, 1, bytes,locFold,36);
+    Graphics::instance().bindGeometry(id, VAO, VBO_GL, 1, bytes,locFoamTime,40);
+    Graphics::instance().bindGeometry(id, VAO, VBO_GL, 1, bytes,locFoamAlpha,44);
 
     cudaGraphicsGLRegisterBuffer(&VBO_CUDA, VBO_GL,
             cudaGraphicsMapFlagsWriteDiscard);
+
+    cudaMalloc((void**)&d_boatsXZ, sizeof(float2) * 5);
     verticalScale = WAVE_HEIGHT / maxHeight();
+    checkErrors();
 }
 
 std::vector<float> height(std::vector<std::pair<float,float> > _worldPos)
 {
+    if (_worldPos.size() > 5) std::cerr << "Too many boats at the same time!";
     std::vector<float> h(_worldPos.size());
     cudaGraphicsMapResources(1, &VBO_CUDA, 0);
     float* positions;
@@ -547,13 +640,15 @@ std::vector<float> height(std::vector<std::pair<float,float> > _worldPos)
     cudaGraphicsResourceGetMappedPointer((void**)&positions,
                                           &num_bytes,
                                           VBO_CUDA);
+    std::vector<float2> xz(_worldPos.size()*2);
     for (unsigned int k = 0 ; k < _worldPos.size(); ++k) {
         int i = _worldPos[k].first*N/WORLD_SIZE;
         int j = _worldPos[k].second*N/WORLD_SIZE;
+        xz[k] = make_float2(_worldPos[k].first, _worldPos[k].second-5.6f);
 
         //the last +1 is to get Y value from VBO
         //*10 because each vertex has 10 floats
-        int idx = (i + j * N) * 10 + 1;
+        int idx = (i + j * N) * 12 + 1;
         
         float temp;
         cudaMemcpy(&temp, positions+idx, sizeof(float),
@@ -564,7 +659,17 @@ std::vector<float> height(std::vector<std::pair<float,float> > _worldPos)
         h[k] = temp;
         
     }
+
+    cudaMemcpy( d_boatsXZ, &xz[0], sizeof(float) * xz.size() ,
+            cudaMemcpyHostToDevice);
+    updateFoam CUDA_KERNEL_DIM(b2D,t2D)(_worldPos.size(),
+                                                    d_boatsXZ,
+                                                    WORLD_SIZE / N,
+                                                    positions);
+
     cudaGraphicsUnmapResources(1, &VBO_CUDA, 0);
+
+    checkErrors();
     return h;
 }
 

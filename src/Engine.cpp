@@ -199,7 +199,6 @@ void Engine::init(int argc, char **argv,
     glutPassiveMotionFunc(MouseMoveFunc);
     glutDisplayFunc(GameLoop);
     glutIdleFunc(GameLoop);
-
     currentTime_ = 0;
     nextSpawn_ = 0.f;
     state_ = RUNNING;
@@ -289,6 +288,7 @@ void Engine::renderFrame(float _currentTime)
     
     RenderShadowMap();
     RenderFirstPass();
+    BlurTextures();
     RenderSecondPass();
 
 
@@ -340,6 +340,20 @@ void Engine::RenderSecondPass()
     Graphics::instance().drawIndices(quadVAO_, quadIdxVBO_, 6, quadShader_);
 }
 
+void Engine::BlurTextures()
+{
+    Graphics::instance().enableFramebuffer(
+                                            horBlurDepthFB_,
+                                            horBlurFB_,
+                                            0,
+                                            1,
+                                            width(),
+                                            height());
+    Graphics::instance().drawIndices(quadVAO_, quadIdxVBO_, 6,
+            horizontalGaussianShader_);
+    Graphics::instance().disableFramebuffer();
+}
+
 void Engine::BuildQuad()
 {
     std::vector<QuadVertex> v(4);
@@ -369,7 +383,7 @@ void Engine::BuildQuad()
 
     std::vector<std::string> colorTexNames;
     colorTexNames.push_back("Phong");
-    colorTexNames.push_back("Bloom");
+    colorTexNames.push_back("Bloom2");
     colorTexNames.push_back("Motion");
     colorTexNames.push_back("CoC");
     colorTexNames.push_back("shadow");
@@ -388,6 +402,7 @@ void Engine::BuildQuad()
     quadShader_->addTexture(shaderTexNames[4], colorTexNames[4]);
 
     quadShader_->addFloat("debug",1.0f);
+    quadShader_->addFloat("texDx", 1.0f / height());
 
     std::string posStr("positionIn");
     std::string texStr("texcoordIn");
@@ -491,13 +506,25 @@ void Engine::CreateFramebuffer()
     colorTexNames.push_back("Motion");
     colorTexNames.push_back("CoC");
 
+    Graphics::instance().createTextureToFBO(colorTexNames, colorTex,
+            firstPassFB_, firstPassDepthFB_, width(), height());
+
     phongTex_ = colorTex[0];
     bloomTex_ = colorTex[1];
     motionTex_ = colorTex[2];
     cocTex_ = colorTex[3];
 
-    Graphics::instance().createTextureToFBO(colorTexNames, colorTex,
-            firstPassFB_, firstPassDepthFB_, width(), height());
+    std::vector<unsigned int> horBlurTex(1);
+    std::vector<std::string> horBlurTexNames;
+    horBlurTexNames.push_back("Bloom2");
+    Graphics::instance().createTextureToFBO(horBlurTexNames, horBlurTex,
+            horBlurFB_, horBlurDepthFB_, width(), height());
+    bloom2Tex_ = horBlurTex[0];
+
+    horizontalGaussianShader_ = new ShaderData("../shaders/horizontalGauss");
+    horizontalGaussianShader_->addTexture("bloomTex", "Bloom");
+    horizontalGaussianShader_->addFloat("texDx", 1.0f / width());
+
 }
 
 void Engine::LoadCameras()
@@ -547,7 +574,13 @@ void Engine::LoadOcean()
     std::string oceanShaderStr("ocean");
     shaders_[oceanShaderStr] = CUDA::Ocean::oceanShaderData();
     CUDA::Ocean::oceanShaderData()->addTexture("shadowMap", "shadow");
+    CUDA::Ocean::oceanShaderData()->addTexture("sunReflection",
+                                               "../textures/sunReflection.png");
+    CUDA::Ocean::oceanShaderData()->addTexture("foamTex",
+                                                   "../textures/foam.jpg");
     CUDA::Ocean::oceanShaderData()->addFloat("shadowMapDx", 1.0f / shadowSize_);
+
+
 }
 
 void Engine::loadWeapons() {

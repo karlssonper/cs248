@@ -23,6 +23,8 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <stdio.h>
+#include <assert.h>
 #include "ShaderData.h"
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
@@ -153,6 +155,7 @@ private:
     void unloadShaderData() const;
     GLuint LoadShader(const std::string _shader, bool geoShader = false);
     std::vector<char> ReadSource(const std::string _file);
+    bool checkError() const;
 
     Graphics(const Graphics &);
     void operator=(const Graphics &);
@@ -177,6 +180,7 @@ void Graphics::geometryIs(GLuint                      _geometryVBO,
 
     VBODataIs(GL_ARRAY_BUFFER, _geometryVBO, _geometryData, type);
     VBODataIs(GL_ELEMENT_ARRAY_BUFFER, _indexVBO, _indexData, type);
+    checkError();
 }
 
 template<class T>

@@ -13,5 +13,5 @@ varying float time;
 void main() {
     gl_Position = ModelViewMatrix*vec4(positionIn, 1.0);
     time = timeIn;
-    size = 0.001*sizeIn;
+    size = sizeIn;
 }

@@ -41,12 +41,40 @@ Graphics::Graphics()
     glEnable(GL_DEPTH_TEST);
 
     CUDA::init();
+    checkError();
+}
 
+bool Graphics::checkError() const
+{
+    GLenum error = glGetError();
+    if (error == GL_NO_ERROR) {
+        return true;
+    }
+    std::cerr << "An error has occured: ";
+    switch (error) {
+        case GL_INVALID_ENUM:
+            std::cerr << "GL_INVALID_ENUM" << std::endl;
+            break;
+        case GL_INVALID_VALUE:
+            std::cerr << "GL_INVALID_VALUE" << std::endl;
+            break;
+        case GL_INVALID_OPERATION:
+            std::cerr << "GL_INVALID_OPERATION" << std::endl;
+            break;
+        case GL_OUT_OF_MEMORY:
+            std::cerr << "GL_OUT_OF_MEMORY" << std::endl;
+            break;
+        case GL_NO_ERROR:
+            std::cerr << "GL_NO_ERROR" << std::endl;
+            break;
+    }
+    return false;
 }
 
 void Graphics::viewportIs(int _width, int _height)
 {
     glViewport(0, 0, _width, _height);
+    checkError();
 }
 
 void Graphics::buffersNew(const std::string & _name,
@@ -62,6 +90,7 @@ void Graphics::buffersNew(const std::string & _name,
     } else {
         std::cerr << "Buffers already exists for " << _name << std::endl;
     }
+    checkError();
 }
 
 void Graphics::buffersNew(const std::string &_name,
@@ -78,6 +107,7 @@ void Graphics::buffersNew(const std::string &_name,
     } else {
         std::cerr << "Buffers already exists for " << _name << std::endl;
     }
+    checkError();
 }
 
 void Graphics::deleteBuffers(const std::string & _name)
@@ -92,6 +122,7 @@ void Graphics::deleteBuffers(const std::string & _name)
     } else {
         std::cerr << "Can't remove buffers " << _name << std::endl;
     }
+    checkError();
 }
 
 void Graphics::deleteBuffers(GLuint _VAO)
@@ -103,10 +134,12 @@ void Graphics::deleteBuffers(GLuint _VAO)
             glDeleteBuffers(1, &S.indexVBO);
             glDeleteVertexArrays(1, &S.VAO);
             VAOData_.erase(it);
+            checkError();
             return;
         }
     }
     std::cerr << "Can't remove buffers  VAO#" << _VAO << std::endl;
+    checkError();
 }
 
 void Graphics::createTextureToFBO(std::string _name,
@@ -142,6 +175,7 @@ void Graphics::createTextureToFBO(std::string _name,
 
     FBO_[_name] = _fbo;
     texture_[_name] = depthTexture;
+    checkError();
 }
 
 void Graphics::createTextureToFBO(const std::vector<std::string> &_names,
@@ -163,14 +197,16 @@ void Graphics::createTextureToFBO(const std::vector<std::string> &_names,
 
     for (unsigned int i = 0; i < _names.size(); ++i) {
         // The position buffer
-        glActiveTexture(GL_TEXTURE0 + i); // Use texture unit 0 for position
-        glGenTextures(1, &_colorTex[i]);
-        texture_[_names[i]] = _colorTex[i];
-        glBindTexture(GL_TEXTURE_2D, _colorTex[i]);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, _width, _height, 0,
-                GL_RGB, GL_UNSIGNED_BYTE, NULL);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        if (texture_.find(_names[i]) == texture_.end()) {
+            glActiveTexture(GL_TEXTURE0 + i); // Use texture unit 0 for position
+            glGenTextures(1, &_colorTex[i]);
+            texture_[_names[i]] = _colorTex[i];
+            glBindTexture(GL_TEXTURE_2D, _colorTex[i]);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, _width, _height, 0,
+                    GL_RGB, GL_UNSIGNED_BYTE, NULL);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        }
     }
 
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
@@ -182,6 +218,7 @@ void Graphics::createTextureToFBO(const std::vector<std::string> &_names,
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
     glBindTexture(GL_TEXTURE_2D, 0);
+    checkError();
 }
 
 void Graphics::enableFramebuffer(GLuint _depthFBO,
@@ -206,6 +243,7 @@ void Graphics::enableFramebuffer(GLuint _depthFBO,
         enums.push_back(GL_COLOR_ATTACHMENT0 + i);
     }
     glDrawBuffers(enums.size(), &enums[0]);
+    checkError();
 }
 
 void Graphics::enableFramebuffer(GLuint _depthFBO, GLuint _width,GLuint _height)
@@ -215,12 +253,14 @@ void Graphics::enableFramebuffer(GLuint _depthFBO, GLuint _width,GLuint _height)
     glCullFace(GL_FRONT);
     glViewport(0, 0, _width, _height);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    checkError(); //todo remove
 }
 
 void Graphics::disableFramebuffer()
 {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glBindRenderbuffer(GL_RENDERBUFFER, 0);
+    checkError(); //todo remove
 }
 
 void Graphics::geometryIs(GLuint _posVBO,
@@ -246,6 +286,7 @@ void Graphics::geometryIs(GLuint _posVBO,
     VBODataIs(GL_ARRAY_BUFFER, _posVBO, pos, type);
     VBODataIs(GL_ARRAY_BUFFER, _sizeVBO, size, type);
     VBODataIs(GL_ARRAY_BUFFER, _timeVBO, time, type);
+    checkError();
 }
 
 
@@ -268,6 +309,7 @@ void Graphics::bindGeometry(GLuint _shader,
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glUseProgram(0);
+    checkError();
 }
 
 void Graphics::drawArrays(GLuint _VAO,
@@ -295,6 +337,8 @@ void Graphics::drawArrays(GLuint _VAO,
     glDepthMask(GL_TRUE);
     glBindVertexArray(0);
     unloadShaderData();
+
+    checkError();//todo remove
 }
 
 void Graphics::drawIndices(GLuint _VAO,
@@ -313,6 +357,8 @@ void Graphics::drawIndices(GLuint _VAO,
     glUseProgram(0);
     glBindVertexArray(0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+    checkError(); //todo remove
 }
 
 void Graphics::loadShaderData(const ShaderData * _shaderData) const
@@ -363,12 +409,16 @@ void Graphics::loadShaderData(const ShaderData * _shaderData) const
                    false,
                    _shaderData->stdMatrixNormal_.second.data.data());
     }
+
+    //todo remove
+    checkError();
 }
 
 void Graphics::unloadShaderData() const
 {
     glBindTexture(GL_TEXTURE_2D, 0);
     glUseProgram(0);
+    checkError();//todo remove
 }
 
 GLuint Graphics::texture(const std::string & _img)
@@ -394,6 +444,7 @@ GLuint Graphics::texture(const std::string & _img)
         texture_[_img] = texID;
         return texID;
     }
+    checkError();
 }
 
 GLuint Graphics::texture(const std::string & _name,
@@ -424,6 +475,7 @@ GLuint Graphics::texture(const std::string & _name,
         texture_[_name] = texID;
         return texID;
     }
+    checkError();
 }
 
 void Graphics::deleteTexture(const std::string & _img)
@@ -433,6 +485,7 @@ void Graphics::deleteTexture(const std::string & _img)
     } else {
         std::cerr << "Can't remove texture " << _img << std::endl;
     }
+    checkError();
 }
 
 void Graphics::deleteTexture(unsigned int _texID)
@@ -441,10 +494,12 @@ void Graphics::deleteTexture(unsigned int _texID)
         if (it->second == _texID) {
             glDeleteTextures(1, &it->second);
             texture_.erase(it);
+            checkError();
             return;
         }
     }
     std::cerr << "Can't remove texture #" << _texID << std::endl;
+    checkError();
 }
 
 GLuint Graphics::shader(const std::string & _shader, bool geoShader)
@@ -530,6 +585,7 @@ GLuint Graphics::LoadShader(const std::string _shader, bool geoShader)
     S.geomShaderID = geomShaderID;
     S.programID = programID;
 
+    checkError();
     return programID;
 }
 
@@ -573,6 +629,7 @@ void Graphics::deleteShader(const std::string & _shader)
     } else {
         std::cerr << "Can't remove shader " << _shader << std::endl;
     }
+    checkError();
 }
 
 void Graphics::deleteShader(unsigned int _shaderID)
@@ -584,10 +641,12 @@ void Graphics::deleteShader(unsigned int _shaderID)
             glDeleteShader(S.fragmentShaderID);
             glDeleteProgram(S.programID);
             shader_.erase(it);
+            checkError();
             return;
         }
     }
     std::cerr << "Can't remove shader #" << _shaderID << std::endl;
+    checkError();
 }
 
 GLint Graphics::shaderUniformLoc(GLuint _shader, const std::string & _name)

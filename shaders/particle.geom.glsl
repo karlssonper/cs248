@@ -13,22 +13,26 @@ out vec2 texCoord;
 
 void main() {
 
-    gl_Position = ProjectionMatrix * (vec4(-size[0],-size[0],0.0,0.0) + gl_PositionIn[0]);
+    gl_Position = ProjectionMatrix *
+            (vec4(-size[0],-size[0],0.0,0.0) + gl_PositionIn[0]);
     timeCopy = time[0];
     texCoord = vec2(0.0, 0.0);
     EmitVertex();
 
-    gl_Position = ProjectionMatrix * (vec4(size[0],-size[0],0.0,0.0) + gl_PositionIn[0]);
+    gl_Position = ProjectionMatrix *
+            (vec4(size[0],-size[0],0.0,0.0) + gl_PositionIn[0]);
     timeCopy = time[0];
     texCoord = vec2(1.0, 0.0);
     EmitVertex();
 
-    gl_Position = ProjectionMatrix * (vec4(-size[0],size[0],0.0,0.0) + gl_PositionIn[0]);
+    gl_Position = ProjectionMatrix *
+            (vec4(-size[0],size[0],0.0,0.0) + gl_PositionIn[0]);
     timeCopy = time[0];
     texCoord = vec2(.0, 1.0);
     EmitVertex();
 
-    gl_Position = ProjectionMatrix * (vec4(size[0],size[0],0.0,0.0) + gl_PositionIn[0]);
+    gl_Position = ProjectionMatrix *
+            (vec4(size[0],size[0],0.0,0.0) + gl_PositionIn[0]);
     timeCopy = time[0];
     texCoord = vec2(1.0, 1.0);
     EmitVertex();
