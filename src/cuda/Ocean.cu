@@ -18,8 +18,8 @@
 #define DIR_X 0
 #define DIR_Y 1
 #define DIR_Z 2
-#define N 128 //REQUENCY RESOLUTION
-#define WORLD_SIZE 100.0f // WORLD SIZE
+#define N 256 //REQUENCY RESOLUTION
+#define WORLD_SIZE 150.0f // WORLD SIZE
 #define OCEAN_DEPTH 200.0f
 #define WIND_X 1.0f
 #define WIND_Z 0.0f
@@ -34,6 +34,7 @@
 #define BOAT_SIZE 2.7f
 #define FOAM_TIME 3.5f
 #define FOAM_ACTIVATED 5.0f
+#define HORIZON_FACTOR 10
 
 struct OceanVertex
 {
@@ -100,9 +101,15 @@ int idxFFT(const int i, const int j)
 }
 
 __device__
+int idxPosPadding(const int i, const int j, int padding)
+{
+    return + i + (j+padding) * (blockDim.x * gridDim.x);
+}
+
+__device__
 int idxPos(const int i, const int j)
 {
-    return i + j * blockDim.x * gridDim.x;
+    return i + j * (blockDim.x * gridDim.x);
 }
 
 
@@ -154,9 +161,11 @@ void build(  cufftComplex * idata,
     }
 }
 
+template <int padding>
 __global__
 void updateFoam(int numBoats, float2 * xz, float scale,float * out)
 {
+
     const int i = threadIdx.x + blockIdx.x * blockDim.x;
     const int j = threadIdx.y + blockIdx.y * blockDim.y;
 
@@ -164,10 +173,15 @@ void updateFoam(int numBoats, float2 * xz, float scale,float * out)
     const int idx = idxPos(i,j);
 
     const float x = i * scale;
-    const float z = j * scale;
+    const float z = (j + padding) * scale;
 
     bool hit = false;
-    float h = out[idxPos(i,j)*11+1];
+    int idxP;
+    if (padding > 0) {
+        idxP= idxPosPadding(i,j,padding);
+    } else {
+        idxP= idxPos(i,j);
+    }
     float size = BOAT_SIZE ;
     for (int k = 0; k < numBoats; ++k) {
         if ((x > xz[k].x-size) &&
@@ -180,20 +194,20 @@ void updateFoam(int numBoats, float2 * xz, float scale,float * out)
             //if(z<xz[k].y && len < size) break;
 
             hit = true;
-            out[idxPos(i,j)*11+9] = FOAM_ACTIVATED;
+            out[idxP*11+9] = FOAM_ACTIVATED;
 
-            out[idxPos(i,j)*11+10] = -abs(dx)/BOAT_SIZE;
+            out[idxP*11+10] = -abs(dx)/BOAT_SIZE;
             break;
         }
     }
-    if (!hit && out[idxPos(i,j)*11+9] > FOAM_TIME) {
-        out[idxPos(i,j)*11+9] = FOAM_TIME;
-        float lol = out[idxPos(i,j)*11+10];
-        out[idxPos(i,j)*11+10] = 1+lol;
+    if (!hit && out[idxP*11+9] > FOAM_TIME) {
+        out[idxP*11+9] = FOAM_TIME;
+        float lol = out[idxP*11+10];
+        out[idxP*11+10] = 1+lol;
     }
 }
 
-template<bool disp>
+template<bool disp, int padding>
 __global__
 void updatePositions(const float scale,
                      const float scaleY,
@@ -211,7 +225,7 @@ void updatePositions(const float scale,
     const int idx = idxFFT(i,j);
 
     const float x = i * scale;
-    const float z = j * scale;
+    const float z = (j+padding) * scale;
 
     const int idxLeft = (i != 0) ? (idxFFT(i-1,j)) : (idxFFT(N-1,j));
     const int idxRight = (i != N-1) ? (idxFFT(i+1,j)) : (idxFFT(0,j));
@@ -236,10 +250,20 @@ void updatePositions(const float scale,
         dzdu = 0.0f;
         dzdv = scale;
     }
+    float factor = 1.0f;
+    if (i >= N - HORIZON_FACTOR){
+        factor= float(N-1-i)/HORIZON_FACTOR;
+    }
 
-    float dydu = (yIn[idxRight] - yIn[idxLeft]) * scaleY;
-    float dydv = (yIn[idxTop] - yIn[idxBot]) * scaleY;;
+    float dydu = (yIn[idxRight] - yIn[idxLeft]) * scaleY*factor;
+    float dydv = (yIn[idxTop] - yIn[idxBot]) * scaleY*factor;
 
+    int idxP;
+    if (padding > 0) {
+        idxP= idxPosPadding(i,j,padding);
+    } else {
+        idxP= idxPos(i,j);
+    }
     if (disp){
         float2 dx = make_float2((xIn[idxRight] - xIn[idxLeft])* CHOPPYNESS * N/WORLD_SIZE,
                 (zIn[idxRight] - zIn[idxLeft])* CHOPPYNESS * N/WORLD_SIZE) ;
@@ -248,37 +272,37 @@ void updatePositions(const float scale,
 
         //float J = (1.0f + dx.x) * (1.0f + dy.y) - dx.y * dy.x;
 
-        out[idxPos(i,j)*11] = x + scaleXZ * xIn[idx];
-        out[idxPos(i,j)*11+1] = scaleY * yIn[idx];
-        out[idxPos(i,j)*11+2] = z + scaleXZ * zIn[idx];
+        out[idxP*11] = x + scaleXZ * xIn[idx];
+        out[idxP*11+1] = scaleY * yIn[idx]*factor;
+        out[idxP*11+2] = z + scaleXZ * zIn[idx];
 
-        out[idxPos(i,j)*11+3] = dxdu;
-        out[idxPos(i,j)*11+4] = dydu;
-        out[idxPos(i,j)*11+5] = dzdu;
+        out[idxP*11+3] = dxdu;
+        out[idxP*11+4] = dydu;
+        out[idxP*11+5] = dzdu;
 
-        out[idxPos(i,j)*11+6] = dxdv;
-        out[idxPos(i,j)*11+7] = dydv;
-        out[idxPos(i,j)*11+8] = dzdv;
+        out[idxP*11+6] = dxdv;
+        out[idxP*11+7] = dydv;
+        out[idxP*11+8] = dzdv;
 
         //out[idxPos(i,j)*11+9] = max(1.0f - J, 0.f);
 
-        out[idxPos(i,j)*11+9] -= dt;
+        out[idxP*11+9] -= dt;
     }
     else {
-        out[idxPos(i,j)*11] = x;
-        out[idxPos(i,j)*11+1] = scaleY * yIn[idx];
-        out[idxPos(i,j)*11+2] = z;
+        out[idxP*11] = x;
+        out[idxP*11+1] = scaleY * yIn[idx]*factor;
+        out[idxP*11+2] = z;
 
-        out[idxPos(i,j)*11+3] = dxdu;
-        out[idxPos(i,j)*11+4] = dydu;
-        out[idxPos(i,j)*11+5] = dzdu;
+        out[idxP*11+3] = dxdu;
+        out[idxP*11+4] = dydu;
+        out[idxP*11+5] = dzdu;
 
-        out[idxPos(i,j)*11+6] = dxdv;
-        out[idxPos(i,j)*11+7] = dydv;
-        out[idxPos(i,j)*11+8] = dzdv;
+        out[idxP*11+6] = dxdv;
+        out[idxP*11+7] = dydv;
+        out[idxP*11+8] = dzdv;
 
        // out[idxPos(i,j)*11+9] = 1.0f;
-        out[idxPos(i,j)*11+9] -= dt;
+        out[idxP*11+9] -= dt;
 
     }
 };
@@ -366,7 +390,7 @@ void updateVBO(bool disp)
                                           VBO_CUDA);
     float scale = WORLD_SIZE / N;
     if (disp){
-        updatePositions<true> CUDA_KERNEL_DIM(b2D,t2D)(scale,
+        updatePositions<true,0> CUDA_KERNEL_DIM(b2D,t2D)(scale,
                                                        verticalScale,
                                                        CHOPPYNESS,
                                                        positions,
@@ -375,7 +399,13 @@ void updateVBO(bool disp)
                                                        odata[DIR_X],
                                                        odata[DIR_Z] );
     } else {
-        updatePositions<false> CUDA_KERNEL_DIM(b2D,t2D)(scale,
+        updatePositions<false,0> CUDA_KERNEL_DIM(b2D,t2D)(scale,
+                                                        verticalScale,
+                                                        0,
+                                                        positions,
+                                                        curTime - prevTime,
+                                                        odata[DIR_Y]);
+        updatePositions<false,N> CUDA_KERNEL_DIM(b2D,t2D)(scale,
                                                         verticalScale,
                                                         0,
                                                         positions,
@@ -562,20 +592,33 @@ void init()
     std::cerr << "Max height: " << maxHeight() << std::endl;
     verticalScale = WAVE_HEIGHT / maxHeight();
 
-    std::vector<float> vertexData(sizeof(OceanVertex)*N*N);
-    std::vector<unsigned int> indices(6*(N-1)*(N-1));
+    std::vector<float> vertexData(sizeof(OceanVertex)*N*N*2);
+    std::vector<unsigned int> indices(6*(2*N-1)*(N-1));
     unsigned int triIdx = 0;
     for (int i = 0; i < N-1; ++i) {
         for (int j = 0; j < N-1; ++j) {
             //Triangle 1
-            indices[triIdx++] = i   + N* j;
-            indices[triIdx++] = i+1 + N* j;
-            indices[triIdx++] = i+1 + N*(j+1);
+            indices[triIdx++] = i   + N* (j);
+            indices[triIdx++] = i+1 + N* (j);
+            indices[triIdx++] = i+1 + N* (j+1);
 
             //Triangle 2
-            indices[triIdx++] = i   + N* j;
-            indices[triIdx++] = i+1 + N*(j+1);
-            indices[triIdx++] = i   + N*(j+1);
+            indices[triIdx++] = i   + N* (j);
+            indices[triIdx++] = i+1 + N* (j+1);
+            indices[triIdx++] = i   + N* (j+1);
+        }
+    }
+    for (int i = 0; i < N-1; ++i) {
+        for (int j = N-1; j < 2*N-1; ++j) {
+            //Triangle 1
+            indices[triIdx++] = i   + N* (j);
+            indices[triIdx++] = i+1 + N* (j);
+            indices[triIdx++] = i+1 + N* (j+1);
+
+            //Triangle 2
+            indices[triIdx++] = i   + N* (j);
+            indices[triIdx++] = i+1 + N* (j+1);
+            indices[triIdx++] = i   + N* (j+1);
         }
     }
     if (triIdx != indices.size()) {
@@ -667,10 +710,14 @@ std::vector<float> height(std::vector<std::pair<float,float> > _worldPos)
 
     cudaMemcpy( d_boatsXZ, &xz[0], sizeof(float) * xz.size() ,
             cudaMemcpyHostToDevice);
-    updateFoam CUDA_KERNEL_DIM(b2D,t2D)(_worldPos.size(),
+    updateFoam<0> CUDA_KERNEL_DIM(b2D,t2D)(_worldPos.size(),
                                                     d_boatsXZ,
                                                     WORLD_SIZE / N,
                                                     positions);
+    updateFoam<N> CUDA_KERNEL_DIM(b2D,t2D)(_worldPos.size(),
+                                                        d_boatsXZ,
+                                                        WORLD_SIZE / N,
+                                                        positions);
 
     cudaGraphicsUnmapResources(1, &VBO_CUDA, 0);
 

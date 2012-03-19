@@ -252,10 +252,10 @@ void Engine::loadResources(const char * _file)
     nrTargetsIs(5);
     targetSpawnRateIs(3.f);
 
-    focalPlane_ = 20.0f;
+    focalPlane_ = 0.8f;
     nearBlurPlane_ = 10.0f;
     farBlurPlane_ = 40.0f;
-    maxBlur_ = 0.8;
+    maxBlur_ = 0.8f;
 
     //Order here is important.
     LoadCameras();
@@ -479,15 +479,15 @@ void Engine::BuildQuad()
 void Engine::BuildSkybox()
 {
     std::vector<SkyboxVertex> v(8);
-    const float scale = 100;
-    v[0].pos[0] = -scale; v[0].pos[1] = -scale; v[0].pos[2] = -scale;
-    v[1].pos[0] = scale; v[1].pos[1] = -scale; v[1].pos[2] = -scale;
-    v[2].pos[0] = -scale; v[2].pos[1] = -scale; v[2].pos[2] = scale;
-    v[3].pos[0] = scale; v[3].pos[1] = -scale; v[3].pos[2] = scale;
-    v[4].pos[0] = -scale; v[4].pos[1] = scale; v[4].pos[2] = -scale;
-    v[5].pos[0] = scale; v[5].pos[1] = scale; v[5].pos[2] = -scale;
-    v[6].pos[0] = -scale; v[6].pos[1] = scale; v[6].pos[2] = scale;
-    v[7].pos[0] = scale; v[7].pos[1] = scale; v[7].pos[2] = scale;
+    const float scale = 300;
+    v[0].pos[0] = 0.5*-scale; v[0].pos[1] = -scale; v[0].pos[2] = -scale;
+    v[1].pos[0] = 0.5*scale; v[1].pos[1] = -scale; v[1].pos[2] = -scale;
+    v[2].pos[0] = 0.5*-scale; v[2].pos[1] = -scale; v[2].pos[2] = scale;
+    v[3].pos[0] = 0.5*scale; v[3].pos[1] = -scale; v[3].pos[2] = scale;
+    v[4].pos[0] = 0.5*-scale; v[4].pos[1] = scale; v[4].pos[2] = -scale;
+    v[5].pos[0] = 0.5*scale; v[5].pos[1] = scale; v[5].pos[2] = -scale;
+    v[6].pos[0] = 0.5*-scale; v[6].pos[1] = scale; v[6].pos[2] = scale;
+    v[7].pos[0] = 0.5*scale; v[7].pos[1] = scale; v[7].pos[2] = scale;
 
     std::vector<unsigned int> i(3*6*2);
     i[0] = 0; i[1] = 1; i[2] = 2;
