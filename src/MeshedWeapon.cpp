@@ -33,7 +33,7 @@ void MeshedWeapon::fire(Vector3 _direction, float _pitch, float _yaw) {
             projectiles_.at(i)->speedIs(normDir*speed_);
             projectiles_.at(i)->flightDistanceIs(0.f);
             Sound::instance().play(Sound::CANNON, Vector3(0,0,0));
-            Engine::instance().camera()->shake(2.f, 3.f);
+            Engine::instance().camera()->shake(1.5f, 2.f);
         }
     }
 }

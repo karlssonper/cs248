@@ -42,6 +42,7 @@ private:
     float flightDistance_;
     Vector3 position_;
     Vector3 speed_;
+    Vector3 tailPos_;
     Node * translationNode_;
     Node * rotationNode_;
     Mesh * mesh_;

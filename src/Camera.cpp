@@ -131,7 +131,7 @@ void Camera::pitch(float _degrees)
     pitchDegrees_ += _degrees;
     if (pitchDegrees_ >= maxPitch_) pitchDegrees_ -= _degrees;
     else if (pitchDegrees_ <= minPitch_) pitchDegrees_ -= _degrees;
-    std::cout << "Camera pitch: " << pitchDegrees_ << std::endl;
+    //std::cout << "Camera pitch: " << pitchDegrees_ << std::endl;
     pitchRadians_ = Degree2Radians(pitchDegrees_);
 }
 
