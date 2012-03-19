@@ -618,7 +618,7 @@ void init()
     Graphics::instance().bindGeometry(id, VAO, VBO_GL, 3, bytes,locPos,0);
     Graphics::instance().bindGeometry(id, VAO, VBO_GL, 3, bytes,locPU,12);
     Graphics::instance().bindGeometry(id, VAO, VBO_GL, 3, bytes,locPV,24);
-    Graphics::instance().bindGeometry(id, VAO, VBO_GL, 1, bytes,locFold,36);
+    //Graphics::instance().bindGeometry(id, VAO, VBO_GL, 1, bytes,locFold,36);
     Graphics::instance().bindGeometry(id, VAO, VBO_GL, 1, bytes,locFoamTime,40);
     Graphics::instance().bindGeometry(id, VAO, VBO_GL, 1, bytes,locFoamAlpha,44);
 

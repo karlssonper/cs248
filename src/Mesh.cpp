@@ -87,8 +87,9 @@ void Mesh::geometryIs(const std::vector<Vector3> &_position,
     g.bindGeometry(sID, VAO_, geometryVBO_, 3, stride, posLoc, 0);
     g.bindGeometry(sID, VAO_, geometryVBO_, 2, stride, texLoc, 12);
     g.bindGeometry(sID, VAO_, geometryVBO_, 3, stride, normalLoc, 20);
-    g.bindGeometry(sID, VAO_, geometryVBO_, 3, stride, tangentLoc, 32);
-    g.bindGeometry(sID, VAO_, geometryVBO_, 3, stride, bitangentLoc, 44);
+
+    //g.bindGeometry(sID, VAO_, geometryVBO_, 3, stride, tangentLoc, 32);
+    //g.bindGeometry(sID, VAO_, geometryVBO_, 3, stride, bitangentLoc, 44);
 
     loadedInGPU_ = true;
 }
