@@ -632,10 +632,6 @@ void init()
             cudaGraphicsMapFlagsWriteDiscard);
 
 
-    cudaMalloc((void**)&d_boatsXZ, sizeof(float2) * 5);
-    std::cerr << "Max height: " << maxHeight() << std::endl;
-    verticalScale = WAVE_HEIGHT / maxHeight();
-
     checkErrors();
 }
 

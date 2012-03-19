@@ -255,7 +255,6 @@ void Engine::loadResources(const char * _file)
     LoadLight();
     LoadOcean();
     CreateFramebuffer();
-    LoadOcean();
     BuildQuad();
     BuildSkybox();
     LoadTargets();
