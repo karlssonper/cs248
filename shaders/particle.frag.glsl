@@ -1,9 +1,9 @@
 uniform sampler2D sprite;
-uniform sampler2D depthTex;
+uniform sampler2D cocTex;
 
 varying float timeCopy;
 varying vec2 texCoord;
-
+varying float eyeDepth;
 float rgb2lum(vec3 color)
 {
     return 0.2126 * color.r + 0.7152 * color.g + 0.0722 * color.b;
@@ -34,8 +34,10 @@ void main() {
 	float worldU = gl_FragCoord.x / 800.0;
 	float worldV = gl_FragCoord.y / 600.0;
 
-	float bgDepth = texture2D(depthTex, vec2(worldU, worldV));
-	float fragDepth = gl_FragCoord.z;
+	float bgDepth = texture2D(cocTex, vec2(worldU, worldV)).y;
+	//float fragDepth = gl_FragCoord.z;
+
+	float fragDepth = clamp(-eyeDepth/200,0,1);
 	float alpha;
 	if (bgDepth < fragDepth) {
 		alpha = 0.0;
