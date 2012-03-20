@@ -260,7 +260,7 @@ void Camera::lookAt(Vector3 _eye, Vector3 _center, Vector3 _up)
 
 void Camera::BuildOrthoProjection(Vector3 _min, Vector3 _max)
 {
-    std::cerr << "Building matrix!";
+    //std::cerr << "Building matrix!";
     projectionMtx_.m_[0] = 2.0f / (_max.x - _min.x);
     projectionMtx_.m_[1] = 0.0f;
     projectionMtx_.m_[2] = 0.0f;

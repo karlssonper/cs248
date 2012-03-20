@@ -39,7 +39,7 @@ Sound::Sound()
     alGenSources(NUM_SOUNDS, source_);
     if (alGetError() != AL_NO_ERROR) std::cerr << "Error in Sound class!\n";
 
-    std::cout << "Loading sound files";
+    //std::cout << "Loading sound files";
     float zeros[3] = {0.0f, 0.0f, 0.0f};
     for (unsigned int i = 0; i < NUM_SOUNDS; ++i) {
         ALenum     format;
@@ -57,7 +57,7 @@ Sound::Sound()
         alSourcefv (source_[i], AL_DIRECTION, zeros);
         std::cout << "..";
     }
-    std::cout << "done." << std::endl;
+   // std::cout << "done." << std::endl;
 
 
     alListenerfv(AL_POSITION,zeros);
