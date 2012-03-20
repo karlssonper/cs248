@@ -1013,7 +1013,7 @@ void Engine::SpawnTargets() {
 
 void Engine::initParticleSystems() {
 
-    std::cout << "initParticleSystems" << std::endl;
+    //std::cout << "initParticleSystems" << std::endl;
 
     std::string s1("../shaders/particle");
 

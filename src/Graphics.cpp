@@ -14,7 +14,7 @@
 Graphics::Graphics()
 {
 #ifdef USE_GLEW
-    printf("OpenGL and GLEW");
+    //printf("OpenGL and GLEW");
     GLint error = glewInit();
     if (GLEW_OK != error) {
         std::cerr << glewGetErrorString(error) << std::endl;
@@ -221,7 +221,7 @@ void Graphics::createTextureToFBO(const std::vector<std::string> &_names,
         GL_TEXTURE_2D, _colorTex[i], 0);
     }
     if (GL_FRAMEBUFFER_COMPLETE != glCheckFramebufferStatus(GL_FRAMEBUFFER)) {
-            std::cerr << "FBO ERROR!!" << std::endl;
+            std::cerr << "FBO ERROR!" << std::endl;
         }
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -510,7 +510,7 @@ void Graphics::unloadShaderData() const
 GLuint Graphics::texture(const std::string & _img)
 {
     if (texture_.find(_img) != texture_.end()) {
-        std::cerr << "Found " <<_img << " "<< texture_[_img] << std::endl;
+       //std::cerr << "Found " <<_img << " "<< texture_[_img] << std::endl;
         return texture_[_img];
     } else {
         FreeImage2Texture FI2T(_img);

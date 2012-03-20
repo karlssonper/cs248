@@ -510,7 +510,7 @@ void display()
 
 void init()
 {
-    std::cerr << "INIT OCEAN" << std::endl;
+    //std::cerr << "INIT OCEAN" << std::endl;
     std::vector<float> kx(N);
     std::vector<float> kz(N/2+1);
     for (int i = 0 ; i <= N/2 ; ++i) {
@@ -589,7 +589,7 @@ void init()
     padding = N/2 + 1;
 
     cudaMalloc((void**)&d_boatsXZ, sizeof(float2) * 5);
-    std::cerr << "Max height: " << maxHeight() << std::endl;
+    //std::cerr << "Max height: " << maxHeight() << std::endl;
     verticalScale = WAVE_HEIGHT / maxHeight();
 
     std::vector<float> vertexData(sizeof(OceanVertex)*N*N*2);

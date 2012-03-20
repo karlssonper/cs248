@@ -15,6 +15,7 @@ public:
            Mesh * _mesh,
            float _energy);
     ~Target();
+
     float energy() const { return energy_; }
     void energyDec(float _e);
     void updatePos(float _dt);

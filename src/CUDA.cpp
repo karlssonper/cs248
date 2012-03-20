@@ -19,7 +19,7 @@ namespace CUDA {
 
 void init()
 {
-    std::cerr << "INIT CUDA.cpp!!!!" << std::endl;
+    //std::cerr << "INIT CUDA.cpp!!!!" << std::endl;
     if (initialized) return;
     cudaGLSetGLDevice(0);
     initialized = true;
