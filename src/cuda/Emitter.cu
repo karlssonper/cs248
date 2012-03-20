@@ -35,6 +35,15 @@ __global__ void initRand(curandState *_randstate) {
     curand_init(2345, tid, 0, &_randstate[tid]);
 }
 
+__global__ void kill(Emitter::EmitterParams _p, float *_time) {
+    int tid = threadIdx.x + blockIdx.x * blockDim.x;
+    while (tid < _p.numParticles_) {
+
+        _time[tid] = 0.0f;
+        tid += blockDim.x * gridDim.x;
+    }
+}
+
 __global__ void init(Emitter::EmitterParams _p,
                      float *_time,
                      float *_pos,
@@ -341,6 +350,20 @@ void Emitter::update(float _dt) {
     cudaGLUnmapBufferObject(vboTime_);
 
     //copyPosToHostAndPrint();
+
+}
+
+void Emitter::deactivate() {
+
+    cudaGLMapBufferObject((void**)&d_pos_, vboPos_);
+    cudaGLMapBufferObject((void**)&d_size_, vboSize_);
+    cudaGLMapBufferObject((void**)&d_time_, vboTime_);
+
+    kill CUDA_KERNEL_DIM(blocks_,threads_)(params_, d_time_);
+
+    cudaGLUnmapBufferObject(vboPos_);
+    cudaGLUnmapBufferObject(vboSize_);
+    cudaGLUnmapBufferObject(vboTime_);
 
 }
 

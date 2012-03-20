@@ -32,7 +32,7 @@ void MeshedProjectile::update(float _dt) {
     translationNode_->update();
 
     position_ = position_ + d;
-    tailPos_ = position_ - (speed_.normalize()) * 3.f;
+    tailPos_ = position_ - (speed_.normalize()) * 10.f;
 
     for (unsigned int i=0; i<particleSystem_->numEmitters(); ++i) {
         particleSystem_->emitter(i)->posIs(Vector3(tailPos_.x,
