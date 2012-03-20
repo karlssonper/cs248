@@ -116,9 +116,6 @@ void Mesh::display() const
 void Mesh::displayShadowPass(ShaderData * _shaderData) const
 {
     if (!show_ || !loadedInGPU_) return;
-
-
-    std::cerr << "Shadow for " << name() << std::endl;
     unsigned int n = indices_.size();
 
     const Matrix4 & view = Engine::instance().lightCamera()->viewMtx();

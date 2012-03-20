@@ -20,8 +20,9 @@
     #include <postprocess.h>
 #endif
 
-#include <Mesh.h>
+#include "Mesh.h"
 #include <string>
+#include "../MathEngine.h"
 
 namespace ASSIMP2MESH{
 
@@ -98,8 +99,10 @@ void readNode(Mesh * _mesh,
                 normal.x = mesh->mNormals[j].x;
                 normal.y = mesh->mNormals[j].y;
                 normal.z = mesh->mNormals[j].z;
-                Vector3 transformedNormal = nodeTransform*normal;
-                _normal->push_back(transformedNormal);
+                Matrix3 test(nodeTransform);
+                //Vector3 transformedNormal =
+                //test*normal;
+                _normal->push_back(normal);
             }
             if (mesh->HasTangentsAndBitangents()) {
                 Vector3 tangent, bitangent;

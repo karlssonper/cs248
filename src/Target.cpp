@@ -124,6 +124,9 @@ void Target::explode() {
     active_ = false;
     mesh_->showIs(false);
 
+    //hack to remove dubble foam spawn
+    midPoint_ =Vector3(0,0,30);
+
     foamPs_->emitter(0)->posIs(Vector3(500,500,500));
     foamPs_->emitter(1)->posIs(Vector3(500,500,500));
 }

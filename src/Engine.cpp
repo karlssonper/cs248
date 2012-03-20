@@ -309,6 +309,9 @@ void Engine::renderFrame(float _currentTime)
     float lastTime = currentTime_;
     currentTime_ = _currentTime;
     float frameTime = currentTime_ - lastTime;
+    std::stringstream ss;
+    ss << 1.0f/frameTime;
+    glutSetWindowTitle(ss.str().c_str());
 
     Matrix4 * prevViewProj = quadShader_->stdMatrix4Data(PREVVIEWPROJECTION);
     *prevViewProj = activeCam_->projectionMtx() * activeCam_->viewMtx();
@@ -673,10 +676,10 @@ void Engine::LoadCameras()
     gameCam_->projectionIs(45.f, 1.f, 1.f, 10000.f);
     gameCam_->positionIs(Vector3(-15.f, -20.f, -20.f));
     gameCam_->rotationIs(115.f, 10.f);
-   /* gameCam_->maxYawIs(130.f);
+    gameCam_->maxYawIs(130.f);
     gameCam_->minYawIs(105.f);
     gameCam_->maxPitchIs(40.f);
-    gameCam_->minPitchIs(-10.f);*/
+    gameCam_->minPitchIs(-10.f);
     activeCam_ = gameCam_;
     updateCamView_ = true;
 
@@ -709,8 +712,8 @@ void Engine::LoadLight()
             Vector3(75,0,150.0),
             Vector3(0,1.0,0));
     lightCam_->BuildOrthoProjection(
-            Vector3(-200,-30,-50),
-            Vector3(200,50,160));
+            Vector3(-70,-75,-110),
+            Vector3(200,75,95));
     shadowShader_->enableMatrix(PROJECTION);
     shadowShader_->enableMatrix(MODELVIEW);
     Matrix4 * shadowProj = shadowShader_->stdMatrix4Data(PROJECTION);
