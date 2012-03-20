@@ -73,9 +73,9 @@ static void KeyPressed(unsigned char key, int x, int y) {
             yaw = -Engine::instance().camera()->yaw()+90.f;
             Engine::instance().rocketLauncher()->fire(direction, pitch, yaw);
 
-            Engine::instance().camera()->position().print();
-            std::cout << "Camera pitch " << Engine::instance().camera()->pitch() << std::endl;
-            std::cout << "Camera yaw " << Engine::instance().camera()->yaw() << std::endl;
+            //Engine::instance().camera()->position().print();
+            //std::cout << "Camera pitch " << Engine::instance().camera()->pitch() << std::endl;
+           // std::cout << "Camera yaw " << Engine::instance().camera()->yaw() << std::endl;
             //Engine::instance().rocketLauncher()->projectiles().at(0)->rotationNode()->rotateX(-Engine::instance().camera()->pitch());
             //Engine::instance().rocketLauncher()->projectiles().at(0)->rotationNode()->rotateY(-Engine::instance().camera()->yaw()+90.f);
             break;
