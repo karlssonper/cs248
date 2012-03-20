@@ -56,10 +56,10 @@ static void KeyPressed(unsigned char key, int x, int y) {
             Graphics::instance().cleanUp();
             exit(0);
         case 'w':
-            Engine::instance().camera()->move(0.5);
+            Engine::instance().camera()->move(2.5);
             break;
         case 's':
-            Engine::instance().camera()->move(-0.5);
+            Engine::instance().camera()->move(-2.5);
             break;
         case 'a':
             Engine::instance().camera()->strafe(-0.5);
@@ -673,10 +673,10 @@ void Engine::LoadCameras()
     gameCam_->projectionIs(45.f, 1.f, 1.f, 10000.f);
     gameCam_->positionIs(Vector3(-15.f, -20.f, -20.f));
     gameCam_->rotationIs(115.f, 10.f);
-    gameCam_->maxYawIs(130.f);
+   /* gameCam_->maxYawIs(130.f);
     gameCam_->minYawIs(105.f);
     gameCam_->maxPitchIs(40.f);
-    gameCam_->minPitchIs(-10.f);
+    gameCam_->minPitchIs(-10.f);*/
     activeCam_ = gameCam_;
     updateCamView_ = true;
 
