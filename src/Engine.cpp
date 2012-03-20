@@ -260,7 +260,7 @@ void Engine::loadResources(const char * _file)
 
     xzBoundsIs(50.f, 140.f, 0.f , 300);
     nrTargetsIs(5);
-    targetSpawnRateIs(7.f);
+    targetSpawnRateIs(6.f);
 
     //Order here is important.
     LoadCameras();
@@ -288,6 +288,17 @@ void Engine::cleanUp() {
     delete splashEmitter1sd_;
     delete splashEmitter2sd_;
     delete rocketLauncher_;
+    delete skyBoxShader_;
+    delete quadShader_;
+    delete shadowShader_;
+    delete horizontalGaussianShader_;
+    delete horDOFShader_;
+    delete vertDOFShader_;
+    delete gameCam_;
+    delete freeCam_;
+    delete lightCam_;
+    delete root_;
+    targets_.clear();
 }
 
 void Engine::renderFrame(float _currentTime)
@@ -823,7 +834,7 @@ void Engine::LoadTargets() {
 
         std::string targetStr("battleCruiserTarget"+oss.str());
         Target * target = new Target(targetStr, mesh, 100.f);
-        target->speedIs(Vector3(0.0f, 0.f, 10.0f));
+        target->speedIs(Vector3(0.0f, 0.f, 13.0f));
         target->yOffsetIs(6.0f);
         targets_.push_back(target);
     }
@@ -1191,32 +1202,32 @@ void Engine::initParticleSystems() {
         ps2 = new ParticleSystem(2);
         (*it)->foamPsIs(ps2);
 
-        Emitter * waterFoamLeft = ps2->newEmitter(40, waterFoamEmitter1sd_);
+        Emitter * waterFoamLeft = ps2->newEmitter(50, waterFoamEmitter1sd_);
         waterFoamLeft->posIs((*it)->frontLeft());
         waterFoamLeft->typeIs(Emitter::EMITTER_STREAM);
         waterFoamLeft->blendModeIs(Emitter::BLEND_FIRE);
         waterFoamLeft->rateIs(0.01f);
-        waterFoamLeft->lifeTimeIs(2.f);
+        waterFoamLeft->lifeTimeIs(2.5f);
         waterFoamLeft->massIs(1.f);
         waterFoamLeft->posRandWeightIs(0.2f);
-        waterFoamLeft->velIs(Vector3(25.f, 0.f, 0.f));
+        waterFoamLeft->velIs(Vector3(30.f, 0.f, 0.f));
         waterFoamLeft->velRandWeightIs(0.2f);
-        waterFoamLeft->accIs(Vector3(-60.f, 0.f, 0.0f));
+        waterFoamLeft->accIs(Vector3(-80.f, 0.f, 0.0f));
         waterFoamLeft->pointSizeIs(1.5f);
 
         waterFoamLeft->growthFactorIs(0.99f); 
 
-        Emitter * waterFoamRight = ps2->newEmitter(40, waterFoamEmitter2sd_);
+        Emitter * waterFoamRight = ps2->newEmitter(50, waterFoamEmitter2sd_);
         waterFoamRight->posIs((*it)->frontRight());
         waterFoamRight->typeIs(Emitter::EMITTER_STREAM);
         waterFoamRight->blendModeIs(Emitter::BLEND_FIRE);
         waterFoamRight->rateIs(0.01f);
-        waterFoamRight->lifeTimeIs(2.f);
+        waterFoamRight->lifeTimeIs(2.5f);
         waterFoamRight->massIs(1.f);
         waterFoamRight->posRandWeightIs(0.2f);
-        waterFoamRight->velIs(Vector3(-25.f, 0.f, 0.f));
+        waterFoamRight->velIs(Vector3(-30.f, 0.f, 0.f));
         waterFoamRight->velRandWeightIs(0.2f);
-        waterFoamRight->accIs(Vector3(60.f, 0.f, 0.0f));
+        waterFoamRight->accIs(Vector3(80.f, 0.f, 0.0f));
         waterFoamRight->pointSizeIs(1.5f);
         waterFoamRight->growthFactorIs(0.99f);
 
