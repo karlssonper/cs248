@@ -33,6 +33,8 @@ void Target::energyDec(float _e) {
 Target::~Target() {
     delete hitBox_;
     delete hitBoxLocal_;
+    delete explosionPs_;
+    delete foamPs_;
 }
 
 void Target::updateHitBox() {
@@ -49,9 +51,6 @@ void Target::updateHitBox() {
                          (p0.y+p1.y)/2.f,
                          (p0.z+p1.z)/2.f );
 
-    //std::cout << "Midpoint: ";
-    //midPoint_.print();
-
     // calculate the two points to put wakes at the front
     // somewhere betweeen the midpoint and the two corner points
     // (this is hardcoded for now)
@@ -66,8 +65,8 @@ void Target::updateHitBox() {
     float leftX, rightX;
     if (p0.x < p1.x) { leftX = p0.x; rightX = p1.x; }
     else { leftX = p1.x; rightX = p0.x; }
-    frontLeft_.x = (4.f*leftX + 2.f*midPoint_.x) / 6.f;
-    frontRight_.x = (4.f*rightX + 2.f*midPoint_.x) / 6.f;
+    frontLeft_.x = (5.f*leftX + 2.f*midPoint_.x) / 7.f;
+    frontRight_.x = (5.f*rightX + 2.f*midPoint_.x) / 7.f;
 
     // smallest Y is lowest
     float frontY;

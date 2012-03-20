@@ -286,8 +286,8 @@ Vector3 Camera::viewVector() const {
     lookAhead.y += dx*sin(pitchRadians_);
     lookAhead.z -= dx*cos(yawRadians_);
     Vector3 dir = lookAhead - worldPos_;
-    std::cout << "View vector: ";
-    dir.print();
+    //std::cout << "View vector: ";
+   // dir.print();
     return dir.normalize();
 
 }

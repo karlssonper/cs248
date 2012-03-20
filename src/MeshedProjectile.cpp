@@ -74,6 +74,10 @@ bool MeshedProjectile::checkCollision(HitBox* _hitBox) {
     return true;
 }
 
+MeshedProjectile::~MeshedProjectile() {
+    delete particleSystem_;
+}
+
 void MeshedProjectile::activeIs(bool _active) {
     active_ = _active;
 }

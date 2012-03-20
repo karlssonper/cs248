@@ -73,9 +73,9 @@ static void KeyPressed(unsigned char key, int x, int y) {
             yaw = -Engine::instance().camera()->yaw()+90.f;
             Engine::instance().rocketLauncher()->fire(direction, pitch, yaw);
 
-            Engine::instance().camera()->position().print();
-            std::cout << "Camera pitch " << Engine::instance().camera()->pitch() << std::endl;
-            std::cout << "Camera yaw " << Engine::instance().camera()->yaw() << std::endl;
+            //Engine::instance().camera()->position().print();
+            //std::cout << "Camera pitch " << Engine::instance().camera()->pitch() << std::endl;
+           // std::cout << "Camera yaw " << Engine::instance().camera()->yaw() << std::endl;
             //Engine::instance().rocketLauncher()->projectiles().at(0)->rotationNode()->rotateX(-Engine::instance().camera()->pitch());
             //Engine::instance().rocketLauncher()->projectiles().at(0)->rotationNode()->rotateY(-Engine::instance().camera()->yaw()+90.f);
             break;
@@ -1166,32 +1166,32 @@ void Engine::initParticleSystems() {
         fireEmitter2->pointSizeIs(2.f);
         fireEmitter2->growthFactorIs(1.0f);
 
-        Emitter * splashEmitter1 = ps->newEmitter(7, splashEmitter1sd_);
+        Emitter * splashEmitter1 = ps->newEmitter(16, splashEmitter1sd_);
         splashEmitter1->posIs((*it)->midPoint());
-        splashEmitter1->burstSizeIs(7);
+        splashEmitter1->burstSizeIs(16);
         splashEmitter1->typeIs(Emitter::EMITTER_BURST);
         splashEmitter1->blendModeIs(Emitter::BLEND_FIRE);
         splashEmitter1->rateIs(0.02f);
         splashEmitter1->lifeTimeIs(1.6f);
         splashEmitter1->massIs(1.f);
         splashEmitter1->posRandWeightIs(1.2f);
-        splashEmitter1->velIs(Vector3(0.f, 15.f, 0.f));
-        splashEmitter1->velRandWeightIs(2.f);
+        splashEmitter1->velIs(Vector3(0.f, 11.f, 0.f));
+        splashEmitter1->velRandWeightIs(3.f);
         splashEmitter1->accIs(Vector3(0.f, -12.f, 0.0f));
         splashEmitter1->pointSizeIs(2.f);
         splashEmitter1->growthFactorIs(1.0f);
 
-        Emitter * splashEmitter2 = ps->newEmitter(7, splashEmitter2sd_);
+        Emitter * splashEmitter2 = ps->newEmitter(16, splashEmitter2sd_);
         splashEmitter2->posIs((*it)->midPoint());
-        splashEmitter2->burstSizeIs(7);
+        splashEmitter2->burstSizeIs(20);
         splashEmitter2->typeIs(Emitter::EMITTER_BURST);
         splashEmitter2->blendModeIs(Emitter::BLEND_FIRE);
         splashEmitter2->rateIs(0.005f);
         splashEmitter2->lifeTimeIs(1.6f);
         splashEmitter2->massIs(1.f);
         splashEmitter2->posRandWeightIs(1.2f);
-        splashEmitter2->velIs(Vector3(0.f, 15.f, 0.f));
-        splashEmitter2->velRandWeightIs(2.f);
+        splashEmitter2->velIs(Vector3(0.f, 11.f, 0.f));
+        splashEmitter2->velRandWeightIs(3.f);
         splashEmitter2->accIs(Vector3(0.f, -12.f, 0.0f));
         splashEmitter2->pointSizeIs(2.f);
         splashEmitter2->growthFactorIs(1.0f);

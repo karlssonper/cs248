@@ -16,6 +16,7 @@ public:
                      float _maxDistance,
                      Node * _translationNode,
                      Node * _rotationNode);
+    ~MeshedProjectile();
     Mesh * mesh() const { return mesh_; }
     Vector3 position() const { return position_; }
     Vector3 speed() const { return speed_; }
