@@ -57,31 +57,41 @@ void Target::updateHitBox() {
     // somewhere betweeen the midpoint and the two corner points
     // (this is hardcoded for now)
 
+    float randFactor = 0.4;
+    float fudgeX = Random::randomFloat(-randFactor,randFactor);
+    float fudgeY = Random::randomFloat(-randFactor,randFactor);
+    float fudgeZ = Random::randomFloat(-randFactor,randFactor);
+
     // smallest Z is the head direction
     float frontZ;
     if (p0.z < p1.z) frontZ = p0.z;
     else frontZ = p1.z;
-    frontLeft_.z = frontRight_.z = (2.f*frontZ + 3.f*midPoint_.z) / 5.f;
+    frontLeft_.z = frontRight_.z = (frontZ + 2.f*midPoint_.z) / 3.f + fudgeZ;
 
     // smallest X is 'left'
     float leftX, rightX;
     if (p0.x < p1.x) { leftX = p0.x; rightX = p1.x; }
     else { leftX = p1.x; rightX = p0.x; }
-    frontLeft_.x = (5.f*leftX + 2.f*midPoint_.x) / 7.f;
-    frontRight_.x = (5.f*rightX + 2.f*midPoint_.x) / 7.f;
+    frontLeft_.x = (leftX + 2.f*midPoint_.x) / 3.f + fudgeX;
+    frontRight_.x = (rightX + 2.f*midPoint_.x) / 3.f + fudgeX;
 
     // smallest Y is lowest
     float frontY;
     if (p0.y < p1.y) frontY = p0.y;
     else frontY = p1.y;
-    frontLeft_.y = frontRight_.y = frontY + 2.2f;
+    frontLeft_.y = frontRight_.y = frontY + 2.0f + fudgeY;
 
     for (unsigned int i=0; i<explosionPs_->numEmitters(); ++i) {
         explosionPs_->emitter(i)->posIs(midPoint_);
     }
 
-    foamPs_->emitter(0)->posIs(frontLeft_);
-    foamPs_->emitter(1)->posIs(frontRight_);
+    std::cout << std::endl;
+    midPoint_.print();
+    frontLeft_.print();
+    frontRight_.print();
+
+    foamPs_->emitter(1)->posIs(frontLeft_);
+    foamPs_->emitter(0)->posIs(frontRight_);
 }
 
 void Target::updatePos(float _dt) {
