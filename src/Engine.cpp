@@ -68,18 +68,12 @@ static void KeyPressed(unsigned char key, int x, int y) {
             Engine::instance().camera()->strafe(5.5);
             break;
         case 'b':
+        case 32: // space bar
             direction = Engine::instance().camera()->viewVector();
             pitch = -Engine::instance().camera()->pitch();
             yaw = -Engine::instance().camera()->yaw()+90.f;
             Engine::instance().rocketLauncher()->fire(direction, pitch, yaw);
-
-            //Engine::instance().camera()->position().print();
-            //std::cout << "Camera pitch " << Engine::instance().camera()->pitch() << std::endl;
-           // std::cout << "Camera yaw " << Engine::instance().camera()->yaw() << std::endl;
-            //Engine::instance().rocketLauncher()->projectiles().at(0)->rotationNode()->rotateX(-Engine::instance().camera()->pitch());
-            //Engine::instance().rocketLauncher()->projectiles().at(0)->rotationNode()->rotateY(-Engine::instance().camera()->yaw()+90.f);
             break;
-        //ZIMMERMAN!!!
         case 'z':
             Sound::instance().play(Sound::THEME, Vector3(0,0,0));
             break;
@@ -901,22 +895,24 @@ void Engine::UpdateTargets(float _frameTime) {
     unsigned int i=0;
     for (it=targets_.begin(); it!=targets_.end(); it++) {
 
-        if ( (*it)->active() ) {
+        Target* t = (*it);
+
+        if ( t->active() ) {
 
            // std::cout << (*it)->name() << " is active" << std::endl;
 
-            float currentHeight = (*it)->midPoint().y;
+            float currentHeight = t->midPoint().y;
             float oceanHeight = heights.at(i);
-            (*it)->heightDiffIs(currentHeight - oceanHeight);
+            t->heightDiffIs(currentHeight - oceanHeight);
 
-            (*it)->updatePos(_frameTime);
+            t->updatePos(_frameTime);
             root_->update();
-            (*it)->updateHitBox();
+            t->updateHitBox();
             
-             if ( (*it)->midPoint().z < zMin_ ) {
+             if ( t->midPoint().z < zMin_ ) {
 
-                (*it)->activeIs(false);
-                (*it)->mesh()->showIs(false);
+                t->activeIs(false);
+                t->mesh()->showIs(false);
             }
 
         } else {
@@ -929,8 +925,9 @@ void Engine::UpdateTargets(float _frameTime) {
 void Engine::ScatterTargets() {
     std::vector<Target*>::iterator it;
     for (it=targets_.begin(); it!=targets_.end(); it++) {
-        (*it)->activeIs(true);
-        (*it)->mesh()->showIs(true);
+        Target* t = (*it);
+        t->activeIs(true);
+        t->mesh()->showIs(true);
         float startX = Random::randomFloat(xMin_, xMax_);
         float startZ = Random::randomFloat(zMin_, zMax_);
         Vector3 startPos(startX, 0.f, startZ);
@@ -938,9 +935,9 @@ void Engine::ScatterTargets() {
         Vector3 currentPos = (Vector3((*it)->midPoint().x,
                                         0.f,
                                       (*it)->midPoint().z));
-        (*it)->mesh()->node()->translate(currentPos-startPos);
-        (*it)->mesh()->node()->update();
-        (*it)->updateHitBox();
+        t->mesh()->node()->translate(currentPos-startPos);
+        t->mesh()->node()->update();
+        t->updateHitBox();
     }
     nextSpawn_ = targetSpawnRate_;
 }
@@ -950,16 +947,17 @@ void Engine::SpawnTargets() {
     if (nextSpawn_ < 0.f) {
         std::vector<Target*>::iterator it;
         for (it=targets_.begin(); it!=targets_.end(); it++) {
-            if ( !(*it)->active() ) {
+            Target* t = (*it);
+            if ( !t->active() ) {
                 float startX = Random::randomFloat(xMin_, xMax_);
                 Vector3 startPos(startX, 0.f, zMax_);
                 Vector3 currentPos = (Vector3((*it)->midPoint().x,
                                               0.f,
                                               (*it)->midPoint().z));
-                (*it)->mesh()->node()->translate(currentPos-startPos);
-                (*it)->mesh()->node()->update();
-                (*it)->activeIs(true);
-                (*it)->mesh()->showIs(true);
+                t->mesh()->node()->translate(currentPos-startPos);
+                t->mesh()->node()->update();
+                t->activeIs(true);
+                t->mesh()->showIs(true);
                 break;
             }
         }
@@ -1237,12 +1235,12 @@ void Engine::initParticleSystems() {
         ps2 = new ParticleSystem(3);
         (*it)->foamPsIs(ps2);
 
-        Emitter * waterFoamLeft = ps2->newEmitter(30, waterFoamEmitter1sd_);
+        Emitter * waterFoamLeft = ps2->newEmitter(20, waterFoamEmitter1sd_);
         waterFoamLeft->posIs((*it)->frontLeft());
         waterFoamLeft->typeIs(Emitter::EMITTER_STREAM);
         waterFoamLeft->blendModeIs(Emitter::BLEND_FIRE);
         waterFoamLeft->rateIs(0.01f);
-        waterFoamLeft->lifeTimeIs(1.5f);
+        waterFoamLeft->lifeTimeIs(1.0f);
         waterFoamLeft->massIs(1.f);
         waterFoamLeft->posRandWeightIs(0.0f);
         waterFoamLeft->velIs(Vector3(8.f, 0.f, 0.f));
@@ -1251,12 +1249,12 @@ void Engine::initParticleSystems() {
         waterFoamLeft->pointSizeIs(1.2f);
         waterFoamLeft->growthFactorIs(1.03f); 
 
-        Emitter * waterFoamRight = ps2->newEmitter(30, waterFoamEmitter2sd_);
+        Emitter * waterFoamRight = ps2->newEmitter(20, waterFoamEmitter2sd_);
         waterFoamRight->posIs((*it)->frontRight());
         waterFoamRight->typeIs(Emitter::EMITTER_STREAM);
         waterFoamRight->blendModeIs(Emitter::BLEND_FIRE);
         waterFoamRight->rateIs(0.01f);
-        waterFoamRight->lifeTimeIs(1.5f);
+        waterFoamRight->lifeTimeIs(1.0f);
         waterFoamRight->massIs(1.f);
         waterFoamRight->posRandWeightIs(0.0f);
         waterFoamRight->velIs(Vector3(-8.f, 0.f, 0.f));
