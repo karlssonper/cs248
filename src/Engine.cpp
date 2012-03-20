@@ -1233,12 +1233,12 @@ void Engine::initParticleSystems() {
         ps2 = new ParticleSystem(3);
         (*it)->foamPsIs(ps2);
 
-        Emitter * waterFoamLeft = ps2->newEmitter(30, waterFoamEmitter1sd_);
+        Emitter * waterFoamLeft = ps2->newEmitter(20, waterFoamEmitter1sd_);
         waterFoamLeft->posIs((*it)->frontLeft());
         waterFoamLeft->typeIs(Emitter::EMITTER_STREAM);
         waterFoamLeft->blendModeIs(Emitter::BLEND_FIRE);
         waterFoamLeft->rateIs(0.01f);
-        waterFoamLeft->lifeTimeIs(1.5f);
+        waterFoamLeft->lifeTimeIs(1.0f);
         waterFoamLeft->massIs(1.f);
         waterFoamLeft->posRandWeightIs(0.0f);
         waterFoamLeft->velIs(Vector3(8.f, 0.f, 0.f));
@@ -1247,12 +1247,12 @@ void Engine::initParticleSystems() {
         waterFoamLeft->pointSizeIs(1.2f);
         waterFoamLeft->growthFactorIs(1.03f); 
 
-        Emitter * waterFoamRight = ps2->newEmitter(30, waterFoamEmitter2sd_);
+        Emitter * waterFoamRight = ps2->newEmitter(20, waterFoamEmitter2sd_);
         waterFoamRight->posIs((*it)->frontRight());
         waterFoamRight->typeIs(Emitter::EMITTER_STREAM);
         waterFoamRight->blendModeIs(Emitter::BLEND_FIRE);
         waterFoamRight->rateIs(0.01f);
-        waterFoamRight->lifeTimeIs(1.5f);
+        waterFoamRight->lifeTimeIs(1.0f);
         waterFoamRight->massIs(1.f);
         waterFoamRight->posRandWeightIs(0.0f);
         waterFoamRight->velIs(Vector3(-8.f, 0.f, 0.f));

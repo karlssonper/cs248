@@ -692,6 +692,7 @@ std::vector<float> height(std::vector<std::pair<float,float> > _worldPos)
     for (unsigned int k = 0 ; k < _worldPos.size(); ++k) {
         int i = _worldPos[k].first*N/WORLD_SIZE;
         int j = _worldPos[k].second*N/WORLD_SIZE;
+        if (j < 0) continue;
         xz[k] = make_float2(_worldPos[k].first, _worldPos[k].second-5.6f);
 
         //the last +1 is to get Y value from VBO
