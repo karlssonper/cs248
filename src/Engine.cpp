@@ -260,7 +260,7 @@ void Engine::loadResources(const char * _file)
 
     xzBoundsIs(50.f, 140.f, 0.f , 300);
     nrTargetsIs(5);
-    targetSpawnRateIs(6.f);
+    targetSpawnRateIs(7.f);
 
     //Order here is important.
     LoadCameras();
@@ -928,7 +928,7 @@ void Engine::ScatterTargets() {
         (*it)->activeIs(true);
         (*it)->mesh()->showIs(true);
         float startX = Random::randomFloat(xMin_, xMax_);
-        float startZ = Random::randomFloat(100.f, zMax_);
+        float startZ = Random::randomFloat(zMin_, zMax_);
         Vector3 startPos(startX, 0.f, startZ);
 
         Vector3 currentPos = (Vector3((*it)->midPoint().x,
@@ -1230,7 +1230,7 @@ void Engine::initParticleSystems() {
         debrisEmitter2->pointSizeIs(0.3f);
         debrisEmitter2->growthFactorIs(1.f);
 
-        ps2 = new ParticleSystem(2);
+        ps2 = new ParticleSystem(3);
         (*it)->foamPsIs(ps2);
 
         Emitter * waterFoamLeft = ps2->newEmitter(30, waterFoamEmitter1sd_);
@@ -1260,6 +1260,20 @@ void Engine::initParticleSystems() {
         waterFoamRight->accIs(Vector3(18.f, 0.f, 0.0f));
         waterFoamRight->pointSizeIs(1.2f);
         waterFoamRight->growthFactorIs(1.03f);
+
+        Emitter * waterFoamMiddle = ps2->newEmitter(10, waterFoamEmitter2sd_);
+        waterFoamMiddle->posIs((*it)->frontRight());
+        waterFoamMiddle->typeIs(Emitter::EMITTER_STREAM);
+        waterFoamMiddle->blendModeIs(Emitter::BLEND_FIRE);
+        waterFoamMiddle->rateIs(0.01f);
+        waterFoamMiddle->lifeTimeIs(1.5f);
+        waterFoamMiddle->massIs(1.f);
+        waterFoamMiddle->posRandWeightIs(0.0f);
+        waterFoamMiddle->velIs(Vector3(0.f, 0.f, 0.f));
+        waterFoamMiddle->velRandWeightIs(1.f);
+        waterFoamMiddle->accIs(Vector3(0.f, 0.f, 0.0f));
+        waterFoamMiddle->pointSizeIs(1.2f);
+        waterFoamMiddle->growthFactorIs(1.03f);
 
 
     }
