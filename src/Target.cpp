@@ -85,13 +85,11 @@ void Target::updateHitBox() {
         explosionPs_->emitter(i)->posIs(midPoint_);
     }
 
-    std::cout << std::endl;
-    midPoint_.print();
-    frontLeft_.print();
-    frontRight_.print();
-
-    foamPs_->emitter(1)->posIs(frontLeft_);
     foamPs_->emitter(0)->posIs(frontRight_);
+    foamPs_->emitter(1)->posIs(frontLeft_);
+    foamPs_->emitter(2)->posIs((frontRight_ + frontLeft_)/2.f + 
+                                Vector3(0.f, 0.f, -1.f));
+    
 }
 
 void Target::updatePos(float _dt) {
