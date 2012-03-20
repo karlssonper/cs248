@@ -2,9 +2,9 @@ uniform sampler2D phongTex;
 uniform sampler2D particlesTex;
 uniform sampler2D bloomTex;
 uniform sampler2D cocTex;
-uniform sampler2D shadowTex;
 uniform sampler2D depthTex;
 uniform sampler2D hudTex;
+uniform sampler2D shadowTex;
 
 uniform mat4 InverseViewProjection;
 uniform mat4 PrevViewProjection;
@@ -95,7 +95,7 @@ void main() {
     } else if (debug == 4.0) {
         color = vec3(texture2D(cocTex, texcoord).r);
     } else if (debug == 5.0) {
-        color = vec3(texture2D(shadowTex, texcoord).z);
+        color = vec3(texture2D(shadowTex, texcoord).z/2);
     }
 
 	//gl_FragColor = vec4(color,1);

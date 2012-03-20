@@ -158,7 +158,7 @@ void Graphics::createTextureToFBO(std::string _name,
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT,
             _width, _height,0,GL_DEPTH_COMPONENT,
-            GL_UNSIGNED_BYTE,0);
+            GL_FLOAT,0);
 
     glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -185,7 +185,6 @@ void Graphics::createTextureToFBO(const std::vector<std::string> &_names,
                                   GLuint _width,
                                   GLuint _height)
 {
-    std::cerr << "WHY!!!!" << std::endl;
     glGenFramebuffers(1, &_colorFBO);
     glGenRenderbuffers(1, &_depthFBO);
 
@@ -234,6 +233,7 @@ void Graphics::createTextureToFBO(const std::vector<std::string> &_names,
 
 void Graphics::createTextureToFBOTest(const std::vector<std::string> &_names,
                                   std::vector<GLuint> &_colorTex,
+                                  std::string _depthName,
                                   GLuint &_depthTex,
                                   GLuint &_colorFBO,
                                   GLuint _width,
@@ -246,8 +246,7 @@ void Graphics::createTextureToFBOTest(const std::vector<std::string> &_names,
     glActiveTexture(GL_TEXTURE0);
     glGenTextures(1, &depthTex);
     _depthTex = depthTex;
-    std::string dStr("depth");
-    texture_[dStr] = _depthTex;
+    texture_[_depthName] = _depthTex;
     glBindTexture(GL_TEXTURE_2D, _depthTex);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);

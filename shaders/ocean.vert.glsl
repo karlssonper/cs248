@@ -55,7 +55,7 @@ void main() {
 	normal = NormalMatrix * crossNormal;
 	//normal = crossNormal;
 
-	lightDir = (NormalMatrix * vec3(1.0, 0.5, 1.0)).xyz;
+	lightDir = (NormalMatrix * vec3(1.0, 0.75, 0.5)).xyz;
 
 	eyePosition = eyeTemp.xyz;
 	coc = calculateCoC(-eyePosition.z);

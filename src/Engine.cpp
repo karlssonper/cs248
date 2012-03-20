@@ -325,11 +325,27 @@ void Engine::renderFrame(float _currentTime)
 
 void Engine::RenderShadowMap()
 {
-    Graphics::instance().enableFramebuffer(shadowFB_, shadowSize_, shadowSize_);
+    Graphics::instance().enableFramebuffer(
+            shadowFB_,
+                                             1,
+                                             shadowSize_,
+                                             shadowSize_);
+
+    //Matrix4 * modelView = shadowShader_->stdMatrix4Data(MODELVIEW);
+    //*modelView = lightCamera()->viewMtx();
+
     for (MeshMap::const_iterator it =meshes_.begin(); it!= meshes_.end();++it) {
         it->second->displayShadowPass(shadowShader_);
     }
-    //CUDA::Ocean::dsplay();
+    std::vector<Target*>::iterator it;
+    for (it=targets_.begin(); it!=targets_.end(); it++) {
+                //if ( !(*it)->active() ) {
+                    (*it)->mesh()->displayShadowPass(shadowShader_);
+                    break;
+                //}
+            }
+
+
     Graphics::instance().disableFramebuffer();
 }
 
@@ -444,18 +460,19 @@ void Engine::BuildQuad()
     colorTexNames.push_back("Particles");
     colorTexNames.push_back("Bloom2");
     colorTexNames.push_back("CoC2");
-    colorTexNames.push_back("shadow");
-    //colorTexNames.push_back("../textures/hudWeapon.png");
+    colorTexNames.push_back("../textures/hudWeapon.png");
     colorTexNames.push_back("depth");
+    colorTexNames.push_back("shadow");
 
     std::vector<std::string> shaderTexNames;
     shaderTexNames.push_back("phongTex");
     shaderTexNames.push_back("particlesTex");
     shaderTexNames.push_back("bloomTex");
     shaderTexNames.push_back("cocTex");
-    shaderTexNames.push_back("shadowTex");
-    //shaderTexNames.push_back("hudTex");
+    shaderTexNames.push_back("hudTex");
     shaderTexNames.push_back("depthTex");
+    shaderTexNames.push_back("shadowTex");
+
 
     quadShader_->addTexture(shaderTexNames[0], colorTexNames[0]);
     quadShader_->addTexture(shaderTexNames[1], colorTexNames[1]);
@@ -463,7 +480,7 @@ void Engine::BuildQuad()
     quadShader_->addTexture(shaderTexNames[3], colorTexNames[3]);
     quadShader_->addTexture(shaderTexNames[4], colorTexNames[4]);
     quadShader_->addTexture(shaderTexNames[5], colorTexNames[5]);
-    //quadShader_->addTexture(shaderTexNames[6], colorTexNames[6]);
+    quadShader_->addTexture(shaderTexNames[6], colorTexNames[6]);
 
     quadShader_->enableMatrix(INVERSEVIEWPROJECTION);
     quadShader_->enableMatrix(PREVVIEWPROJECTION);
@@ -579,7 +596,7 @@ void Engine::CreateFramebuffer()
     colorTexNames.push_back("Bloom");
     colorTexNames.push_back("CoC");
 
-    Graphics::instance().createTextureToFBOTest(colorTexNames, colorTex,
+    Graphics::instance().createTextureToFBOTest(colorTexNames, colorTex, "depth",
             depthTex_, firstPassFB_, width(), height());
 
     phongTex_ = colorTex[0];
@@ -650,23 +667,33 @@ void Engine::LoadCameras()
 
 void Engine::LoadLight()
 {
-    shadowSize_ = 1024;
+    shadowSize_ = 2048;
+
+    std::vector<std::string> lol;
+    lol.push_back("SLASK");
+    std::vector<GLuint> lol2(1);
+
     std::string shadowStr("shadow");
-    Graphics::instance().createTextureToFBO(shadowStr, shadowTex_,
-            shadowFB_, shadowSize_, shadowSize_);
+
+
+    Graphics::instance().createTextureToFBOTest(lol, lol2, shadowStr,
+            shadowTex_, shadowFB_, shadowSize_, shadowSize_);
+
     std::string shadowShaderStr("../shaders/shadow");
     shadowShader_ = new ShaderData(shadowShaderStr);
-    shadowShader_->enableMatrix(PROJECTION);
-    shadowShader_->enableMatrix(MODELVIEW);
     lightCam_->lookAt(
-            Vector3(51.0,0.5, 51.0),
-            Vector3(50,0,50.0),
+            Vector3(76.0,0.75, 150.5),
+            Vector3(75,0,150.0),
             Vector3(0,1.0,0));
     lightCam_->BuildOrthoProjection(
-            Vector3(-100,-50,-100),
-            Vector3(100,50,100));
+            Vector3(-200,-30,-50),
+            Vector3(200,50,160));
+    shadowShader_->enableMatrix(PROJECTION);
+    shadowShader_->enableMatrix(MODELVIEW);
     Matrix4 * shadowProj = shadowShader_->stdMatrix4Data(PROJECTION);
-    *shadowProj = Engine::instance().lightCamera()->projectionMtx();
+    *shadowProj = lightCam_->projectionMtx();
+    Matrix4 * shadowView = shadowShader_->stdMatrix4Data(MODELVIEW);
+    *shadowView = lightCam_->viewMtx();
 }
 
 void Engine::LoadOcean()
