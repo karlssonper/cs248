@@ -19,6 +19,7 @@ public:
         THEME = 0,
         IMPACT,
         CANNON,
+        OCEAN,
         NUM_SOUNDS
     };
 

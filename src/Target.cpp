@@ -63,14 +63,14 @@ void Target::updateHitBox() {
     float leftX, rightX;
     if (p0.x < p1.x) { leftX = p0.x; rightX = p1.x; }
     else { leftX = p1.x; rightX = p0.x; }
-    frontLeft_.x = (2.f*leftX + 3.f*midPoint_.x) / 5.f;
-    frontRight_.x = (2.f*rightX + 3.f*midPoint_.x) / 5.f;
+    frontLeft_.x = (4.f*leftX + 2.f*midPoint_.x) / 6.f;
+    frontRight_.x = (4.f*rightX + 2.f*midPoint_.x) / 6.f;
 
     // smallest Y is lowest
     float frontY;
     if (p0.y < p1.y) frontY = p0.y;
     else frontY = p1.y;
-    frontLeft_.y = frontRight_.y = frontY + 2.f;
+    frontLeft_.y = frontRight_.y = frontY + 2.2f;
 
     for (unsigned int i=0; i<explosionPs_->numEmitters(); ++i) {
         explosionPs_->emitter(i)->posIs(midPoint_);

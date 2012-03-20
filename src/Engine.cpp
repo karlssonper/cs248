@@ -226,6 +226,8 @@ void Engine::init(int argc, char **argv,
 
 void Engine::start()
 {
+    Sound::instance().play(Sound::OCEAN, Vector3(0.f, 0.f, 0.f));
+    Sound::instance().play(Sound::THEME, Vector3(0.f, 0.f, 0.f));
     glutMainLoop();
 }
 
@@ -864,19 +866,18 @@ void Engine::UpdateTargets(float _frameTime) {
 void Engine::ScatterTargets() {
     std::vector<Target*>::iterator it;
     for (it=targets_.begin(); it!=targets_.end(); it++) {
-        //std::cout << "Activating " << (*it)->name() << std::endl;
+        std::cout << "Activating " << (*it)->name() << std::endl;
         float startX = Random::randomFloat(xMin_, xMax_);
         float startZ = Random::randomFloat(zMin_, zMax_);
         Vector3 startPos(startX, 0.f, startZ);
         Vector3 currentPos = (Vector3((*it)->midPoint().x,
                                         0.f,
-                                        (*it)->midPoint().z));
+                                      (*it)->midPoint().z));
         (*it)->mesh()->node()->translate(currentPos-startPos);
         (*it)->mesh()->node()->update();
         (*it)->activeIs(true);
         (*it)->mesh()->showIs(true);
     }
-    nextSpawn_ = targetSpawnRate_;
 }
 
 void Engine::SpawnTargets() {
@@ -885,7 +886,7 @@ void Engine::SpawnTargets() {
         std::vector<Target*>::iterator it;
         for (it=targets_.begin(); it!=targets_.end(); it++) {
             if ( !(*it)->active() ) {
-                //std::cout << "Activating " << (*it)->name() << std::endl;
+                std::cout << "Activating " << (*it)->name() << std::endl;
                 float startX = Random::randomFloat(xMin_, xMax_);
                 Vector3 startPos(startX, 0.f, zMax_);
                 Vector3 currentPos = (Vector3((*it)->midPoint().x,
@@ -907,34 +908,20 @@ void Engine::initParticleSystems() {
     std::cout << "initParticleSystems" << std::endl;
 
     std::string s1("../shaders/particle");
-    std::string s2("../shaders/particle");
-    std::string s3("../shaders/particle");
-    std::string s4("../shaders/particle");
-    std::string s5("../shaders/particle");
-    std::string s6("../shaders/particle");
-    std::string s7("../shaders/particle");
-    std::string s8("../shaders/particle");
-    std::string s9("../shaders/particle");
 
     fireEmitter1sd_ = new ShaderData(s1,true);
-    fireEmitter2sd_ = new ShaderData(s2,true);
-    debrisEmitter1sd_ = new ShaderData(s3,true);
-    smokeEmittersd_ = new ShaderData(s4,true);
-    missileSmokeEmittersd_ = new ShaderData(s5, true);
-    missileFireEmittersd_ = new ShaderData(s6, true);
-    debrisEmitter2sd_ = new ShaderData(s7, true);
-    waterFoamEmitter1sd_ = new ShaderData(s8, true);
-    waterFoamEmitter2sd_ = new ShaderData(s9, true);
+    fireEmitter2sd_ = new ShaderData(s1,true);
+    debrisEmitter1sd_ = new ShaderData(s1,true);
+    smokeEmittersd_ = new ShaderData(s1,true);
+    missileSmokeEmittersd_ = new ShaderData(s1, true);
+    missileFireEmittersd_ = new ShaderData(s1, true);
+    debrisEmitter2sd_ = new ShaderData(s1, true);
+    waterFoamEmitter1sd_ = new ShaderData(s1, true);
+    waterFoamEmitter2sd_ = new ShaderData(s1, true);
+    splashEmitter1sd_ = new ShaderData(s1, true);
+    splashEmitter2sd_ = new ShaderData(s1, true);
 
     std::string t1("sprite");
-    std::string t2("sprite");
-    std::string t3("sprite");
-    std::string t4("sprite");
-    std::string t5("sprite");
-    std::string t6("sprite");
-    std::string t7("sprite");
-    std::string t8("sprite");
-    std::string t9("sprite");
 
     std::string p1("../textures/fire1.png");
     std::string p2("../textures/fire2.png");
@@ -945,6 +932,8 @@ void Engine::initParticleSystems() {
     std::string p7("../textures/debris2.png");
     std::string p8("../textures/waterFoam1.png");
     std::string p9("../textures/waterFoam1.png");
+    std::string p10("../textures/splash1.png");
+    std::string p11("../textures/splash2.png");
 
     fireEmitter1sd_->enableMatrix(MODELVIEW);
     fireEmitter2sd_->enableMatrix(MODELVIEW);
@@ -965,6 +954,8 @@ void Engine::initParticleSystems() {
     missileFireEmittersd_->enableMatrix(PROJECTION);
     waterFoamEmitter1sd_->enableMatrix(PROJECTION);
     waterFoamEmitter2sd_->enableMatrix(PROJECTION);
+    splashEmitter1sd_->enableMatrix(PROJECTION);
+    splashEmitter2sd_->enableMatrix(PROJECTION);
 
     Matrix4 * proj1 = fireEmitter1sd_->stdMatrix4Data(PROJECTION);
     Matrix4 * proj2 = fireEmitter2sd_->stdMatrix4Data(PROJECTION);
@@ -975,6 +966,8 @@ void Engine::initParticleSystems() {
     Matrix4 * proj7 = debrisEmitter2sd_->stdMatrix4Data(PROJECTION);
     Matrix4 * proj8 = waterFoamEmitter1sd_->stdMatrix4Data(PROJECTION);
     Matrix4 * proj9 = waterFoamEmitter2sd_->stdMatrix4Data(PROJECTION);
+    Matrix4 * proj10 = splashEmitter1sd_->stdMatrix4Data(PROJECTION);
+    Matrix4 * proj11 = splashEmitter2sd_->stdMatrix4Data(PROJECTION);
 
     *proj1 = camera()->projectionMtx();
     *proj2 = camera()->projectionMtx();
@@ -985,16 +978,20 @@ void Engine::initParticleSystems() {
     *proj7 = camera()->projectionMtx();
     *proj8 = camera()->projectionMtx();
     *proj9 = camera()->projectionMtx();
+    *proj10 = camera()->projectionMtx();
+    *proj11 = camera()->projectionMtx();
 
     fireEmitter1sd_->addTexture(t1,p1);
-    fireEmitter2sd_->addTexture(t2,p2);
-    debrisEmitter1sd_->addTexture(t3,p3);
-    smokeEmittersd_->addTexture(t4,p4);
-    missileSmokeEmittersd_->addTexture(t5,p5);
-    missileFireEmittersd_->addTexture(t6,p6);
-    debrisEmitter2sd_->addTexture(t7,p7);
-    waterFoamEmitter1sd_->addTexture(t8, p8);
-    waterFoamEmitter2sd_->addTexture(t9, p9);
+    fireEmitter2sd_->addTexture(t1,p2);
+    debrisEmitter1sd_->addTexture(t1,p3);
+    smokeEmittersd_->addTexture(t1,p4);
+    missileSmokeEmittersd_->addTexture(t1,p5);
+    missileFireEmittersd_->addTexture(t1,p6);
+    debrisEmitter2sd_->addTexture(t1,p7);
+    waterFoamEmitter1sd_->addTexture(t1, p8);
+    waterFoamEmitter2sd_->addTexture(t1, p9);
+    splashEmitter1sd_->addTexture(t1, p10);
+    splashEmitter2sd_->addTexture(t1, p11);
 
     fireEmitter1sd_->addFloat("softDist", 0.15);
     fireEmitter2sd_->addFloat("softDist", 0.15);
@@ -1003,8 +1000,10 @@ void Engine::initParticleSystems() {
     missileSmokeEmittersd_->addFloat("softDist", 0.2);
     missileFireEmittersd_->addFloat("softDist", 0.2);
     debrisEmitter2sd_->addFloat("softDist", 0.2);
-    waterFoamEmitter1sd_->addFloat("softDist", 0.005);
-    waterFoamEmitter2sd_->addFloat("softDist", 0.005);
+    waterFoamEmitter1sd_->addFloat("softDist", 0.003);
+    waterFoamEmitter2sd_->addFloat("softDist", 0.003);
+    splashEmitter1sd_->addFloat("softDist", 0.15);
+    splashEmitter2sd_->addFloat("softDist", 0.15);
 
     fireEmitter1sd_->addTexture("cocTex","CoC");
     fireEmitter2sd_->addTexture("cocTex","CoC");
@@ -1015,6 +1014,8 @@ void Engine::initParticleSystems() {
     debrisEmitter2sd_->addTexture("cocTex","CoC");
     waterFoamEmitter1sd_->addTexture("cocTex","CoC");
     waterFoamEmitter2sd_->addTexture("cocTex","CoC");
+        splashEmitter1sd_->addTexture("cocTex","CoC");
+    splashEmitter2sd_->addTexture("cocTex","CoC");
 
     ParticleSystem * ps;
     ParticleSystem * ps2;
@@ -1060,7 +1061,7 @@ void Engine::initParticleSystems() {
     std::vector<Target*>::iterator it;
     for (it=targets_.begin(); it!=targets_.end(); it++) {
 
-        ps = new ParticleSystem(5);
+        ps = new ParticleSystem(7);
 
         (*it)->explosionPsIs(ps);
 
@@ -1076,7 +1077,7 @@ void Engine::initParticleSystems() {
         smokeEmitter->velIs(Vector3(0.f, 0.001f, 0.f));
         smokeEmitter->velRandWeightIs(0.001);
         smokeEmitter->accIs(Vector3(0.f, 0.0f, 0.0f));
-        smokeEmitter->pointSizeIs(10.f);
+        smokeEmitter->pointSizeIs(9.f);
         smokeEmitter->growthFactorIs(1.00f);
 
         Emitter * fireEmitter1 = ps->newEmitter(70, fireEmitter1sd_);
@@ -1088,10 +1089,10 @@ void Engine::initParticleSystems() {
         fireEmitter1->lifeTimeIs(1.6f);
         fireEmitter1->massIs(1.f);
         fireEmitter1->posRandWeightIs(1.2f);
-        fireEmitter1->velIs(Vector3(-3.f, 0.f, 0.f));
+        fireEmitter1->velIs(Vector3(3.f, 0.f, 0.f));
         fireEmitter1->velRandWeightIs(2.f);
         fireEmitter1->accIs(Vector3(0.f, -5.f, 0.0f));
-        fireEmitter1->pointSizeIs(2.f);
+        fireEmitter1->pointSizeIs(1.f);
         fireEmitter1->growthFactorIs(1.0f);
         
         Emitter * fireEmitter2 = ps->newEmitter(70, fireEmitter2sd_);
@@ -1106,13 +1107,42 @@ void Engine::initParticleSystems() {
         fireEmitter2->velIs(Vector3(-3.f, 0.f, 0.f));
         fireEmitter2->velRandWeightIs(2.f);
         fireEmitter2->accIs(Vector3(0.f, -5.f, 0.0f));
-        fireEmitter2->pointSizeIs(3.f);
+        fireEmitter2->pointSizeIs(2.f);
         fireEmitter2->growthFactorIs(1.0f);
 
+        Emitter * splashEmitter1 = ps->newEmitter(7, splashEmitter1sd_);
+        splashEmitter1->posIs((*it)->midPoint());
+        splashEmitter1->burstSizeIs(7);
+        splashEmitter1->typeIs(Emitter::EMITTER_BURST);
+        splashEmitter1->blendModeIs(Emitter::BLEND_FIRE);
+        splashEmitter1->rateIs(0.02f);
+        splashEmitter1->lifeTimeIs(1.6f);
+        splashEmitter1->massIs(1.f);
+        splashEmitter1->posRandWeightIs(1.2f);
+        splashEmitter1->velIs(Vector3(0.f, 15.f, 0.f));
+        splashEmitter1->velRandWeightIs(2.f);
+        splashEmitter1->accIs(Vector3(0.f, -12.f, 0.0f));
+        splashEmitter1->pointSizeIs(2.f);
+        splashEmitter1->growthFactorIs(1.0f);
 
-        Emitter * debrisEmitter1 = ps->newEmitter(20, debrisEmitter1sd_);
+        Emitter * splashEmitter2 = ps->newEmitter(7, splashEmitter2sd_);
+        splashEmitter2->posIs((*it)->midPoint());
+        splashEmitter2->burstSizeIs(7);
+        splashEmitter2->typeIs(Emitter::EMITTER_BURST);
+        splashEmitter2->blendModeIs(Emitter::BLEND_FIRE);
+        splashEmitter2->rateIs(0.005f);
+        splashEmitter2->lifeTimeIs(1.6f);
+        splashEmitter2->massIs(1.f);
+        splashEmitter2->posRandWeightIs(1.2f);
+        splashEmitter2->velIs(Vector3(0.f, 15.f, 0.f));
+        splashEmitter2->velRandWeightIs(2.f);
+        splashEmitter2->accIs(Vector3(0.f, -12.f, 0.0f));
+        splashEmitter2->pointSizeIs(2.f);
+        splashEmitter2->growthFactorIs(1.0f);
+
+        Emitter * debrisEmitter1 = ps->newEmitter(40, debrisEmitter1sd_);
         debrisEmitter1->posIs((*it)->midPoint());
-        debrisEmitter1->burstSizeIs(20);
+        debrisEmitter1->burstSizeIs(40);
         debrisEmitter1->typeIs(Emitter::EMITTER_BURST);
         debrisEmitter1->blendModeIs(Emitter::BLEND_SMOKE);
         debrisEmitter1->rateIs(0.02f);
@@ -1122,12 +1152,12 @@ void Engine::initParticleSystems() {
         debrisEmitter1->velIs(Vector3(0.f, 2.f, 0.f));
         debrisEmitter1->velRandWeightIs(3.f);
         debrisEmitter1->accIs(Vector3(0.f, -20.f, 0.0f));
-        debrisEmitter1->pointSizeIs(0.3f);
+        debrisEmitter1->pointSizeIs(0.2f);
         debrisEmitter1->growthFactorIs(1.f);
 
-        Emitter * debrisEmitter2 = ps->newEmitter(20, debrisEmitter2sd_);
+        Emitter * debrisEmitter2 = ps->newEmitter(40, debrisEmitter2sd_);
         debrisEmitter2->posIs((*it)->midPoint());
-        debrisEmitter2->burstSizeIs(20);
+        debrisEmitter2->burstSizeIs(40);
         debrisEmitter2->typeIs(Emitter::EMITTER_BURST);
         debrisEmitter2->blendModeIs(Emitter::BLEND_SMOKE);
         debrisEmitter2->rateIs(0.02f);
@@ -1137,7 +1167,7 @@ void Engine::initParticleSystems() {
         debrisEmitter2->velIs(Vector3(0.f, 2.f, 0.f));
         debrisEmitter2->velRandWeightIs(4.f);
         debrisEmitter2->accIs(Vector3(0.f, -20.f, 0.0f));
-        debrisEmitter2->pointSizeIs(0.4f);
+        debrisEmitter2->pointSizeIs(0.3f);
         debrisEmitter2->growthFactorIs(1.f);
 
         ps2 = new ParticleSystem(2);
@@ -1151,10 +1181,10 @@ void Engine::initParticleSystems() {
         waterFoamLeft->lifeTimeIs(2.f);
         waterFoamLeft->massIs(1.f);
         waterFoamLeft->posRandWeightIs(0.2f);
-        waterFoamLeft->velIs(Vector3(13.f, 0.f, 0.f));
+        waterFoamLeft->velIs(Vector3(25.f, 0.f, 0.f));
         waterFoamLeft->velRandWeightIs(0.2f);
-        waterFoamLeft->accIs(Vector3(-10.f, 0.f, 0.0f));
-        waterFoamLeft->pointSizeIs(1.0f);
+        waterFoamLeft->accIs(Vector3(-60.f, 0.f, 0.0f));
+        waterFoamLeft->pointSizeIs(1.5f);
 
         waterFoamLeft->growthFactorIs(0.99f); 
 
@@ -1166,10 +1196,10 @@ void Engine::initParticleSystems() {
         waterFoamRight->lifeTimeIs(2.f);
         waterFoamRight->massIs(1.f);
         waterFoamRight->posRandWeightIs(0.2f);
-        waterFoamRight->velIs(Vector3(-13.f, 0.f, 0.f));
+        waterFoamRight->velIs(Vector3(-25.f, 0.f, 0.f));
         waterFoamRight->velRandWeightIs(0.2f);
-        waterFoamRight->accIs(Vector3(10.f, 0.f, 0.0f));
-        waterFoamRight->pointSizeIs(1.0f);
+        waterFoamRight->accIs(Vector3(60.f, 0.f, 0.0f));
+        waterFoamRight->pointSizeIs(1.5f);
         waterFoamRight->growthFactorIs(0.99f);
 
 
