@@ -63,7 +63,7 @@ void main() {
 	vec3 totDiffuse = diffuse(light, N, vec3(0.7, 0.7, 0.7));
     vec3 totSpecular = specular(light, N, V, vec3(0.3, 0.3, 0.3));
 	vec3 totAmbient = vec3(0.1);
-	float alpha = clamp(-eyePosition.z/200,0,1);
+
 	vec4 phong = vec4(totDiffuse+totSpecular+totAmbient, 1) * vec4(diffuseTexture, 1.0 );
 	//gl_FragColor = vec4(texcoord.x, 0,0,1);
 
@@ -81,5 +81,6 @@ void main() {
 	gl_FragData[1] = vec4(bloom(phong.rgb,0.7),1);
 
 	//CoC Tex
+	float alpha = clamp(-eyePosition.z/200,0,1);
 	gl_FragData[2] = vec4(coc, alpha,0,1);
 }

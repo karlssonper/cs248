@@ -92,7 +92,7 @@ void main() {
         color = vec3(texture2D(particlesTex, texcoord).a);
         //color = texture2D(phongTex, texcoord) + gaussianBlur(10);
     } else if (debug == 4.0) {
-        color = vec3(texture2D(cocTex, texcoord).r);
+        color = vec3(abs(texture2D(cocTex, texcoord).r-0.5)*2);
     } else if (debug == 5.0) {
         color = vec3(texture2D(shadowTex, texcoord).z);
     }

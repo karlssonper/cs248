@@ -37,8 +37,8 @@ float calculateCoC(float depth)
         f = clamp (f, 0, maxBlur);
     }
     // scale and bias into [0, 1] range
-    return focalPlane;
-    //return f * 0.5 + 0.5;
+    //return f;
+    return f * 0.5 + 0.5;
 }
 
 void main() {
