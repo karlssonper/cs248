@@ -56,16 +56,16 @@ static void KeyPressed(unsigned char key, int x, int y) {
             Graphics::instance().cleanUp();
             exit(0);
         case 'w':
-            Engine::instance().camera()->move(0.5);
+            Engine::instance().camera()->move(5.5);
             break;
         case 's':
-            Engine::instance().camera()->move(-0.5);
+            Engine::instance().camera()->move(-5.5);
             break;
         case 'a':
-            Engine::instance().camera()->strafe(-0.5);
+            Engine::instance().camera()->strafe(-5.5);
             break;
         case 'd':
-            Engine::instance().camera()->strafe(0.5);
+            Engine::instance().camera()->strafe(5.5);
             break;
         case 'b':
             direction = Engine::instance().camera()->viewVector();
@@ -259,7 +259,7 @@ void Engine::loadResources(const char * _file)
     //same as cudaoceantest
 
     xzBoundsIs(50.f, 140.f, 0.f , 300);
-    nrTargetsIs(5);
+    nrTargetsIs(1);
     targetSpawnRateIs(6.f);
 
     //Order here is important.
@@ -675,8 +675,8 @@ void Engine::LoadCameras()
     gameCam_->rotationIs(115.f, 10.f);
     gameCam_->maxYawIs(130.f);
     gameCam_->minYawIs(105.f);
-    gameCam_->maxPitchIs(40.f);
-    gameCam_->minPitchIs(-10.f);
+    gameCam_->maxPitchIs(30.f);
+    gameCam_->minPitchIs(-5.f);
     activeCam_ = gameCam_;
     updateCamView_ = true;
 
@@ -926,7 +926,8 @@ void Engine::ScatterTargets() {
         (*it)->mesh()->showIs(true);
         float startX = Random::randomFloat(xMin_, xMax_);
         float startZ = Random::randomFloat(100.f, zMax_);
-        Vector3 startPos(startX, 0.f, startZ);
+        //Vector3 startPos(startX, 0.f, startZ);
+        Vector3 startPos(20, 0.f, zMax_);
         Vector3 currentPos = (Vector3((*it)->midPoint().x,
                                         0.f,
                                       (*it)->midPoint().z));
@@ -944,7 +945,8 @@ void Engine::SpawnTargets() {
         for (it=targets_.begin(); it!=targets_.end(); it++) {
             if ( !(*it)->active() ) {
                 float startX = Random::randomFloat(xMin_, xMax_);
-                Vector3 startPos(startX, 0.f, zMax_);
+                //Vector3 startPos(startX, 0.f, zMax_);
+                Vector3 startPos(20, 0.f, zMax_);
                 Vector3 currentPos = (Vector3((*it)->midPoint().x,
                                               0.f,
                                               (*it)->midPoint().z));
