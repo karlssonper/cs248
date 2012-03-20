@@ -179,8 +179,9 @@ private:
     ShaderData * waterFoamEmitter2sd_;
     ShaderData * splashEmitter1sd_;
     ShaderData * splashEmitter2sd_;
-
     MeshedWeapon * rocketLauncher_;
+
+    bool scatter;
 };
 
 

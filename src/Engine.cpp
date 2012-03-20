@@ -222,6 +222,7 @@ void Engine::init(int argc, char **argv,
     Sound::instance().listenerPositionIs(Vector3(0.f, 0.f, 0.f));
     srand(1986);
     root_ = new Node("root");
+    scatter = false;
 }
 
 void Engine::start()
@@ -275,9 +276,18 @@ void Engine::loadResources(const char * _file)
 }
 
 void Engine::cleanUp() {
-    //delete node;
-    //delete mesh;
-    //delete shader;
+    delete fireEmitter1sd_;
+    delete fireEmitter2sd_;
+    delete smokeEmittersd_;
+    delete debrisEmitter1sd_;
+    delete debrisEmitter2sd_;
+    delete missileSmokeEmittersd_;
+    delete missileFireEmittersd_;
+    delete waterFoamEmitter1sd_;
+    delete waterFoamEmitter2sd_;
+    delete splashEmitter1sd_;
+    delete splashEmitter2sd_;
+    delete rocketLauncher_;
 }
 
 void Engine::renderFrame(float _currentTime)
@@ -288,7 +298,6 @@ void Engine::renderFrame(float _currentTime)
     float lastTime = currentTime_;
     currentTime_ = _currentTime;
     float frameTime = currentTime_ - lastTime;
-
 
     Matrix4 * prevViewProj = quadShader_->stdMatrix4Data(PREVVIEWPROJECTION);
     *prevViewProj = activeCam_->projectionMtx() * activeCam_->viewMtx();
@@ -308,9 +317,12 @@ void Engine::renderFrame(float _currentTime)
     CUDA::Ocean::performIFFT(currentTime_, false);
     CUDA::Ocean::updateVBO(false);
 
+    
     SpawnTargets();
     root_->update();
     UpdateTargets(frameTime);
+
+    if (!scatter) { ScatterTargets(); scatter = true; }
 
     rocketLauncher_->positionIs(Engine::instance().camera()->worldPos(2.f));
     updateProjectiles(frameTime);
@@ -827,6 +839,7 @@ void Engine::targetSpawnRateIs(float _targetSpawnRate) {
 
 void Engine::UpdateTargets(float _frameTime) {
 
+
     nextSpawn_ -= _frameTime;
 
     std::vector<Target*>::iterator it;
@@ -845,6 +858,8 @@ void Engine::UpdateTargets(float _frameTime) {
 
         if ( (*it)->active() ) {
 
+           // std::cout << (*it)->name() << " is active" << std::endl;
+
             float currentHeight = (*it)->midPoint().y;
             float oceanHeight = heights.at(i);
             (*it)->heightDiffIs(currentHeight - oceanHeight);
@@ -852,12 +867,15 @@ void Engine::UpdateTargets(float _frameTime) {
             (*it)->updatePos(_frameTime);
             root_->update();
             (*it)->updateHitBox();
-
+            
              if ( (*it)->midPoint().z < zMin_ ) {
+
                 (*it)->activeIs(false);
                 (*it)->mesh()->showIs(false);
             }
 
+        } else {
+           // std::cout << (*it)->name() << " is passive" << std::endl;
         }
         i++;
     }
@@ -866,18 +884,19 @@ void Engine::UpdateTargets(float _frameTime) {
 void Engine::ScatterTargets() {
     std::vector<Target*>::iterator it;
     for (it=targets_.begin(); it!=targets_.end(); it++) {
-        std::cout << "Activating " << (*it)->name() << std::endl;
+        (*it)->activeIs(true);
+        (*it)->mesh()->showIs(true);
         float startX = Random::randomFloat(xMin_, xMax_);
-        float startZ = Random::randomFloat(zMin_, zMax_);
+        float startZ = Random::randomFloat(100.f, zMax_);
         Vector3 startPos(startX, 0.f, startZ);
         Vector3 currentPos = (Vector3((*it)->midPoint().x,
                                         0.f,
                                       (*it)->midPoint().z));
         (*it)->mesh()->node()->translate(currentPos-startPos);
         (*it)->mesh()->node()->update();
-        (*it)->activeIs(true);
-        (*it)->mesh()->showIs(true);
+        (*it)->updateHitBox();
     }
+    nextSpawn_ = targetSpawnRate_;
 }
 
 void Engine::SpawnTargets() {
@@ -886,7 +905,6 @@ void Engine::SpawnTargets() {
         std::vector<Target*>::iterator it;
         for (it=targets_.begin(); it!=targets_.end(); it++) {
             if ( !(*it)->active() ) {
-                std::cout << "Activating " << (*it)->name() << std::endl;
                 float startX = Random::randomFloat(xMin_, xMax_);
                 Vector3 startPos(startX, 0.f, zMax_);
                 Vector3 currentPos = (Vector3((*it)->midPoint().x,
