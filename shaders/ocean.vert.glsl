@@ -19,6 +19,7 @@ varying vec3 eyePosition;
 varying vec3 normal;
 varying vec4 shadowcoord;
 varying vec3 lightDir;
+varying vec2 suncoord;
 varying vec2 texcoord;
 varying float foamTime;
 varying float foamAlpha;
@@ -44,6 +45,8 @@ float calculateCoC(float depth)
 void main() {
     texcoord.x = positionIn.x/50.0;
     texcoord.y = positionIn.z/100.0;
+    suncoord.x = positionIn.x/150.0;
+    suncoord.y = positionIn.z/300.0;
     shadowcoord = 0.5 *(LightProjectionMatrix * LightViewMatrix * vec4(positionIn, 1)) + vec4(0.5,0.5,0.5,0.5);;
 	vec4 eyeTemp =  ModelViewMatrix * vec4(positionIn, 1);
 
@@ -52,7 +55,7 @@ void main() {
 	normal = NormalMatrix * crossNormal;
 	//normal = crossNormal;
 
-	lightDir = (NormalMatrix * vec3(1.0, 0.5, 1.0)).xyz;
+	lightDir = (NormalMatrix * vec3(1.0, 0.75, 0.5)).xyz;
 
 	eyePosition = eyeTemp.xyz;
 	coc = calculateCoC(-eyePosition.z);

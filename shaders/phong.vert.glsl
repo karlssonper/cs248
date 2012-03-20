@@ -58,7 +58,7 @@ void main() {
 	//bitangent =   NormalMatrix * bitangentIn;
 
 
-	L = (NormalMatrix * vec3(1.0, 0.5, 1.0)).xyz;
+	L = (NormalMatrix * vec3(1.0, 0.75, 0.5)).xyz;
 
 	texcoord = texcoordIn;
 }

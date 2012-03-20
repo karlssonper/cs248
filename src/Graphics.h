@@ -82,6 +82,7 @@ public:
 
     void createTextureToFBOTest(const std::vector<std::string> &_names,
                             std::vector<GLuint> &_colorTex,
+                            std::string _depthName,
                             GLuint &_depthTex,
                             GLuint &_colorFBO,
                             GLuint _width,

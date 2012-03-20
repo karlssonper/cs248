@@ -11,6 +11,7 @@ varying vec3 normal;
 varying vec4 shadowcoord;
 varying vec3 lightDir;
 varying vec2 texcoord;
+varying vec2 suncoord;
 varying float foamTime;
 varying float foamAlpha;
 varying float coc;
@@ -97,7 +98,7 @@ vec3 sunReflect(vec3 L, vec3 N, vec3 V)
 {
     vec3 R = reflect(-L, N);
     float Rs = pow(max(0.0, dot(V, R)), 20.0);
-    return Rs * texture2D(sunReflection,texcoord).xyz;
+    return Rs * texture2D(sunReflection,suncoord).xyz;
 }
 
 float shadowScale(int n)
@@ -116,7 +117,7 @@ void main() {
     vec3 diffuseColor = diffuse(L, N,vec3(0.1, 0.15, 0.2));
     vec3 reflectColor = reflectEnv(N, V);
     vec3 ambientColor = vec3(0.15, 0.15, 0.16);
-    vec3 specularColor = sunReflect(L,N,V);
+    vec3 specularColor = 0.7*sunReflect(L,N,V);
     float ss = shadowScale(3);
     vec3 phong = ss*(ambientColor + diffuseColor+reflectColor+ specularColor);
     float alpha;
