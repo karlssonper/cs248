@@ -926,8 +926,7 @@ void Engine::ScatterTargets() {
         (*it)->mesh()->showIs(true);
         float startX = Random::randomFloat(xMin_, xMax_);
         float startZ = Random::randomFloat(100.f, zMax_);
-        //Vector3 startPos(startX, 0.f, startZ);
-        Vector3 startPos(20, 0.f, zMax_);
+        Vector3 startPos(startX, 0.f, startZ);
         Vector3 currentPos = (Vector3((*it)->midPoint().x,
                                         0.f,
                                       (*it)->midPoint().z));
@@ -945,8 +944,7 @@ void Engine::SpawnTargets() {
         for (it=targets_.begin(); it!=targets_.end(); it++) {
             if ( !(*it)->active() ) {
                 float startX = Random::randomFloat(xMin_, xMax_);
-                //Vector3 startPos(startX, 0.f, zMax_);
-                Vector3 startPos(20, 0.f, zMax_);
+                Vector3 startPos(startX, 0.f, zMax_);
                 Vector3 currentPos = (Vector3((*it)->midPoint().x,
                                               0.f,
                                               (*it)->midPoint().z));
