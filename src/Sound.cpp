@@ -24,7 +24,8 @@
 static std::string SoundFiles[Sound::NUM_SOUNDS] = {
         "../sound/theme.wav",
         "../sound/impact.wav",
-        "../sound/cannon.wav"
+        "../sound/cannon.wav",
+        "../sound/ocean.wav"
 };
 
 Sound::Sound()
