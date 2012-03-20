@@ -1,7 +1,9 @@
 uniform sampler2D bloomTex;
 uniform sampler2D cocTex;
+uniform sampler2D hudTex;
 
 uniform float texDx;
+uniform float focalPlane;
 
 varying vec2 texcoord;
 
@@ -31,6 +33,18 @@ void main() {
 	gl_FragData[0] = vec4(gaussianBlur(bloomTex,10),1);
 
 	//gl_FragData[1] = vec4(gaussianBlur(cocTex,10),1);
-	gl_FragData[1] = texture2D(cocTex, texcoord);
+
+	vec4 hud = texture2D(hudTex, texcoord);
+
+	vec4 coc =texture2D(cocTex, texcoord);;
+	if (hud.a > 0) {
+	    if (focalPlane > 80){
+	        coc.r = 1.0f;
+	    } else {
+	        float t = focalPlane/80.0f;
+	        coc.r = t*t*t*t;
+	    }
+	}
+	gl_FragData[1] = coc;
 	//gl_FragData[1] = vec4(1,0,0,1);
 }

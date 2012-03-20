@@ -647,6 +647,8 @@ void Engine::CreateFramebuffer()
     horizontalGaussianShader_ = new ShaderData("../shaders/horizontalGauss");
     horizontalGaussianShader_->addTexture("bloomTex", "Bloom");
     horizontalGaussianShader_->addTexture("cocTex", "CoC");
+    horizontalGaussianShader_->addTexture("hudTex", "../textures/hudWeapon.png");
+    horizontalGaussianShader_->addFloat("focalPlane", focalPlane_);
     horizontalGaussianShader_->addFloat("texDx", 1.0f / width());
 
     std::vector<unsigned int> secondPassTex(2);
@@ -659,6 +661,8 @@ void Engine::CreateFramebuffer()
     horDOFShader_ = new ShaderData("../shaders/horDOF");
     horDOFShader_->addTexture("phongTex", "Phong2");
     horDOFShader_->addTexture("cocTex", "CoC3");
+
+
     horDOFShader_->addFloat("texDx", 1.0f / width());
     horDOFShader_->addFloat("DOF", 10.0f);
 
@@ -727,11 +731,11 @@ void Engine::LoadOcean()
     CUDA::Ocean::init();
     std::string oceanShaderStr("ocean");
     shaders_[oceanShaderStr] = CUDA::Ocean::oceanShaderData();
-    CUDA::Ocean::oceanShaderData()->addTexture("shadowMap", "shadow");
     CUDA::Ocean::oceanShaderData()->addTexture("sunReflection",
                                                "../textures/sunReflection.png");
     CUDA::Ocean::oceanShaderData()->addTexture("foamTex",
                                                    "../textures/foam.jpg");
+    CUDA::Ocean::oceanShaderData()->addTexture("shadowMap", "shadow");
     CUDA::Ocean::oceanShaderData()->addFloat("shadowMapDx", 1.0f / shadowSize_);
     CUDA::Ocean::oceanShaderData()->addFloat("focalPlane", focalPlane_);
     CUDA::Ocean::oceanShaderData()->addFloat("nearBlurPlane", nearBlurPlane_);
@@ -1336,6 +1340,9 @@ void Engine::UpdateDOF()
     *oceanNear = nearBlurPlane_;
     *oceanFar = farBlurPlane_;
     *oceanMax = maxBlur_;
+
+    float *hor = horizontalGaussianShader_->floatData(focalPlaneStr);
+    *hor = focalPlane_;
 }
 
 void Engine::updateParticles(float _dt) {

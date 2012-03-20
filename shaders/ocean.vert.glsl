@@ -49,7 +49,7 @@ void main() {
     suncoord.y = positionIn.z/300.0;
     shadowcoord = 0.5 *(LightProjectionMatrix * LightViewMatrix * vec4(positionIn, 1)) + vec4(0.5,0.5,0.5,0.5);;
 	vec4 eyeTemp =  ModelViewMatrix * vec4(positionIn, 1);
-
+	eyePosition = eyeTemp.xyz;
 	//vec3 crossNormal = cross(partialUIn, -partialVIn);
 	vec3 crossNormal = cross(partialUIn, -partialVIn);
 	normal = NormalMatrix * crossNormal;
@@ -57,8 +57,8 @@ void main() {
 
 	lightDir = (NormalMatrix * vec3(1.0, 0.75, 0.5)).xyz;
 
-	eyePosition = eyeTemp.xyz;
 	coc = calculateCoC(-eyePosition.z);
+
 	gl_Position = ProjectionMatrix * eyeTemp;
 	foamTime = foamTimeIn;
 	foamAlpha = foamAlphaIn;
