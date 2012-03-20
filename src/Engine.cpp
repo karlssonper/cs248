@@ -1200,9 +1200,9 @@ void Engine::UpdateDOF()
     Vector3 viewVector = activeCam_->viewVector();
     float t = (-activeCam_->worldPos(0.0f).y-5)/viewVector.y;
     focalPlane_ = t;
-    nearBlurPlane_ = t-50.0f;
+    nearBlurPlane_ = t-70.0f;
     if (nearBlurPlane_ < 0.0) nearBlurPlane_ = 0.0f;
-    farBlurPlane_ = t+50.f;
+    farBlurPlane_ = t+70.f;
     maxBlur_ = 0.8f;
 
     std::string focalPlaneStr("focalPlane");
