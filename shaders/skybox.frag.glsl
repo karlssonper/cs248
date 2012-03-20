@@ -22,7 +22,7 @@ void main() {
 
 	vec3 color = textureCube(skyboxTex, dir).rgb;
 	float alpha = clamp(-eyeDepth/200,0,1);
-	gl_FragData[0] = vec4(color,1.0);
+	gl_FragData[0] = vec4(0.6*color,1.0);
 
 	gl_FragData[1] = vec4(bloom(color,0.7),1);
 

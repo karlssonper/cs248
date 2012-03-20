@@ -33,7 +33,7 @@ void main() {
     //First color buffer
     float blurAmount = texture2D(cocTex,texcoord).r;
     vec3 color;
-    if (blurAmount > 0.25)
+    if (blurAmount > 0.25 && DOF != 0.0)
         color = gaussianBlur(phongTex,blurAmount*DOF);
     else
         color = texture2D(phongTex,texcoord).rgb;

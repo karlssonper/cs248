@@ -92,9 +92,25 @@ static void KeyPressed(unsigned char key, int x, int y) {
         case '5':
             Engine::instance().renderTexture(5.0f);
             break;
+        case '6':
+            Engine::instance().renderTexture(6.0f);
+            break;
+        case '7':
+            Engine::instance().renderTexture(7.0f);
+            break;
+        case '8':
+            Engine::instance().renderTexture(8.0f);
+            break;
         case 'q':
             Engine::instance().changeCamera();
             break;
+        case 'e':
+            Engine::instance().toggleDOF();
+            break;
+        case 'r':
+            Engine::instance().toggleHUD();
+            break;
+
     }
 }
 
@@ -217,6 +233,8 @@ void Engine::init(int argc, char **argv,
     srand(1986);
     root_ = new Node("root");
     scatter = false;
+    useDOF_ = true;
+    useHUD_ = true;
 }
 
 void Engine::start()
@@ -293,6 +311,32 @@ void Engine::cleanUp() {
     delete lightCam_;
     delete root_;
     targets_.clear();
+}
+
+void Engine::toggleDOF()
+{
+    useHUD_ = !useHUD_;
+
+    float * f1 = horDOFShader_->floatData("DOF");
+    float * f2 = vertDOFShader_->floatData("DOF");
+
+    if (useHUD_) {
+        *f1 = 10.f;
+        *f2 = 10.f;
+    } else {
+        *f1 = 0.f;
+        *f2 = 0.f;
+    }
+}
+
+void Engine::toggleHUD()
+{
+    useDOF_ = !useDOF_;
+
+    float * f1 = horizontalGaussianShader_->floatData("useHUD");
+    float * f2 = quadShader_->floatData("useHUD");
+    *f1 = float(useDOF_);
+    *f2 = float(useDOF_);
 }
 
 void Engine::renderFrame(float _currentTime)
@@ -507,6 +551,7 @@ void Engine::BuildQuad()
 
     quadShader_->addFloat("debug",1.0f);
     quadShader_->addFloat("texDx", 1.0f / height());
+    quadShader_->addFloat("useHUD", float(useHUD_));
 
     std::string posStr("positionIn");
     std::string texStr("texcoordIn");
@@ -644,6 +689,7 @@ void Engine::CreateFramebuffer()
     horizontalGaussianShader_->addTexture("hudTex", "../textures/hudWeapon.png");
     horizontalGaussianShader_->addFloat("focalPlane", focalPlane_);
     horizontalGaussianShader_->addFloat("texDx", 1.0f / width());
+    horizontalGaussianShader_->addFloat("useHUD", float(useHUD_));
 
     std::vector<unsigned int> secondPassTex(2);
     std::vector<std::string> secondPassTexNames;

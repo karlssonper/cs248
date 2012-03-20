@@ -114,9 +114,9 @@ void main() {
     vec3 N = normalize(normal);
     vec3 V = normalize(-eyePosition);
 
-    vec3 diffuseColor = diffuse(L, N,vec3(0.1, 0.15, 0.2));
-    vec3 reflectColor = reflectEnv(N, V);
-    vec3 ambientColor = vec3(0.15, 0.15, 0.16);
+    vec3 diffuseColor = 0.8*diffuse(L, N,vec3(0.1, 0.15, 0.2));
+    vec3 reflectColor = 0.8*reflectEnv(N, V);
+    vec3 ambientColor = 0.8*vec3(0.15, 0.15, 0.16);
     vec3 specularColor = 0.9*sunReflect(L,N,V);
     float ss = shadowScale(3);
     vec3 phong = ss*(ambientColor + diffuseColor+reflectColor+ specularColor);

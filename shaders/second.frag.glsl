@@ -10,6 +10,7 @@ uniform mat4 InverseViewProjection;
 uniform mat4 PrevViewProjection;
 
 uniform float debug;
+uniform float useHUD;
 varying vec2 texcoord;
 
 uniform float texDx;
@@ -85,8 +86,13 @@ vec3 motionBlur(float numSamples)
 void main() {
 	vec3 color;
 	if (debug == 1.0) {
-	    vec4 hud = texture2D(hudTex, texcoord);
-	    color = (1.0-hud.a)*motionBlur(1.5) + hud.a*(hud.rgb);
+	    if (useHUD > 0.0){
+            vec4 hud = texture2D(hudTex, texcoord);
+            color = (1.0-hud.a)*motionBlur(2.0) + hud.a*(hud.rgb);
+	    } else {
+	        color = motionBlur(2.0);
+	    }
+
 	} else if (debug == 2.0) {
 	    color = gaussianBlur(bloomTex,10);
     } else if (debug == 3.0) {
@@ -95,6 +101,12 @@ void main() {
     } else if (debug == 4.0) {
         color = vec3(texture2D(cocTex, texcoord).r);
     } else if (debug == 5.0) {
+        color = vec3(texture2D(shadowTex, texcoord).z/2);
+    } else if (debug == 6.0) {
+        color = vec3(texture2D(cocTex, texcoord).g);
+    } else if (debug == 7.0) {
+        color = vec3(texture2D(cocTex, texcoord).b);
+    } else if (debug == 8.0) {
         color = vec3(texture2D(shadowTex, texcoord).z/2);
     }
 

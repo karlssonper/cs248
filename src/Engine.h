@@ -29,6 +29,8 @@ public:
     void renderFrame(float _currentTime);
     void renderTexture(float v);
     void changeCamera();
+    void toggleDOF();
+    void toggleHUD();
     Camera * camera() const { return activeCam_;};
     Camera * lightCamera() const { return lightCam_;};
 
@@ -61,6 +63,9 @@ private:
     int mouseY_;
     int width_;
     int height_;
+
+    bool useDOF_;
+    bool useHUD_;
 
     enum State { NOT_INITIATED, RUNNING, PAUSED};
     State state_;
