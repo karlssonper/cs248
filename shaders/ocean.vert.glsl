@@ -37,12 +37,13 @@ float calculateCoC(float depth)
         f = clamp (f, 0, maxBlur);
     }
     // scale and bias into [0, 1] range
-    return focalPlane;
-    //return f * 0.5 + 0.5;
+    //return f;
+    return f*f*f*f;
 }
 
 void main() {
-    texcoord.x = positionIn.xz / 100.0;
+    texcoord.x = positionIn.x/50.0;
+    texcoord.y = positionIn.z/100.0;
     shadowcoord = 0.5 *(LightProjectionMatrix * LightViewMatrix * vec4(positionIn, 1)) + vec4(0.5,0.5,0.5,0.5);;
 	vec4 eyeTemp =  ModelViewMatrix * vec4(positionIn, 1);
 

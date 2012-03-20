@@ -37,8 +37,9 @@ vec3 gaussianBlur(sampler2D tex, int n)
 
 vec3 sceneColor(vec2 coords)
 {
+    vec3 bloom = texture2D(bloomTex, coords).rgb;
     vec4 part = texture2D(particlesTex, coords);
-    vec3 phong = texture2D(phongTex, coords).rgb;
+    vec3 phong = texture2D(phongTex, coords).rgb + 0.3*bloom;
     return (1.0-part.a) * phong + part.a*part.rgb;
 }
 
@@ -85,19 +86,19 @@ void main() {
 	vec3 color;
 	if (debug == 1.0) {
 	    vec4 hud = texture2D(hudTex, texcoord);
-	    color = (1.0-hud.a)*motionBlur(3.5) + hud.a*(hud.rgb);
+	    color = (1.0-hud.a)*motionBlur(2.25) + hud.a*(hud.rgb);
 	} else if (debug == 2.0) {
 	    color = gaussianBlur(bloomTex,10);
     } else if (debug == 3.0) {
         color = vec3(texture2D(particlesTex, texcoord).a);
         //color = texture2D(phongTex, texcoord) + gaussianBlur(10);
     } else if (debug == 4.0) {
-        color = vec3(texture2D(cocTex, texcoord).r);
+        color = vec3(texture2D(cocTex, texcoord).b);
     } else if (debug == 5.0) {
         color = vec3(texture2D(shadowTex, texcoord).z);
     }
 
 	//gl_FragColor = vec4(color,1);
 	gl_FragData[0] = vec4(color,1);
-	gl_FragData[1] = vec4(gaussianBlur(cocTex,10),1);
+	gl_FragData[1] = vec4(texture2D(cocTex,texcoord));
 }

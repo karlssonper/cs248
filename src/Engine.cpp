@@ -261,11 +261,6 @@ void Engine::loadResources(const char * _file)
     nrTargetsIs(5);
     targetSpawnRateIs(7.f);
 
-    focalPlane_ = 0.8f;
-    nearBlurPlane_ = 10.0f;
-    farBlurPlane_ = 40.0f;
-    maxBlur_ = 0.8f;
-
     //Order here is important.
     LoadCameras();
     LoadLight();
@@ -301,6 +296,8 @@ void Engine::renderFrame(float _currentTime)
     if (updateCamView_) {
         activeCam_->BuildViewMatrix();
     }
+
+    UpdateDOF();
 
     Matrix4 * invViewProj = quadShader_->stdMatrix4Data(INVERSEVIEWPROJECTION);
     *invViewProj =
@@ -448,9 +445,8 @@ void Engine::BuildQuad()
     colorTexNames.push_back("Bloom2");
     colorTexNames.push_back("CoC2");
     colorTexNames.push_back("shadow");
-    colorTexNames.push_back("../textures/hud.png");
+    //colorTexNames.push_back("../textures/hudWeapon.png");
     colorTexNames.push_back("depth");
-
 
     std::vector<std::string> shaderTexNames;
     shaderTexNames.push_back("phongTex");
@@ -458,9 +454,8 @@ void Engine::BuildQuad()
     shaderTexNames.push_back("bloomTex");
     shaderTexNames.push_back("cocTex");
     shaderTexNames.push_back("shadowTex");
-    shaderTexNames.push_back("hudTex");
+    //shaderTexNames.push_back("hudTex");
     shaderTexNames.push_back("depthTex");
-
 
     quadShader_->addTexture(shaderTexNames[0], colorTexNames[0]);
     quadShader_->addTexture(shaderTexNames[1], colorTexNames[1]);
@@ -468,7 +463,7 @@ void Engine::BuildQuad()
     quadShader_->addTexture(shaderTexNames[3], colorTexNames[3]);
     quadShader_->addTexture(shaderTexNames[4], colorTexNames[4]);
     quadShader_->addTexture(shaderTexNames[5], colorTexNames[5]);
-    quadShader_->addTexture(shaderTexNames[6], colorTexNames[6]);
+    //quadShader_->addTexture(shaderTexNames[6], colorTexNames[6]);
 
     quadShader_->enableMatrix(INVERSEVIEWPROJECTION);
     quadShader_->enableMatrix(PREVVIEWPROJECTION);
@@ -538,7 +533,7 @@ void Engine::BuildSkybox()
     skyBoxShader_->addFloat("focalPlane", focalPlane_);
     skyBoxShader_->addFloat("nearBlurPlane", nearBlurPlane_);
     skyBoxShader_->addFloat("farBlurPlane", farBlurPlane_);
-    skyBoxShader_->addFloat("maxBlure", maxBlur_);
+    skyBoxShader_->addFloat("maxBlur", maxBlur_);
 
     const int stride = sizeof(SkyboxVertex);
     unsigned int sID = skyBoxShader_->shaderID();
@@ -622,11 +617,14 @@ void Engine::CreateFramebuffer()
     horDOFShader_->addTexture("phongTex", "Phong2");
     horDOFShader_->addTexture("cocTex", "CoC3");
     horDOFShader_->addFloat("texDx", 1.0f / width());
+    horDOFShader_->addFloat("DOF", 10.0f);
 
     vertDOFShader_ = new ShaderData("../shaders/vertDOF");
     vertDOFShader_->addTexture("phongTex", "Bloom2");
     vertDOFShader_->addTexture("cocTex", "CoC3");
     vertDOFShader_->addFloat("texDx", 1.0f / width());
+    vertDOFShader_->addFloat("DOF", 10.0f);
+    vertDOFShader_->addTexture("hudTex", "../textures/hud.png");
 }
 
 void Engine::LoadCameras()
@@ -653,7 +651,8 @@ void Engine::LoadCameras()
 void Engine::LoadLight()
 {
     shadowSize_ = 1024;
-    Graphics::instance().createTextureToFBO("shadow", shadowTex_,
+    std::string shadowStr("shadow");
+    Graphics::instance().createTextureToFBO(shadowStr, shadowTex_,
             shadowFB_, shadowSize_, shadowSize_);
     std::string shadowShaderStr("../shaders/shadow");
     shadowShader_ = new ShaderData(shadowShaderStr);
@@ -684,7 +683,7 @@ void Engine::LoadOcean()
     CUDA::Ocean::oceanShaderData()->addFloat("focalPlane", focalPlane_);
     CUDA::Ocean::oceanShaderData()->addFloat("nearBlurPlane", nearBlurPlane_);
     CUDA::Ocean::oceanShaderData()->addFloat("farBlurPlane", farBlurPlane_);
-    CUDA::Ocean::oceanShaderData()->addFloat("maxBlure", maxBlur_);
+    CUDA::Ocean::oceanShaderData()->addFloat("maxBlur", maxBlur_);
 
 }
 
@@ -774,7 +773,7 @@ void Engine::updateProjectiles(float _dt) {
 
 void Engine::LoadTargets() {
 
-    std::string phongStr("phong");
+    std::string phongStr("phongTarget");
     ShaderData * shader = new ShaderData("../shaders/phong");
     shaders_[phongStr] = shader;
     shader->enableMatrix(MODELVIEW);
@@ -789,7 +788,7 @@ void Engine::LoadTargets() {
     shader->addFloat("focalPlane", focalPlane_);
     shader->addFloat("nearBlurPlane", nearBlurPlane_);
     shader->addFloat("farBlurPlane", farBlurPlane_);
-    shader->addFloat("maxBlure", maxBlur_);
+    shader->addFloat("maxBlur", maxBlur_);
 
     for (unsigned int i = 0; i < nrTargets_; i++) {
         std::ostringstream oss;
@@ -1224,6 +1223,44 @@ void Engine::displayParticles() {
             (*it)->foamPs()->display();
         }
     }
+}
+
+void Engine::UpdateDOF()
+{
+    Vector3 viewVector = activeCam_->viewVector();
+    float t = (-activeCam_->worldPos(0.0f).y-5)/viewVector.y;
+    focalPlane_ = t;
+    nearBlurPlane_ = t-50.0f;
+    if (nearBlurPlane_ < 0.0) nearBlurPlane_ = 0.0f;
+    farBlurPlane_ = t+50.f;
+    maxBlur_ = 0.8f;
+
+    std::string focalPlaneStr("focalPlane");
+    std::string nearPlaneStr("nearBlurPlane");
+    std::string farPlaneStr("farBlurPlane");
+    std::string maxStr("maxBlur");
+
+    ShaderData* phong = shaders_["phongTarget"];
+    float * phongFocal = phong->floatData(focalPlaneStr);
+    float * phongNear = phong->floatData(nearPlaneStr);
+    float * phongFar = phong->floatData(farPlaneStr);
+    float * phongMax = phong->floatData(maxStr);
+
+    ShaderData* ocean = shaders_["ocean"];
+    float * oceanFocal = ocean->floatData(focalPlaneStr);
+    float * oceanNear = ocean->floatData(nearPlaneStr);
+    float * oceanFar = ocean->floatData(farPlaneStr);
+    float * oceanMax = ocean->floatData(maxStr);
+
+    *phongFocal = focalPlane_;
+    *phongNear = nearBlurPlane_;
+    *phongFar = farBlurPlane_;
+    *phongMax = maxBlur_;
+
+    *oceanFocal = focalPlane_;
+    *oceanNear = nearBlurPlane_;
+    *oceanFar = farBlurPlane_;
+    *oceanMax = maxBlur_;
 }
 
 void Engine::updateParticles(float _dt) {

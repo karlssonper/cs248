@@ -27,6 +27,6 @@ void main() {
 	gl_FragData[1] = vec4(bloom(color,0.7),1);
 
 	//gl_FragData[2] = vec4(coc,eyeDepth,0.0,1.0);
-	gl_FragData[2] = vec4(coc, alpha, 1.0, 1.0);
+	gl_FragData[2] = vec4(1.0, alpha, 1.0, 1.0);
 
 }

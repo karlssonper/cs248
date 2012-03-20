@@ -158,6 +158,7 @@ private:
     void LoadTargets();
     void UpdateTargets(float _frameTime);
     void SpawnTargets();
+    void UpdateDOF();
     void ScatterTargets();
 
     void initParticleSystems();
