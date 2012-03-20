@@ -27,11 +27,15 @@ vec3 gaussianBlur(sampler2D tex, float n)
 }
 
 void main() {
-    float t = abs(texture2D(cocTex,texcoord).r-0.5)*2;
     //First color buffer
-    float blurAmount = t*t*t*t;
+    float blurAmount = texture2D(cocTex,texcoord).r;
+    vec3 color;
+    if (blurAmount > 0.25)
+        color = gaussianBlur(phongTex,blurAmount*DOF);
+    else
+        color = texture2D(phongTex,texcoord).rgb;
 
-	gl_FragData[0] = vec4(gaussianBlur(phongTex,blurAmount*DOF),1);
+	gl_FragData[0] = vec4(color,1.0);
 
 	gl_FragData[1] = vec4(1);
 }

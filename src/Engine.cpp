@@ -73,9 +73,9 @@ static void KeyPressed(unsigned char key, int x, int y) {
             yaw = -Engine::instance().camera()->yaw()+90.f;
             Engine::instance().rocketLauncher()->fire(direction, pitch, yaw);
 
-            //Engine::instance().camera()->position().print();
-            //std::cout << "Camera pitch " << Engine::instance().camera()->pitch() << std::endl;
-            //std::cout << "Camera yaw " << Engine::instance().camera()->yaw() << std::endl;
+            Engine::instance().camera()->position().print();
+            std::cout << "Camera pitch " << Engine::instance().camera()->pitch() << std::endl;
+            std::cout << "Camera yaw " << Engine::instance().camera()->yaw() << std::endl;
             //Engine::instance().rocketLauncher()->projectiles().at(0)->rotationNode()->rotateX(-Engine::instance().camera()->pitch());
             //Engine::instance().rocketLauncher()->projectiles().at(0)->rotationNode()->rotateY(-Engine::instance().camera()->yaw()+90.f);
             break;
@@ -126,23 +126,30 @@ static void KeyReleased(unsigned char key, int x, int y) {
 static void MouseFunc(int x,int y)
 {
 
-    Vector3 direction;
-    float pitch, yaw;
-    direction = Engine::instance().camera()->viewVector();
-    pitch = -Engine::instance().camera()->pitch();
-    yaw = -Engine::instance().camera()->yaw()+90.f;
-    Engine::instance().rocketLauncher()->fire(direction, pitch, yaw);
-}
+    //Vector3 direction;
+    //float pitch, yaw;
+    //direction = Engine::instance().camera()->viewVector();
+    //pitch = -Engine::instance().camera()->pitch();
+    //yaw = -Engine::instance().camera()->yaw()+90.f;
+    //Engine::instance().rocketLauncher()->fire(direction, pitch, yaw);
 
-static void MouseMoveFunc(int x,int y)
-{
-
-    int dx = x - Engine::instance().mouseX();
+        int dx = x - Engine::instance().mouseX();
     int dy = y - Engine::instance().mouseY();
     Engine::instance().mouseXIs(x);
     Engine::instance().mouseYIs(y);
     Engine::instance().camera()->yaw(0.3*dx);
     Engine::instance().camera()->pitch(0.3*dy);
+}
+
+static void MouseMoveFunc(int x,int y)
+{
+
+   // int dx = x - Engine::instance().mouseX();
+    //int dy = y - Engine::instance().mouseY();
+    Engine::instance().mouseXIs(x);
+    Engine::instance().mouseYIs(y);
+    //Engine::instance().camera()->yaw(0.3*dx);
+    //Engine::instance().camera()->pitch(0.3*dy);
 
     //Engine::instance().mouseXIs(x);
     //Engine::instance().mouseYIs(y);
@@ -248,9 +255,9 @@ void Engine::loadResources(const char * _file)
 {
     //same as cudaoceantest
 
-    xzBoundsIs(0.f, 100.f, 0.f ,100.f);
+    xzBoundsIs(50.f, 140.f, 0.f , 300);
     nrTargetsIs(5);
-    targetSpawnRateIs(3.f);
+    targetSpawnRateIs(7.f);
 
     //Order here is important.
     LoadCameras();
@@ -262,6 +269,7 @@ void Engine::loadResources(const char * _file)
     LoadTargets();
     loadWeapons();
     initParticleSystems();
+
 }
 
 void Engine::cleanUp() {
@@ -435,9 +443,8 @@ void Engine::BuildQuad()
     colorTexNames.push_back("Bloom2");
     colorTexNames.push_back("CoC2");
     colorTexNames.push_back("shadow");
-    colorTexNames.push_back("../textures/hud.png");
+    //colorTexNames.push_back("../textures/hudWeapon.png");
     colorTexNames.push_back("depth");
-
 
     std::vector<std::string> shaderTexNames;
     shaderTexNames.push_back("phongTex");
@@ -445,9 +452,8 @@ void Engine::BuildQuad()
     shaderTexNames.push_back("bloomTex");
     shaderTexNames.push_back("cocTex");
     shaderTexNames.push_back("shadowTex");
-    shaderTexNames.push_back("hudTex");
+    //shaderTexNames.push_back("hudTex");
     shaderTexNames.push_back("depthTex");
-
 
     quadShader_->addTexture(shaderTexNames[0], colorTexNames[0]);
     quadShader_->addTexture(shaderTexNames[1], colorTexNames[1]);
@@ -455,7 +461,7 @@ void Engine::BuildQuad()
     quadShader_->addTexture(shaderTexNames[3], colorTexNames[3]);
     quadShader_->addTexture(shaderTexNames[4], colorTexNames[4]);
     quadShader_->addTexture(shaderTexNames[5], colorTexNames[5]);
-    quadShader_->addTexture(shaderTexNames[6], colorTexNames[6]);
+    //quadShader_->addTexture(shaderTexNames[6], colorTexNames[6]);
 
     quadShader_->enableMatrix(INVERSEVIEWPROJECTION);
     quadShader_->enableMatrix(PREVVIEWPROJECTION);
@@ -616,18 +622,19 @@ void Engine::CreateFramebuffer()
     vertDOFShader_->addTexture("cocTex", "CoC3");
     vertDOFShader_->addFloat("texDx", 1.0f / width());
     vertDOFShader_->addFloat("DOF", 10.0f);
+    vertDOFShader_->addTexture("hudTex", "../textures/hud.png");
 }
 
 void Engine::LoadCameras()
 {
     gameCam_ = new Camera();
     gameCam_->projectionIs(45.f, 1.f, 1.f, 10000.f);
-    gameCam_->positionIs(Vector3(25.f, -20.f, 5.f));
-    gameCam_->rotationIs(125.f, 15.f);
-    gameCam_->maxYawIs(125.f+50.0);
-    gameCam_->minYawIs(125.f-50.0);
-    gameCam_->maxPitchIs(15.f+15.0);
-    gameCam_->minPitchIs(15.f-15.0);
+    gameCam_->positionIs(Vector3(-15.f, -20.f, -20.f));
+    gameCam_->rotationIs(115.f, 10.f);
+    gameCam_->maxYawIs(130.f);
+    gameCam_->minYawIs(105.f);
+    gameCam_->maxPitchIs(40.f);
+    gameCam_->minPitchIs(-10.f);
     activeCam_ = gameCam_;
     updateCamView_ = true;
 
@@ -642,7 +649,8 @@ void Engine::LoadCameras()
 void Engine::LoadLight()
 {
     shadowSize_ = 1024;
-    Graphics::instance().createTextureToFBO("shadow", shadowTex_,
+    std::string shadowStr("shadow");
+    Graphics::instance().createTextureToFBO(shadowStr, shadowTex_,
             shadowFB_, shadowSize_, shadowSize_);
     std::string shadowShaderStr("../shaders/shadow");
     shadowShader_ = new ShaderData(shadowShaderStr);
@@ -853,31 +861,45 @@ void Engine::UpdateTargets(float _frameTime) {
     }
 }
 
+void Engine::ScatterTargets() {
+    std::vector<Target*>::iterator it;
+    for (it=targets_.begin(); it!=targets_.end(); it++) {
+        //std::cout << "Activating " << (*it)->name() << std::endl;
+        float startX = Random::randomFloat(xMin_, xMax_);
+        float startZ = Random::randomFloat(zMin_, zMax_);
+        Vector3 startPos(startX, 0.f, startZ);
+        Vector3 currentPos = (Vector3((*it)->midPoint().x,
+                                        0.f,
+                                        (*it)->midPoint().z));
+        (*it)->mesh()->node()->translate(currentPos-startPos);
+        (*it)->mesh()->node()->update();
+        (*it)->activeIs(true);
+        (*it)->mesh()->showIs(true);
+    }
+    nextSpawn_ = targetSpawnRate_;
+}
+
 void Engine::SpawnTargets() {
 
     if (nextSpawn_ < 0.f) {
         std::vector<Target*>::iterator it;
         for (it=targets_.begin(); it!=targets_.end(); it++) {
-            
             if ( !(*it)->active() ) {
                 //std::cout << "Activating " << (*it)->name() << std::endl;
-
                 float startX = Random::randomFloat(xMin_, xMax_);
                 Vector3 startPos(startX, 0.f, zMax_);
                 Vector3 currentPos = (Vector3((*it)->midPoint().x,
                                               0.f,
                                               (*it)->midPoint().z));
                 (*it)->mesh()->node()->translate(currentPos-startPos);
+                (*it)->mesh()->node()->update();
                 (*it)->activeIs(true);
                 (*it)->mesh()->showIs(true);
-
                 break;
             }
         }
-
         nextSpawn_ = targetSpawnRate_;
     }
-
 }
 
 void Engine::initParticleSystems() {
@@ -981,8 +1003,8 @@ void Engine::initParticleSystems() {
     missileSmokeEmittersd_->addFloat("softDist", 0.2);
     missileFireEmittersd_->addFloat("softDist", 0.2);
     debrisEmitter2sd_->addFloat("softDist", 0.2);
-    waterFoamEmitter1sd_->addFloat("softDist", 0.001);
-    waterFoamEmitter2sd_->addFloat("softDist", 0.001);
+    waterFoamEmitter1sd_->addFloat("softDist", 0.005);
+    waterFoamEmitter2sd_->addFloat("softDist", 0.005);
 
     fireEmitter1sd_->addTexture("cocTex","CoC");
     fireEmitter2sd_->addTexture("cocTex","CoC");
@@ -1121,12 +1143,12 @@ void Engine::initParticleSystems() {
         ps2 = new ParticleSystem(2);
         (*it)->foamPsIs(ps2);
 
-        Emitter * waterFoamLeft = ps2->newEmitter(30, waterFoamEmitter1sd_);
+        Emitter * waterFoamLeft = ps2->newEmitter(40, waterFoamEmitter1sd_);
         waterFoamLeft->posIs((*it)->frontLeft());
         waterFoamLeft->typeIs(Emitter::EMITTER_STREAM);
         waterFoamLeft->blendModeIs(Emitter::BLEND_FIRE);
         waterFoamLeft->rateIs(0.01f);
-        waterFoamLeft->lifeTimeIs(5.f);
+        waterFoamLeft->lifeTimeIs(2.f);
         waterFoamLeft->massIs(1.f);
         waterFoamLeft->posRandWeightIs(0.2f);
         waterFoamLeft->velIs(Vector3(13.f, 0.f, 0.f));
@@ -1134,21 +1156,21 @@ void Engine::initParticleSystems() {
         waterFoamLeft->accIs(Vector3(-10.f, 0.f, 0.0f));
         waterFoamLeft->pointSizeIs(1.0f);
 
-        waterFoamLeft->growthFactorIs(0.97f); 
+        waterFoamLeft->growthFactorIs(0.99f); 
 
-        Emitter * waterFoamRight = ps2->newEmitter(30, waterFoamEmitter2sd_);
+        Emitter * waterFoamRight = ps2->newEmitter(40, waterFoamEmitter2sd_);
         waterFoamRight->posIs((*it)->frontRight());
         waterFoamRight->typeIs(Emitter::EMITTER_STREAM);
         waterFoamRight->blendModeIs(Emitter::BLEND_FIRE);
         waterFoamRight->rateIs(0.01f);
-        waterFoamRight->lifeTimeIs(5.f);
+        waterFoamRight->lifeTimeIs(2.f);
         waterFoamRight->massIs(1.f);
         waterFoamRight->posRandWeightIs(0.2f);
         waterFoamRight->velIs(Vector3(-13.f, 0.f, 0.f));
         waterFoamRight->velRandWeightIs(0.2f);
         waterFoamRight->accIs(Vector3(10.f, 0.f, 0.0f));
         waterFoamRight->pointSizeIs(1.0f);
-        waterFoamRight->growthFactorIs(0.97f);
+        waterFoamRight->growthFactorIs(0.99f);
 
 
     }

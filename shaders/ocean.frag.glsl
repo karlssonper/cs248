@@ -124,7 +124,7 @@ void main() {
         alpha = max(0.0, foamTime)/3.5;
     else
         alpha = 0.0;
-    vec3 foam = 3.0*texture2D(foamTex,texcoord + vec2(foamAlpha*0.01)).rgb;
+    vec3 foam = texture2D(foamTex,texcoord + vec2(0,0.3-foamTime*0.01)).rgb;
     alpha*=max(0.0,foamAlpha);
 
     //Normal
@@ -147,13 +147,13 @@ void main() {
 
     //Phong Tex
     float alphaPhong = clamp(-eyePosition.z/200,0,1);
-    gl_FragData[0] = vec4((1.0-alpha)*phong + alpha*foam, 1.0);
+    gl_FragData[0] = vec4((1.0-alpha)*phong + alpha*rgb2lum(foam)*vec3(3.0,3.0,3.0), 1.0);
 
     //Bloom Tex
     gl_FragData[1] = vec4(bloom(phong,0.7), 1.0);
 
     //Motion Tex
 
-    gl_FragData[2] = vec4(coc,alphaPhong,0,1);
+    gl_FragData[2] = vec4(coc,alphaPhong,rgb2lum(foam),1);
     //gl_FragData[3] = vec4(ss,ss,ss,1);
 }

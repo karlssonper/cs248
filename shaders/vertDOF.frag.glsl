@@ -1,5 +1,6 @@
 uniform sampler2D phongTex;
 uniform sampler2D cocTex;
+uniform sampler2D hudTex;
 
 uniform float texDx;
 uniform float DOF;
@@ -27,9 +28,16 @@ vec3 gaussianBlur(sampler2D tex, float n)
 }
 
 void main() {
-    float t = abs(texture2D(cocTex,texcoord).r-0.5)*2;
-	//First color buffer
-    float blurAmount = t*t*t*t;
-	gl_FragColor = vec4(gaussianBlur(phongTex,blurAmount*DOF),1);
-    //gl_FragColor = vec4(1,0,0,1);
+
+    float blurAmount = texture2D(cocTex,texcoord).r;
+    vec3 color;
+    if (blurAmount > 0.25)
+        color = gaussianBlur(phongTex,blurAmount*DOF);
+    else
+        color = texture2D(phongTex,texcoord).rgb;
+
+    vec4 hud = texture2D(hudTex, texcoord);
+    vec3 final = (1.0-hud.a)*color + hud.a*(hud.rgb);
+
+    gl_FragColor = vec4(final,1.0);
 }

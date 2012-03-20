@@ -25,7 +25,7 @@ float calculateCoC(float depth)
         f = clamp (f, 0, maxBlur);
     }
     // scale and bias into [0, 1] range
-    return f * 0.5 + 0.5;
+    return f*f*f*f;
 }
 
 void main() {

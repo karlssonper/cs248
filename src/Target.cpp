@@ -121,4 +121,7 @@ void Target::explode() {
 
     active_ = false;
     mesh_->showIs(false);
+
+    foamPs_->emitter(0)->posIs(Vector3(500,500,500));
+    foamPs_->emitter(1)->posIs(Vector3(500,500,500));
 }
