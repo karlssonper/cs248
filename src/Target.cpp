@@ -49,6 +49,9 @@ void Target::updateHitBox() {
                          (p0.y+p1.y)/2.f,
                          (p0.z+p1.z)/2.f );
 
+    //std::cout << "Midpoint: ";
+    //midPoint_.print();
+
     // calculate the two points to put wakes at the front
     // somewhere betweeen the midpoint and the two corner points
     // (this is hardcoded for now)

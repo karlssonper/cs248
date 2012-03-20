@@ -222,6 +222,7 @@ void Engine::init(int argc, char **argv,
     Sound::instance().listenerPositionIs(Vector3(0.f, 0.f, 0.f));
     srand(1986);
     root_ = new Node("root");
+    scatter = false;
 }
 
 void Engine::start()
@@ -259,7 +260,7 @@ void Engine::loadResources(const char * _file)
 
     xzBoundsIs(50.f, 140.f, 0.f , 300);
     nrTargetsIs(5);
-    targetSpawnRateIs(7.f);
+    targetSpawnRateIs(6.f);
 
     //Order here is important.
     LoadCameras();
@@ -275,9 +276,29 @@ void Engine::loadResources(const char * _file)
 }
 
 void Engine::cleanUp() {
-    //delete node;
-    //delete mesh;
-    //delete shader;
+    delete fireEmitter1sd_;
+    delete fireEmitter2sd_;
+    delete smokeEmittersd_;
+    delete debrisEmitter1sd_;
+    delete debrisEmitter2sd_;
+    delete missileSmokeEmittersd_;
+    delete missileFireEmittersd_;
+    delete waterFoamEmitter1sd_;
+    delete waterFoamEmitter2sd_;
+    delete splashEmitter1sd_;
+    delete splashEmitter2sd_;
+    delete rocketLauncher_;
+    delete skyBoxShader_;
+    delete quadShader_;
+    delete shadowShader_;
+    delete horizontalGaussianShader_;
+    delete horDOFShader_;
+    delete vertDOFShader_;
+    delete gameCam_;
+    delete freeCam_;
+    delete lightCam_;
+    delete root_;
+    targets_.clear();
 }
 
 void Engine::renderFrame(float _currentTime)
@@ -288,7 +309,6 @@ void Engine::renderFrame(float _currentTime)
     float lastTime = currentTime_;
     currentTime_ = _currentTime;
     float frameTime = currentTime_ - lastTime;
-
 
     Matrix4 * prevViewProj = quadShader_->stdMatrix4Data(PREVVIEWPROJECTION);
     *prevViewProj = activeCam_->projectionMtx() * activeCam_->viewMtx();
@@ -308,9 +328,12 @@ void Engine::renderFrame(float _currentTime)
     CUDA::Ocean::performIFFT(currentTime_, false);
     CUDA::Ocean::updateVBO(false);
 
+    
     SpawnTargets();
     root_->update();
     UpdateTargets(frameTime);
+
+    if (!scatter) { ScatterTargets(); scatter = true; }
 
     rocketLauncher_->positionIs(Engine::instance().camera()->worldPos(2.f));
     updateProjectiles(frameTime);
@@ -838,7 +861,7 @@ void Engine::LoadTargets() {
 
         std::string targetStr("battleCruiserTarget"+oss.str());
         Target * target = new Target(targetStr, mesh, 100.f);
-        target->speedIs(Vector3(0.0f, 0.f, 10.0f));
+        target->speedIs(Vector3(0.0f, 0.f, 13.0f));
         target->yOffsetIs(6.0f);
         targets_.push_back(target);
     }
@@ -853,6 +876,7 @@ void Engine::targetSpawnRateIs(float _targetSpawnRate) {
 }
 
 void Engine::UpdateTargets(float _frameTime) {
+
 
     nextSpawn_ -= _frameTime;
 
@@ -872,6 +896,8 @@ void Engine::UpdateTargets(float _frameTime) {
 
         if ( (*it)->active() ) {
 
+           // std::cout << (*it)->name() << " is active" << std::endl;
+
             float currentHeight = (*it)->midPoint().y;
             float oceanHeight = heights.at(i);
             (*it)->heightDiffIs(currentHeight - oceanHeight);
@@ -879,12 +905,15 @@ void Engine::UpdateTargets(float _frameTime) {
             (*it)->updatePos(_frameTime);
             root_->update();
             (*it)->updateHitBox();
-
+            
              if ( (*it)->midPoint().z < zMin_ ) {
+
                 (*it)->activeIs(false);
                 (*it)->mesh()->showIs(false);
             }
 
+        } else {
+           // std::cout << (*it)->name() << " is passive" << std::endl;
         }
         i++;
     }
@@ -893,18 +922,19 @@ void Engine::UpdateTargets(float _frameTime) {
 void Engine::ScatterTargets() {
     std::vector<Target*>::iterator it;
     for (it=targets_.begin(); it!=targets_.end(); it++) {
-        std::cout << "Activating " << (*it)->name() << std::endl;
+        (*it)->activeIs(true);
+        (*it)->mesh()->showIs(true);
         float startX = Random::randomFloat(xMin_, xMax_);
-        float startZ = Random::randomFloat(zMin_, zMax_);
+        float startZ = Random::randomFloat(100.f, zMax_);
         Vector3 startPos(startX, 0.f, startZ);
         Vector3 currentPos = (Vector3((*it)->midPoint().x,
                                         0.f,
                                       (*it)->midPoint().z));
         (*it)->mesh()->node()->translate(currentPos-startPos);
         (*it)->mesh()->node()->update();
-        (*it)->activeIs(true);
-        (*it)->mesh()->showIs(true);
+        (*it)->updateHitBox();
     }
+    nextSpawn_ = targetSpawnRate_;
 }
 
 void Engine::SpawnTargets() {
@@ -913,7 +943,6 @@ void Engine::SpawnTargets() {
         std::vector<Target*>::iterator it;
         for (it=targets_.begin(); it!=targets_.end(); it++) {
             if ( !(*it)->active() ) {
-                std::cout << "Activating " << (*it)->name() << std::endl;
                 float startX = Random::randomFloat(xMin_, xMax_);
                 Vector3 startPos(startX, 0.f, zMax_);
                 Vector3 currentPos = (Vector3((*it)->midPoint().x,
@@ -1200,32 +1229,32 @@ void Engine::initParticleSystems() {
         ps2 = new ParticleSystem(2);
         (*it)->foamPsIs(ps2);
 
-        Emitter * waterFoamLeft = ps2->newEmitter(40, waterFoamEmitter1sd_);
+        Emitter * waterFoamLeft = ps2->newEmitter(50, waterFoamEmitter1sd_);
         waterFoamLeft->posIs((*it)->frontLeft());
         waterFoamLeft->typeIs(Emitter::EMITTER_STREAM);
         waterFoamLeft->blendModeIs(Emitter::BLEND_FIRE);
         waterFoamLeft->rateIs(0.01f);
-        waterFoamLeft->lifeTimeIs(2.f);
+        waterFoamLeft->lifeTimeIs(2.5f);
         waterFoamLeft->massIs(1.f);
         waterFoamLeft->posRandWeightIs(0.2f);
-        waterFoamLeft->velIs(Vector3(25.f, 0.f, 0.f));
+        waterFoamLeft->velIs(Vector3(30.f, 0.f, 0.f));
         waterFoamLeft->velRandWeightIs(0.2f);
-        waterFoamLeft->accIs(Vector3(-60.f, 0.f, 0.0f));
+        waterFoamLeft->accIs(Vector3(-80.f, 0.f, 0.0f));
         waterFoamLeft->pointSizeIs(1.5f);
 
         waterFoamLeft->growthFactorIs(0.99f); 
 
-        Emitter * waterFoamRight = ps2->newEmitter(40, waterFoamEmitter2sd_);
+        Emitter * waterFoamRight = ps2->newEmitter(50, waterFoamEmitter2sd_);
         waterFoamRight->posIs((*it)->frontRight());
         waterFoamRight->typeIs(Emitter::EMITTER_STREAM);
         waterFoamRight->blendModeIs(Emitter::BLEND_FIRE);
         waterFoamRight->rateIs(0.01f);
-        waterFoamRight->lifeTimeIs(2.f);
+        waterFoamRight->lifeTimeIs(2.5f);
         waterFoamRight->massIs(1.f);
         waterFoamRight->posRandWeightIs(0.2f);
-        waterFoamRight->velIs(Vector3(-25.f, 0.f, 0.f));
+        waterFoamRight->velIs(Vector3(-30.f, 0.f, 0.f));
         waterFoamRight->velRandWeightIs(0.2f);
-        waterFoamRight->accIs(Vector3(60.f, 0.f, 0.0f));
+        waterFoamRight->accIs(Vector3(80.f, 0.f, 0.0f));
         waterFoamRight->pointSizeIs(1.5f);
         waterFoamRight->growthFactorIs(0.99f);
 
