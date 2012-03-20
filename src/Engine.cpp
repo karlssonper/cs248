@@ -62,10 +62,10 @@ static void KeyPressed(unsigned char key, int x, int y) {
             Engine::instance().camera()->move(-2.5);
             break;
         case 'a':
-            Engine::instance().camera()->strafe(-0.5);
+            Engine::instance().camera()->strafe(-5.5);
             break;
         case 'd':
-            Engine::instance().camera()->strafe(0.5);
+            Engine::instance().camera()->strafe(5.5);
             break;
         case 'b':
             direction = Engine::instance().camera()->viewVector();
@@ -678,8 +678,8 @@ void Engine::LoadCameras()
     gameCam_->rotationIs(115.f, 10.f);
     gameCam_->maxYawIs(130.f);
     gameCam_->minYawIs(105.f);
-    gameCam_->maxPitchIs(40.f);
-    gameCam_->minPitchIs(-10.f);
+    gameCam_->maxPitchIs(30.f);
+    gameCam_->minPitchIs(-5.f);
     activeCam_ = gameCam_;
     updateCamView_ = true;
 
@@ -930,6 +930,7 @@ void Engine::ScatterTargets() {
         float startX = Random::randomFloat(xMin_, xMax_);
         float startZ = Random::randomFloat(100.f, zMax_);
         Vector3 startPos(startX, 0.f, startZ);
+
         Vector3 currentPos = (Vector3((*it)->midPoint().x,
                                         0.f,
                                       (*it)->midPoint().z));
@@ -1232,34 +1233,33 @@ void Engine::initParticleSystems() {
         ps2 = new ParticleSystem(2);
         (*it)->foamPsIs(ps2);
 
-        Emitter * waterFoamLeft = ps2->newEmitter(50, waterFoamEmitter1sd_);
+        Emitter * waterFoamLeft = ps2->newEmitter(30, waterFoamEmitter1sd_);
         waterFoamLeft->posIs((*it)->frontLeft());
         waterFoamLeft->typeIs(Emitter::EMITTER_STREAM);
         waterFoamLeft->blendModeIs(Emitter::BLEND_FIRE);
         waterFoamLeft->rateIs(0.01f);
-        waterFoamLeft->lifeTimeIs(2.5f);
+        waterFoamLeft->lifeTimeIs(1.5f);
         waterFoamLeft->massIs(1.f);
-        waterFoamLeft->posRandWeightIs(0.2f);
-        waterFoamLeft->velIs(Vector3(30.f, 0.f, 0.f));
-        waterFoamLeft->velRandWeightIs(0.2f);
-        waterFoamLeft->accIs(Vector3(-80.f, 0.f, 0.0f));
-        waterFoamLeft->pointSizeIs(1.5f);
+        waterFoamLeft->posRandWeightIs(0.0f);
+        waterFoamLeft->velIs(Vector3(8.f, 0.f, 0.f));
+        waterFoamLeft->velRandWeightIs(0.3f);
+        waterFoamLeft->accIs(Vector3(-18.f, 0.f, 0.0f));
+        waterFoamLeft->pointSizeIs(1.2f);
+        waterFoamLeft->growthFactorIs(1.03f); 
 
-        waterFoamLeft->growthFactorIs(0.99f); 
-
-        Emitter * waterFoamRight = ps2->newEmitter(50, waterFoamEmitter2sd_);
+        Emitter * waterFoamRight = ps2->newEmitter(30, waterFoamEmitter2sd_);
         waterFoamRight->posIs((*it)->frontRight());
         waterFoamRight->typeIs(Emitter::EMITTER_STREAM);
         waterFoamRight->blendModeIs(Emitter::BLEND_FIRE);
         waterFoamRight->rateIs(0.01f);
-        waterFoamRight->lifeTimeIs(2.5f);
+        waterFoamRight->lifeTimeIs(1.5f);
         waterFoamRight->massIs(1.f);
-        waterFoamRight->posRandWeightIs(0.2f);
-        waterFoamRight->velIs(Vector3(-30.f, 0.f, 0.f));
-        waterFoamRight->velRandWeightIs(0.2f);
-        waterFoamRight->accIs(Vector3(80.f, 0.f, 0.0f));
-        waterFoamRight->pointSizeIs(1.5f);
-        waterFoamRight->growthFactorIs(0.99f);
+        waterFoamRight->posRandWeightIs(0.0f);
+        waterFoamRight->velIs(Vector3(-8.f, 0.f, 0.f));
+        waterFoamRight->velRandWeightIs(0.3f);
+        waterFoamRight->accIs(Vector3(18.f, 0.f, 0.0f));
+        waterFoamRight->pointSizeIs(1.2f);
+        waterFoamRight->growthFactorIs(1.03f);
 
 
     }
@@ -1288,10 +1288,12 @@ void Engine::UpdateDOF()
 {
     Vector3 viewVector = activeCam_->viewVector();
     float t = (-activeCam_->worldPos(0.0f).y-5)/viewVector.y;
+    if (t > 125.0f || viewVector.y <= 0) t = 125.f;
     focalPlane_ = t;
-    nearBlurPlane_ = t-70.0f;
+
+    nearBlurPlane_ = t-60.0f;
     if (nearBlurPlane_ < 0.0) nearBlurPlane_ = 0.0f;
-    farBlurPlane_ = t+70.f;
+    farBlurPlane_ = t+60.f;
     maxBlur_ = 0.8f;
 
     std::string focalPlaneStr("focalPlane");

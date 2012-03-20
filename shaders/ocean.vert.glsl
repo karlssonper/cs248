@@ -39,7 +39,7 @@ float calculateCoC(float depth)
     }
     // scale and bias into [0, 1] range
     //return f;
-    return f*f*f*f;
+    return f*f;
 }
 
 void main() {

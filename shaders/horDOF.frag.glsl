@@ -18,10 +18,13 @@ vec3 gaussianBlur(sampler2D tex, float n)
     float u = texcoord.x - n/2.0 * texDx;
     float totWeight = 0.0;
     for (int i = 0; i < n; ++i, u += texDx){
+        if (texture2D(cocTex,texcoord).r > 0.25) {
             float d = distance(texcoord, vec2(u,texcoord.y ));
             float weight = exp(-d*d);
             sum += weight*texture2D(tex, vec2(u,texcoord.y )).rgb;
             totWeight += weight;
+        }
+
     }
     return sum / totWeight;
 }

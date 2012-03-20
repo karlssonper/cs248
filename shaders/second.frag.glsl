@@ -86,7 +86,7 @@ void main() {
 	vec3 color;
 	if (debug == 1.0) {
 	    vec4 hud = texture2D(hudTex, texcoord);
-	    color = (1.0-hud.a)*motionBlur(2.25) + hud.a*(hud.rgb);
+	    color = (1.0-hud.a)*motionBlur(1.5) + hud.a*(hud.rgb);
 	} else if (debug == 2.0) {
 	    color = gaussianBlur(bloomTex,10);
     } else if (debug == 3.0) {

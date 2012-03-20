@@ -117,7 +117,7 @@ void main() {
     vec3 diffuseColor = diffuse(L, N,vec3(0.1, 0.15, 0.2));
     vec3 reflectColor = reflectEnv(N, V);
     vec3 ambientColor = vec3(0.15, 0.15, 0.16);
-    vec3 specularColor = 0.7*sunReflect(L,N,V);
+    vec3 specularColor = 0.9*sunReflect(L,N,V);
     float ss = shadowScale(3);
     vec3 phong = ss*(ambientColor + diffuseColor+reflectColor+ specularColor);
     float alpha;

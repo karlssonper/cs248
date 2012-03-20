@@ -18,7 +18,7 @@
 #define DIR_X 0
 #define DIR_Y 1
 #define DIR_Z 2
-#define N 128 //REQUENCY RESOLUTION
+#define N 256 //REQUENCY RESOLUTION
 #define WORLD_SIZE 150.0f // WORLD SIZE
 #define OCEAN_DEPTH 200.0f
 #define WIND_X 1.0f
