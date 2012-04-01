@@ -1,7 +1,7 @@
 PROJECT (ENGINE_LIB)
 
 
-CUDA_ADD_LIBRARY(engine STATIC
+CUDA_ADD_EXECUTABLE (main Main
                             Engine 
                             cuda/Ocean.cu
                             cuda/Emitter.cu
@@ -19,7 +19,7 @@ CUDA_ADD_LIBRARY(engine STATIC
                             Sound
                             )
 
-TARGET_LINK_LIBRARIES(engine 
+TARGET_LINK_LIBRARIES(main 
                                     ${GL_EXT_LIB} 
                                                GL 
                                                GLU 
@@ -32,6 +32,4 @@ TARGET_LINK_LIBRARIES(engine
                                                alut
                                                )
 
-INSTALL (TARGETS engine DESTINATION lib)
-
-SET(engine ENGINE_LIB)
+INSTALL (TARGETS main DESTINATION bin)

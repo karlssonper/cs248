@@ -1,0 +1,51 @@
+userid: perk, vsand
+cs248 - Final Project
+Per Karlsson, Victor Sand
+
+=========== Features implemented by Per ==============
+
+- Ocean:
+  1. Wave motion using inverse FFT, using this paper:
+	graphics.ucsd.edu/courses/rendering/2005/jdewall/tessendorf.pdf
+  2. FFTs and positions updates on CUDA (Updating ~2 million vertices/second)
+  3. Render Ocean with Lambert term for diffuse, specular map for sun beam, fresnel term for sky reflections
+  4. Each boat generates foam, which is a blending with a foam texture (time offset for a small animation)
+
+- Structure (The project has a really nice framework to handle geometry and shaders)
+  1. Everything uses Vertex Array Objects (binded with Vertex Buffer Objects) to keep geometry on GPU.
+  2. A shader class that optimizes and minimizes the amount of calls to Shader programs (and to update 		uniform shader data).
+  3. All graphics are rendered with the OpenGL 3.3+ core, i.e no matrix stack etc anymore
+  4. Render geometry only once to diffrent textures and perform deferred rendering.
+
+- Shaders
+  1. A simple HUD on top of everything (a single image, static)
+  2. Depth of Field. Calculate the Circle of Confusion at each pixel (HUD and scene treated in their own way). Gaussian blur in two passes (separable) to get the final DOF blur.
+	Inspired by: Scheuermann, Thorsten. 2004. "Advanced Depth of Field.
+  3. Camera motion blur. To get each pixels speed in screen space, use inverted viewprojection and previous frame's viewprojection matrix. Blur along the pixel's velocity. http://developer.nvidia.com/node/184
+	
+  4. Bloom. Each pixel with an intensity higher than a treshold is rendered to a texture and later blurred with a separable gaussian blur (two passes). Blend with regular output to make strong lights "bleed" into geometry.
+  5. The rest is from assignment 3 (Shadows, Phong, Skybox).
+
+
+=========== Features implemented by Victor ==============
+
+ - Particle systems on CUDA
+Particle allocation and updating are handled by CUDA. The information that the shaders need is stored on VBO's to avoid traffic to the CPU completely. The particle system supports emitters with textured point sprites, and every emitter can have individual parameters for particle size, position, acceleration, spread, growth factor etc. Two modes are supported; constant stream of particle or bursts. We use particle emitters for projectile impacts, projectile flights and boat foam.
+ 
+ - Soft particles
+The particles are rendered using soft particles with individual "distance factors" per emitter for flexibility. As an example, explosions start fading from a further distance to the background than the foam around the boats.
+ 
+- Game physics with collision handling
+The simple game engine features weapons, projectiles and targets. A target have a hitbox that projectiles can collide with.
+ 
+
+=========== General ==============
+
+ - Models, textures and sound
+The boat and rockets models and textures are downloaded from http://artist-3d.com/. Other textures have been found on various websites and altered. Sounds effects are downloaded from http://www.freesound.org.
+ 
+External libraries
+Assimp: For loading 3ds models (Note: only loading step. We load into our own data structures).
+OpenAL: For sounds
+Freeimage: For loading texture images
+CUDA: For GPU calculations

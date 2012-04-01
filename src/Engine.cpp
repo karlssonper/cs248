@@ -217,7 +217,7 @@ void Engine::init(int argc, char **argv,
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
     glutInitWindowSize(_width, _height);
-    glutCreateWindow("tests/engine");
+    glutCreateWindow("cs248 Final Project");
     glutReshapeFunc(Reshape);
     glutKeyboardFunc(KeyPressed);
     glutKeyboardUpFunc(KeyReleased);
@@ -240,7 +240,7 @@ void Engine::init(int argc, char **argv,
 void Engine::start()
 {
     Sound::instance().play(Sound::OCEAN, Vector3(0.f, 0.f, 0.f));
-    Sound::instance().play(Sound::THEME, Vector3(0.f, 0.f, 0.f));
+    //Sound::instance().play(Sound::THEME, Vector3(0.f, 0.f, 0.f));
     glutMainLoop();
 }
 
@@ -349,7 +349,7 @@ void Engine::renderFrame(float _currentTime)
     float frameTime = currentTime_ - lastTime;
     std::stringstream ss;
     ss << 1.0f/frameTime;
-    glutSetWindowTitle(ss.str().c_str());
+    //glutSetWindowTitle(ss.str().c_str());
 
     Matrix4 * prevViewProj = quadShader_->stdMatrix4Data(PREVVIEWPROJECTION);
     *prevViewProj = activeCam_->projectionMtx() * activeCam_->viewMtx();

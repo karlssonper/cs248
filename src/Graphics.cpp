@@ -14,7 +14,7 @@
 Graphics::Graphics()
 {
 #ifdef USE_GLEW
-    //printf("OpenGL and GLEW");
+    printf("OpenGL and GLEW");
     GLint error = glewInit();
     if (GLEW_OK != error) {
         std::cerr << glewGetErrorString(error) << std::endl;
